@@ -1,0 +1,175 @@
+'
+' StringUtilsTests - suite di test per il modulo StringUtils.
+'
+' RunAll riceve il TestRunner da usare, cosi' la suite puo' essere composta
+' con altre senza che ciascuna crei un proprio contatore.
+'
+Module StringUtilsTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestPadding runner
+        TestSearch runner
+        TestRepeat runner
+        TestCollapseWhitespace runner
+        TestWordWrap runner
+        TestSlugify runner
+        TestLevenshtein runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+
+    Private Sub TestPadding(ByVal runner As TestRunner)
+        runner.BeginTest "PadLeft riempie a sinistra"
+        runner.AreEqual "..ab", StringUtils.PadLeft("ab", 4, ".")
+        runner.AreEqual "   ab", StringUtils.PadLeft("ab", 5)
+
+        runner.BeginTest "PadRight riempie a destra"
+        runner.AreEqual "ab..", StringUtils.PadRight("ab", 4, ".")
+
+        runner.BeginTest "Il padding non tronca mai il testo"
+        runner.AreEqual "abcdef", StringUtils.PadLeft("abcdef", 3)
+        runner.AreEqual "abcdef", StringUtils.PadRight("abcdef", 3)
+
+        runner.BeginTest "Il carattere di riempimento deve essere singolo"
+        runner.RaisedError 5, ErrorFromPadLeft("ab", 6, "xy")
+    End Sub
+
+    Private Sub TestSearch(ByVal runner As TestRunner)
+        runner.BeginTest "StartsWith distingue le maiuscole per default"
+        runner.IsTrue StringUtils.StartsWith("Ciao mondo", "Ciao")
+        runner.IsFalse StringUtils.StartsWith("Ciao mondo", "ciao")
+        runner.IsTrue StringUtils.StartsWith("Ciao mondo", "ciao", vbTextCompare)
+
+        runner.BeginTest "Prefisso e suffisso vuoti sono sempre presenti"
+        runner.IsTrue StringUtils.StartsWith("qualcosa", "")
+        runner.IsTrue StringUtils.EndsWith("qualcosa", "")
+
+        runner.BeginTest "EndsWith riconosce l'estensione"
+        runner.IsTrue StringUtils.EndsWith("StringUtils.twin", ".twin")
+        runner.IsFalse StringUtils.EndsWith("StringUtils.twin", ".bas")
+
+        runner.BeginTest "Un ago piu' lungo del pagliaio non c'e'"
+        runner.IsFalse StringUtils.StartsWith("ab", "abc")
+        runner.IsFalse StringUtils.EndsWith("ab", "abc")
+
+        runner.BeginTest "Contains cerca ovunque nella stringa"
+        runner.IsTrue StringUtils.Contains("banana", "nan")
+        runner.IsFalse StringUtils.Contains("banana", "NAN")
+        runner.IsTrue StringUtils.Contains("banana", "NAN", vbTextCompare)
+
+        runner.BeginTest "CountOccurrences non conta le sovrapposizioni"
+        runner.AreEqual 2, StringUtils.CountOccurrences("aaaa", "aa")
+        runner.AreEqual 2, StringUtils.CountOccurrences("banana", "na")
+        runner.AreEqual 0, StringUtils.CountOccurrences("banana", "kiwi")
+        runner.AreEqual 0, StringUtils.CountOccurrences("banana", "")
+    End Sub
+
+    Private Sub TestRepeat(ByVal runner As TestRunner)
+        runner.BeginTest "Repeat concatena count volte"
+        runner.AreEqual "ababab", StringUtils.Repeat("ab", 3)
+        runner.AreEqual "x", StringUtils.Repeat("x", 1)
+
+        runner.BeginTest "Repeat con zero ripetizioni o testo vuoto da' stringa vuota"
+        runner.AreEqual "", StringUtils.Repeat("ab", 0)
+        runner.AreEqual "", StringUtils.Repeat("", 9)
+
+        runner.BeginTest "Repeat produce la lunghezza attesa su valori grandi"
+        runner.AreEqual 1000, Len(StringUtils.Repeat("abcde", 200))
+
+        runner.BeginTest "Repeat rifiuta un conteggio negativo"
+        runner.RaisedError 5, ErrorFromRepeat("ab", -1)
+    End Sub
+
+    Private Sub TestCollapseWhitespace(ByVal runner As TestRunner)
+        runner.BeginTest "CollapseWhitespace normalizza spazi, tab e a capo"
+        runner.AreEqual "a b c", StringUtils.CollapseWhitespace("  a  b" & vbTab & " c  ")
+        runner.AreEqual "riga1 riga2", StringUtils.CollapseWhitespace("riga1" & vbCrLf & "riga2")
+
+        runner.BeginTest "CollapseWhitespace su testo gia' pulito non cambia nulla"
+        runner.AreEqual "a b c", StringUtils.CollapseWhitespace("a b c")
+
+        runner.BeginTest "CollapseWhitespace su soli spazi da' stringa vuota"
+        runner.AreEqual "", StringUtils.CollapseWhitespace("   " & vbTab & "  ")
+    End Sub
+
+    Private Sub TestWordWrap(ByVal runner As TestRunner)
+        runner.BeginTest "WordWrap spezza sugli spazi rispettando la larghezza"
+        runner.AreEqual "il gatto|dorme sul|tetto", _
+                        StringUtils.WordWrap("il gatto dorme sul tetto", 10, "|")
+
+        runner.BeginTest "WordWrap non spezza mai una parola singola"
+        runner.AreEqual "a|straordinariamente|b", _
+                        StringUtils.WordWrap("a straordinariamente b", 5, "|")
+
+        runner.BeginTest "WordWrap normalizza lo spazio in ingresso"
+        runner.AreEqual "uno due", StringUtils.WordWrap("  uno    due  ", 40, "|")
+
+        runner.BeginTest "WordWrap su testo vuoto da' stringa vuota"
+        runner.AreEqual "", StringUtils.WordWrap("   ", 10, "|")
+
+        runner.BeginTest "WordWrap rifiuta una larghezza non positiva"
+        runner.RaisedError 5, ErrorFromWordWrap("testo", 0)
+    End Sub
+
+    Private Sub TestSlugify(ByVal runner As TestRunner)
+        runner.BeginTest "Slugify riduce le accentate alla lettera base"
+        runner.AreEqual "citta-di-nizza", _
+                        StringUtils.Slugify("Citt" & ChrW$(&HE0&) & " di Nizza")
+
+        runner.BeginTest "Slugify elimina punteggiatura e trattini ai bordi"
+        runner.AreEqual "hello-world", StringUtils.Slugify("  Hello,   World!  ")
+        runner.AreEqual "twinbasic-2026", StringUtils.Slugify("twinBASIC / 2026")
+
+        runner.BeginTest "Slugify su testo senza caratteri utili da' stringa vuota"
+        runner.AreEqual "", StringUtils.Slugify("--- !!! ---")
+    End Sub
+
+    Private Sub TestLevenshtein(ByVal runner As TestRunner)
+        runner.BeginTest "Levenshtein sui casi classici"
+        runner.AreEqual 3, StringUtils.LevenshteinDistance("kitten", "sitting")
+        runner.AreEqual 2, StringUtils.LevenshteinDistance("flaw", "lawn")
+
+        runner.BeginTest "Levenshtein e' zero fra stringhe identiche"
+        runner.AreEqual 0, StringUtils.LevenshteinDistance("gatto", "gatto")
+
+        runner.BeginTest "Levenshtein conta una sola sostituzione"
+        runner.AreEqual 1, StringUtils.LevenshteinDistance("gatto", "gatti")
+
+        runner.BeginTest "Levenshtein con una stringa vuota vale la lunghezza dell'altra"
+        runner.AreEqual 3, StringUtils.LevenshteinDistance("", "abc")
+        runner.AreEqual 3, StringUtils.LevenshteinDistance("abc", "")
+        runner.AreEqual 0, StringUtils.LevenshteinDistance("", "")
+
+        runner.BeginTest "Levenshtein e' simmetrica"
+        runner.AreEqual StringUtils.LevenshteinDistance("sabato", "sabbia"), _
+                        StringUtils.LevenshteinDistance("sabbia", "sabato")
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper: eseguono una chiamata destinata a fallire e restituiscono il
+    ' numero di errore sollevato, oppure 0 se non e' stato sollevato nulla.
+    ' ------------------------------------------------------------------
+
+    Private Function ErrorFromPadLeft(ByVal text As String, ByVal width As Long, _
+                                      ByVal padChar As String) As Long
+        On Error Resume Next
+        Err.Clear
+        StringUtils.PadLeft text, width, padChar
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromRepeat(ByVal text As String, ByVal count As Long) As Long
+        On Error Resume Next
+        Err.Clear
+        StringUtils.Repeat text, count
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromWordWrap(ByVal text As String, ByVal width As Long) As Long
+        On Error Resume Next
+        Err.Clear
+        StringUtils.WordWrap text, width
+        Return Err.Number
+    End Function
+
+End Module

@@ -1,0 +1,40 @@
+'
+' App - punto di ingresso del progetto.
+'
+' Impostare questo modulo come Startup Object del progetto twinBASIC.
+' Main esegue prima la suite di test, poi una breve dimostrazione della
+' libreria, cosi' un singolo avvio dice sia se il codice e' sano sia cosa fa.
+'
+Module App
+
+    Public Sub Main()
+        Dim runner As TestRunner
+        Set runner = New TestRunner
+
+        ConsoleOut.WriteHeading "tbToolkit - suite di test"
+        StringUtilsTests.RunAll runner
+        runner.Report
+
+        ConsoleOut.WriteLine
+        ShowDemo
+    End Sub
+
+    ' Piccola vetrina delle funzioni, utile per vedere l'output reale
+    ' invece di leggere solo gli assert.
+    Private Sub ShowDemo()
+        Const SAMPLE As String = "twinBASIC compila lo stesso sorgente " & _
+                                 "sia a 32 sia a 64 bit, senza modifiche."
+
+        ConsoleOut.WriteHeading "tbToolkit - dimostrazione"
+
+        ConsoleOut.WriteField "Slug del titolo", StringUtils.Slugify("Guida rapida a twinBASIC!")
+        ConsoleOut.WriteField "Occorrenze di 'a'", CStr(StringUtils.CountOccurrences(SAMPLE, "a"))
+        ConsoleOut.WriteField "Distanza gatto/gatti", CStr(StringUtils.LevenshteinDistance("gatto", "gatti"))
+        ConsoleOut.WriteField "Cornice", StringUtils.Repeat("=*", 10)
+
+        ConsoleOut.WriteLine
+        ConsoleOut.WriteLine "Testo mandato a capo a 40 colonne:"
+        ConsoleOut.WriteLine StringUtils.WordWrap(SAMPLE, 40)
+    End Sub
+
+End Module

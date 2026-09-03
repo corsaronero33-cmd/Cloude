@@ -1,0 +1,141 @@
+'
+' TestRunner - micro framework di test, circa un centinaio di righe.
+'
+' Uso tipico:
+'
+'     Dim runner As TestRunner
+'     Set runner = New TestRunner
+'     runner.BeginTest "PadLeft riempie a sinistra"
+'     runner.AreEqual "..ab", StringUtils.PadLeft("ab", 4, ".")
+'     runner.Report
+'
+' I fallimenti vengono stampati subito e riepilogati alla fine. La proprieta'
+' HasFailures permette di far uscire il processo con un codice di errore.
+'
+Class TestRunner
+
+    Private mPassed As Long
+    Private mFailed As Long
+    Private mCurrentTest As String
+    Private mFailures As Collection
+
+    Private Sub Class_Initialize()
+        Set mFailures = New Collection
+        mCurrentTest = "(test senza nome)"
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Stato
+    ' ------------------------------------------------------------------
+
+    Public Property Get Passed() As Long
+        Return mPassed
+    End Property
+
+    Public Property Get Failed() As Long
+        Return mFailed
+    End Property
+
+    Public Property Get Total() As Long
+        Return mPassed + mFailed
+    End Property
+
+    Public Property Get HasFailures() As Boolean
+        Return (mFailed > 0)
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Asserzioni
+    ' ------------------------------------------------------------------
+
+    ' Dichiara a quale caso si riferiscono le asserzioni successive.
+    Public Sub BeginTest(ByVal testName As String)
+        mCurrentTest = testName
+    End Sub
+
+    Public Sub AreEqual(ByVal expected As Variant, ByVal actual As Variant, _
+                        Optional ByVal message As String = "")
+        If ValuesMatch(expected, actual) Then
+            RecordPass
+        Else
+            RecordFail message & " atteso <" & AsText(expected) & _
+                       ">, ottenuto <" & AsText(actual) & ">"
+        End If
+    End Sub
+
+    Public Sub IsTrue(ByVal condition As Boolean, Optional ByVal message As String = "")
+        If condition Then RecordPass Else RecordFail message & " atteso True, ottenuto False"
+    End Sub
+
+    Public Sub IsFalse(ByVal condition As Boolean, Optional ByVal message As String = "")
+        If Not condition Then RecordPass Else RecordFail message & " atteso False, ottenuto True"
+    End Sub
+
+    ' Verifica che l'ultimo errore intercettato abbia il numero atteso.
+    ' Va usata subito dopo una chiamata protetta da On Error Resume Next.
+    Public Sub RaisedError(ByVal expectedNumber As Long, ByVal actualNumber As Long, _
+                           Optional ByVal message As String = "")
+        If actualNumber = expectedNumber Then
+            RecordPass
+        ElseIf actualNumber = 0 Then
+            RecordFail message & " atteso errore " & CStr(expectedNumber) & ", nessun errore sollevato"
+        Else
+            RecordFail message & " atteso errore " & CStr(expectedNumber) & _
+                       ", sollevato errore " & CStr(actualNumber)
+        End If
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Riepilogo
+    ' ------------------------------------------------------------------
+
+    Public Sub Report()
+        Dim i As Long
+
+        ConsoleOut.WriteLine
+        ConsoleOut.WriteLine "Asserzioni superate: " & CStr(mPassed) & " su " & CStr(Total)
+
+        If mFailed = 0 Then
+            ConsoleOut.WriteLine "Esito: TUTTO OK"
+            Exit Sub
+        End If
+
+        ConsoleOut.WriteLine "Esito: " & CStr(mFailed) & " FALLIMENTI"
+        For i = 1 To mFailures.Count
+            ConsoleOut.WriteLine "  - " & mFailures.Item(i)
+        Next i
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Sub RecordPass()
+        mPassed += 1
+    End Sub
+
+    Private Sub RecordFail(ByVal detail As String)
+        Dim line As String
+
+        mFailed += 1
+        line = mCurrentTest & ": " & Trim$(detail)
+        mFailures.Add line
+        ConsoleOut.WriteLine "  [FAIL] " & line
+    End Sub
+
+    ' Il confronto passa per il testo se almeno uno dei due valori e' una
+    ' stringa, cosi' AreEqual "4", 4 non fallisce per differenza di tipo.
+    Private Function ValuesMatch(ByVal a As Variant, ByVal b As Variant) As Boolean
+        If VarType(a) = vbString Or VarType(b) = vbString Then
+            Return (AsText(a) = AsText(b))
+        End If
+        Return (a = b)
+    End Function
+
+    Private Function AsText(ByVal value As Variant) As String
+        If IsNull(value) Then Return "Null"
+        If IsEmpty(value) Then Return "Empty"
+        Return CStr(value)
+    End Function
+
+End Class

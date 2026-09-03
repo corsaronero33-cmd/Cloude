@@ -1,0 +1,20 @@
+# Output di compilazione twinBASIC
+Build/
+build/
+*.exe
+*.dll
+*.ocx
+*.pdb
+*.tlb
+*.exp
+*.lib
+
+# Backup e file temporanei dell'IDE
+*.bak
+*.twinproj.bak
+*~
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store

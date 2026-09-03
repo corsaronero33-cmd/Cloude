@@ -1,0 +1,283 @@
+'
+' StringUtils - libreria di utilita' per stringhe, senza dipendenze esterne.
+'
+' Tutte le funzioni sono pure: non modificano lo stato del modulo e non
+' toccano l'interfaccia utente. Gli argomenti sono sempre ByVal.
+'
+Module StringUtils
+
+    ' ------------------------------------------------------------------
+    ' Allineamento
+    ' ------------------------------------------------------------------
+
+    ' Allinea a destra riempiendo a sinistra fino a totalWidth caratteri.
+    ' Se il testo e' gia' piu' lungo di totalWidth viene restituito intatto.
+    Public Function PadLeft(ByVal text As String, ByVal totalWidth As Long, _
+                            Optional ByVal padChar As String = " ") As String
+        If Len(padChar) <> 1 Then
+            Err.Raise 5, "StringUtils.PadLeft", "padChar deve essere un singolo carattere"
+        End If
+        If Len(text) >= totalWidth Then Return text
+        Return String$(totalWidth - Len(text), padChar) & text
+    End Function
+
+    ' Allinea a sinistra riempiendo a destra fino a totalWidth caratteri.
+    Public Function PadRight(ByVal text As String, ByVal totalWidth As Long, _
+                             Optional ByVal padChar As String = " ") As String
+        If Len(padChar) <> 1 Then
+            Err.Raise 5, "StringUtils.PadRight", "padChar deve essere un singolo carattere"
+        End If
+        If Len(text) >= totalWidth Then Return text
+        Return text & String$(totalWidth - Len(text), padChar)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Ricerca
+    ' ------------------------------------------------------------------
+
+    ' Vero se text inizia con prefix. Un prefisso vuoto e' sempre presente.
+    Public Function StartsWith(ByVal text As String, ByVal prefix As String, _
+                               Optional ByVal compare As VbCompareMethod = vbBinaryCompare) As Boolean
+        If Len(prefix) = 0 Then Return True
+        If Len(prefix) > Len(text) Then Return False
+        Return (StrComp(Left$(text, Len(prefix)), prefix, compare) = 0)
+    End Function
+
+    ' Vero se text termina con suffix. Un suffisso vuoto e' sempre presente.
+    Public Function EndsWith(ByVal text As String, ByVal suffix As String, _
+                             Optional ByVal compare As VbCompareMethod = vbBinaryCompare) As Boolean
+        If Len(suffix) = 0 Then Return True
+        If Len(suffix) > Len(text) Then Return False
+        Return (StrComp(Right$(text, Len(suffix)), suffix, compare) = 0)
+    End Function
+
+    ' Vero se needle compare almeno una volta dentro text.
+    Public Function Contains(ByVal text As String, ByVal needle As String, _
+                             Optional ByVal compare As VbCompareMethod = vbBinaryCompare) As Boolean
+        If Len(needle) = 0 Then Return True
+        Return (InStr(1, text, needle, compare) > 0)
+    End Function
+
+    ' Conta le occorrenze NON sovrapposte di needle dentro text.
+    ' "aaaa" contiene 2 occorrenze di "aa", non 3.
+    Public Function CountOccurrences(ByVal text As String, ByVal needle As String, _
+                                     Optional ByVal compare As VbCompareMethod = vbBinaryCompare) As Long
+        Dim pos As Long
+        Dim total As Long
+
+        If Len(needle) = 0 Then Return 0
+
+        pos = InStr(1, text, needle, compare)
+        Do While pos > 0
+            total += 1
+            pos = InStr(pos + Len(needle), text, needle, compare)
+        Loop
+        Return total
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Costruzione
+    ' ------------------------------------------------------------------
+
+    ' Concatena text a se stesso count volte, raddoppiando il buffer a ogni
+    ' passo: O(log count) concatenazioni invece di O(count).
+    Public Function Repeat(ByVal text As String, ByVal count As Long) As String
+        Dim result As String
+        Dim chunk As String
+        Dim remaining As Long
+
+        If count < 0 Then
+            Err.Raise 5, "StringUtils.Repeat", "count deve essere >= 0"
+        End If
+        If count = 0 Or Len(text) = 0 Then Return ""
+
+        chunk = text
+        remaining = count
+        Do While remaining > 0
+            If (remaining And 1&) = 1& Then result = result & chunk
+            remaining = remaining \ 2
+            If remaining > 0 Then chunk = chunk & chunk
+        Loop
+        Return result
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Normalizzazione
+    ' ------------------------------------------------------------------
+
+    ' Riduce ogni sequenza di spazi, tab, CR e LF a un singolo spazio e
+    ' rimuove gli spazi iniziali e finali.
+    Public Function CollapseWhitespace(ByVal text As String) As String
+        Dim i As Long
+        Dim ch As String
+        Dim result As String
+        Dim pendingSpace As Boolean
+
+        pendingSpace = True     ' evita lo spazio iniziale
+        For i = 1 To Len(text)
+            ch = Mid$(text, i, 1)
+            If ch = " " Or ch = vbTab Or ch = vbCr Or ch = vbLf Then
+                If Not pendingSpace Then
+                    result = result & " "
+                    pendingSpace = True
+                End If
+            Else
+                result = result & ch
+                pendingSpace = False
+            End If
+        Next i
+        Return RTrim$(result)
+    End Function
+
+    ' Manda a capo il testo su righe lunghe al massimo width caratteri,
+    ' spezzando solo sugli spazi. Una parola piu' lunga di width occupa da
+    ' sola la propria riga e la eccede: non viene mai troncata.
+    Public Function WordWrap(ByVal text As String, ByVal width As Long, _
+                             Optional ByVal newLine As String = vbCrLf) As String
+        Dim words() As String
+        Dim result As String
+        Dim line As String
+        Dim word As String
+        Dim i As Long
+
+        If width < 1 Then
+            Err.Raise 5, "StringUtils.WordWrap", "width deve essere >= 1"
+        End If
+
+        text = CollapseWhitespace(text)
+        If Len(text) = 0 Then Return ""
+
+        words = Split(text, " ")
+        For i = LBound(words) To UBound(words)
+            word = words(i)
+            If Len(line) = 0 Then
+                line = word
+            ElseIf Len(line) + 1 + Len(word) <= width Then
+                line = line & " " & word
+            Else
+                If Len(result) > 0 Then result = result & newLine
+                result = result & line
+                line = word
+            End If
+        Next i
+
+        If Len(line) > 0 Then
+            If Len(result) > 0 Then result = result & newLine
+            result = result & line
+        End If
+        Return result
+    End Function
+
+    ' Converte un titolo in uno slug minuscolo adatto a URL e nomi file.
+    ' Le lettere accentate latine vengono ridotte alla lettera base, cosi'
+    ' "Città di Nizza" diventa "citta-di-nizza".
+    Public Function Slugify(ByVal text As String) As String
+        Dim i As Long
+        Dim code As Long
+        Dim result As String
+        Dim pendingDash As Boolean
+
+        text = FoldAccents(LCase$(text))
+        pendingDash = True      ' evita il trattino iniziale
+
+        For i = 1 To Len(text)
+            code = AscW(Mid$(text, i, 1))
+            If (code >= 97 And code <= 122) Or (code >= 48 And code <= 57) Then
+                result = result & Chr$(code)
+                pendingDash = False
+            Else
+                If Not pendingDash Then
+                    result = result & "-"
+                    pendingDash = True
+                End If
+            End If
+        Next i
+
+        If Len(result) > 0 Then
+            If Right$(result, 1) = "-" Then result = Left$(result, Len(result) - 1)
+        End If
+        Return result
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Distanza
+    ' ------------------------------------------------------------------
+
+    ' Distanza di Levenshtein: numero minimo di inserimenti, cancellazioni e
+    ' sostituzioni per trasformare a in b. Usa due sole righe della matrice,
+    ' quindi occupa O(Len(b)) invece di O(Len(a) * Len(b)).
+    Public Function LevenshteinDistance(ByVal a As String, ByVal b As String) As Long
+        Dim previousRow() As Long
+        Dim currentRow() As Long
+        Dim lenA As Long
+        Dim lenB As Long
+        Dim i As Long
+        Dim j As Long
+        Dim cost As Long
+        Dim charA As String
+
+        lenA = Len(a)
+        lenB = Len(b)
+        If lenA = 0 Then Return lenB
+        If lenB = 0 Then Return lenA
+
+        ReDim previousRow(0 To lenB)
+        ReDim currentRow(0 To lenB)
+
+        For j = 0 To lenB
+            previousRow(j) = j
+        Next j
+
+        For i = 1 To lenA
+            charA = Mid$(a, i, 1)
+            currentRow(0) = i
+            For j = 1 To lenB
+                If charA = Mid$(b, j, 1) Then cost = 0 Else cost = 1
+                currentRow(j) = SmallestOfThree(currentRow(j - 1) + 1, _
+                                                previousRow(j) + 1, _
+                                                previousRow(j - 1) + cost)
+            Next j
+            For j = 0 To lenB
+                previousRow(j) = currentRow(j)
+            Next j
+        Next i
+
+        Return previousRow(lenB)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Sostituisce le vocali e consonanti accentate del blocco Latin-1 con la
+    ' lettera ASCII corrispondente. I caratteri non mappati restano invariati.
+    Private Function FoldAccents(ByVal text As String) As String
+        Dim i As Long
+        Dim ch As String
+        Dim result As String
+
+        For i = 1 To Len(text)
+            ch = Mid$(text, i, 1)
+            Select Case AscW(ch)
+                Case &HC0& To &HC5&, &HE0& To &HE5&:    result = result & "a"
+                Case &HC8& To &HCB&, &HE8& To &HEB&:    result = result & "e"
+                Case &HCC& To &HCF&, &HEC& To &HEF&:    result = result & "i"
+                Case &HD2& To &HD6&, &HF2& To &HF6&:    result = result & "o"
+                Case &HD9& To &HDC&, &HF9& To &HFC&:    result = result & "u"
+                Case &HC7&, &HE7&:                      result = result & "c"
+                Case &HD1&, &HF1&:                      result = result & "n"
+                Case Else:                              result = result & ch
+            End Select
+        Next i
+        Return result
+    End Function
+
+    Private Function SmallestOfThree(ByVal x As Long, ByVal y As Long, ByVal z As Long) As Long
+        Dim smallest As Long
+        smallest = x
+        If y < smallest Then smallest = y
+        If z < smallest Then smallest = z
+        Return smallest
+    End Function
+
+End Module
