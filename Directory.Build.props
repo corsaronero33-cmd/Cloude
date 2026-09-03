@@ -1,0 +1,10 @@
+<Project>
+  <!-- Impostazioni comuni a tutti i progetti: le metto qui una volta sola
+       invece di ripeterle in ogni .csproj -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

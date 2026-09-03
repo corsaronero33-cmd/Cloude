@@ -1,0 +1,23 @@
+# Build
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+
+# Visual Studio
+.vs/
+*.vsidx
+
+# Rider
+.idea/
+
+# Database locali di sviluppo
+*.db
+*.db-shm
+*.db-wal
+
+# Output pubblicazione
+publish/
+*.zip

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Cloude.App</RootNamespace>
+
+    <!-- Permette di compilare un progetto Windows anche da Linux/macOS.
+         Sul tuo PC Windows non cambia nulla; serve alla verifica automatica. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cloude.Nucleo\Cloude.Nucleo.csproj" />
+    <ProjectReference Include="..\Cloude.Dati\Cloude.Dati.csproj" />
+  </ItemGroup>
+
+</Project>

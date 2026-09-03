@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Cloude.Dati</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cloude.Nucleo\Cloude.Nucleo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Gli script SQL vengono inglobati dentro la DLL: cosi' l'installazione
+         dal cliente non puo' ritrovarsi senza i file di schema. -->
+    <EmbeddedResource Include="..\..\db\*.sql" LinkBase="Migrazioni" />
+  </ItemGroup>
+</Project>
