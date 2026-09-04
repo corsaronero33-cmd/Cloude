@@ -1,0 +1,94 @@
+CLOUDE - Anagrafica clienti in B4J
+==================================
+
+PREMESSA ONESTA
+---------------
+Questo codice non l'ho potuto compilare: B4J gira solo su Windows e io no.
+E' scritto con attenzione, ma alla prima prova e' normale che salti fuori
+un errore o due (un nome di evento, una proprieta' scritta diversamente).
+Non e' un problema tuo ne' un segno che qualcosa e' rotto: mi mandi il
+messaggio che vedi e lo sistemo subito.
+
+
+COSA TI SERVE
+-------------
+B4J e il JDK che hai gia' (quello con dentro la cartella javafx).
+Nient'altro.
+
+
+MONTAGGIO - sei passaggi
+------------------------
+
+1) Apri B4J e fai:  File -> New -> Default
+   Chiamalo  Cloude  e scegli una cartella tua, per esempio
+   C:\Progetti\Cloude
+
+2) Chiudi B4J un momento e copia i due file
+        Dati.bas
+        Controlli.bas
+   dentro la cartella del progetto che hai appena creato
+   (quella dove c'e' il file Cloude.b4j).
+   Poi riapri il progetto.
+
+3) Nel pannello di destra apri la scheda  Libs  (Libraries Manager)
+   e metti la spunta su:
+        jSQL
+   jCore e jFX di solito sono gia' spuntate: lasciale.
+
+4) Menu  Project -> Add Existing Module
+   Scegli  Dati.bas
+   Ripeti per  Controlli.bas
+   Adesso in alto vedi tre linguette: Main, Dati, Controlli.
+
+5) Vai sulla linguetta  Main, seleziona tutto quello che c'e' (Ctrl+A),
+   cancella, e incolla il contenuto del file
+        Main - da incollare.txt
+
+6) Premi  F5
+
+Dovrebbe aprirsi una finestra con la casella di ricerca in alto, l'elenco
+vuoto al centro e la scheda del cliente in basso.
+
+
+PRIMA PROVA
+-----------
+- Premi  Nuovo
+- Scrivi una ragione sociale, per esempio  Rossi Costruzioni Srl
+- Nella partita IVA scrivi  12345678903   (e' valida davvero: l'ultima
+  cifra e' quella giusta di controllo)
+- Premi  Salva
+
+Il cliente deve comparire nell'elenco. Clicca la riga: i dati devono
+ritornare nella scheda sotto.
+
+Poi prova a sbagliare apposta: cambia l'ultima cifra della partita IVA in
+1 e premi Salva. Deve dirti che non e' valida.
+
+
+DOVE FINISCONO I DATI
+---------------------
+Il database e' un unico file:
+   C:\Users\<tuonome>\AppData\Roaming\Cloude\cloude.db
+La copia di sicurezza e' la copia di quel file.
+Se vuoi ripartire da zero, chiudi il programma e cancellalo.
+
+
+SE QUALCOSA NON VA
+------------------
+In basso in B4J c'e' la scheda  Logs.  Copia quello che vedi scritto la'
+dentro e mandamelo. Con quello capisco subito dove intervenire.
+
+Se l'errore parla di  javafx  non trovato, allora e' il JDK sbagliato:
+in quel caso  Tools -> Configure Paths  e punta al javac.exe del JDK che
+ha dentro la cartella javafx.
+
+
+COM'E' ORGANIZZATO
+------------------
+Main        la finestra: come e' fatta e cosa succede quando premi i tasti
+Dati        tutto quello che tocca il database, e nient'altro
+Controlli   partita IVA e codice fiscale: funzioni pure, si provano da sole
+
+I tre pezzi non si intrecciano: la finestra non sa com'e' fatto il
+database, e i controlli non sanno che esiste una finestra. Serve perche'
+il giorno che cambi una delle tre cose non devi toccare le altre due.

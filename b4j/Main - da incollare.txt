@@ -1,0 +1,306 @@
+#Region Project Attributes
+	#MainFormWidth: 900
+	#MainFormHeight: 640
+#End Region
+
+' ---------------------------------------------------------------------------
+' CLOUDE - Anagrafica clienti
+'
+' Una finestra sola, divisa in tre fasce:
+'   in alto     la casella di ricerca
+'   al centro   l'elenco dei clienti
+'   in basso    la scheda del cliente selezionato
+'
+' Si lavora come su uno schedario: clicchi una riga dell'elenco e sotto
+' compaiono i dati; li modifichi e premi Salva.
+'
+' Tutto il codice e' procedurale: Sub che fanno una cosa e la finiscono.
+' Niente classi, niente ereditarieta'.
+'
+' NOTA: questa finestra e' costruita da codice invece che col Designer, cosi'
+' funziona subito senza che tu debba disegnare niente. Piu' avanti la
+' rifacciamo col mouse, che e' il modo normale di lavorare in B4X.
+' ---------------------------------------------------------------------------
+
+Sub Process_Globals
+	Private fx As JFX
+	Private MainForm As Form
+
+	Private CasellaRicerca As TextField
+	Private Griglia As TableView
+	Private EtichettaStato As Label
+
+	Private CasellaCodice As TextField
+	Private CasellaRagioneSociale As TextField
+	Private CasellaPartitaIva As TextField
+	Private CasellaCodiceFiscale As TextField
+	Private CasellaIndirizzo As TextField
+	Private CasellaCap As TextField
+	Private CasellaComune As TextField
+	Private CasellaProvincia As TextField
+	Private CasellaEmail As TextField
+	Private CasellaTelefono As TextField
+
+	' Id del cliente che si sta modificando. 0 = scheda nuova, non ancora salvata.
+	Private IdCorrente As Int = 0
+
+	' Gli Id dei clienti mostrati nell'elenco, nello stesso ordine delle righe.
+	' La griglia non fa vedere l'Id, ma quando clicchi una riga mi serve sapere
+	' quale cliente hai scelto: lo ripesco qui usando il numero di riga.
+	Private IdRighe As List
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	MainForm.Title = "Cloude - Anagrafica clienti"
+	MainForm.Resizable = False
+
+	Dati.Apri
+	CostruisciFinestra
+	SvuotaScheda
+	AggiornaElenco
+
+	MainForm.Show
+End Sub
+
+
+' ===========================================================================
+' COSTRUZIONE DELLA FINESTRA
+' ===========================================================================
+
+Private Sub CostruisciFinestra
+	IdRighe.Initialize
+
+	' --- Fascia alta: ricerca ---------------------------------------------
+	AggiungiEtichetta("Cerca:", 15, 14, 60)
+	CasellaRicerca = AggiungiCasella("CasellaRicerca", 75, 12, 320)
+
+	' --- Fascia centrale: elenco ------------------------------------------
+	Griglia.Initialize("Griglia")
+	Griglia.SetColumns(Array As String("Codice", "Denominazione", _
+		"Partita IVA", "Comune", "Pr.", "Telefono"))
+	MainForm.RootPane.AddNode(Griglia, 15, 48, 860, 230)
+
+	EtichettaStato = AggiungiEtichetta("", 15, 284, 400)
+
+	' --- Fascia bassa: scheda del cliente ---------------------------------
+	Dim Y As Int = 316
+
+	AggiungiEtichetta("Codice:", 15, Y + 3, 130)
+	CasellaCodice = AggiungiCasella("", 150, Y, 120)
+	AggiungiEtichetta("Partita IVA:", 470, Y + 3, 120)
+	CasellaPartitaIva = AggiungiCasella("", 600, Y, 160)
+
+	Y = Y + 34
+	AggiungiEtichetta("Ragione sociale:", 15, Y + 3, 130)
+	CasellaRagioneSociale = AggiungiCasella("", 150, Y, 300)
+	AggiungiEtichetta("Codice fiscale:", 470, Y + 3, 120)
+	CasellaCodiceFiscale = AggiungiCasella("", 600, Y, 200)
+
+	Y = Y + 34
+	AggiungiEtichetta("Indirizzo:", 15, Y + 3, 130)
+	CasellaIndirizzo = AggiungiCasella("", 150, Y, 300)
+	AggiungiEtichetta("Email:", 470, Y + 3, 120)
+	CasellaEmail = AggiungiCasella("", 600, Y, 250)
+
+	Y = Y + 34
+	AggiungiEtichetta("CAP:", 15, Y + 3, 130)
+	CasellaCap = AggiungiCasella("", 150, Y, 90)
+	AggiungiEtichetta("Telefono:", 470, Y + 3, 120)
+	CasellaTelefono = AggiungiCasella("", 600, Y, 180)
+
+	Y = Y + 34
+	AggiungiEtichetta("Comune:", 15, Y + 3, 130)
+	CasellaComune = AggiungiCasella("", 150, Y, 220)
+	AggiungiEtichetta("Provincia:", 380, Y + 3, 80)
+	CasellaProvincia = AggiungiCasella("", 465, Y, 60)
+
+	' --- Pulsanti ----------------------------------------------------------
+	Y = Y + 46
+	AggiungiPulsante("PulsanteNuovo", "Nuovo", 15, Y, 120)
+	AggiungiPulsante("PulsanteSalva", "Salva", 145, Y, 120)
+	AggiungiPulsante("PulsanteElimina", "Elimina", 275, Y, 120)
+End Sub
+
+' Le tre Sub qui sotto servono solo a non ripetere cinque righe uguali per
+' ogni campo. Creano il controllo, lo mettono sulla finestra e lo restituiscono.
+
+Private Sub AggiungiEtichetta (Testo As String, X As Int, Y As Int, Larghezza As Int) As Label
+	Dim E As Label
+	E.Initialize("")
+	E.Text = Testo
+	MainForm.RootPane.AddNode(E, X, Y, Larghezza, 22)
+	Return E
+End Sub
+
+Private Sub AggiungiCasella (NomeEvento As String, X As Int, Y As Int, Larghezza As Int) As TextField
+	Dim C As TextField
+	C.Initialize(NomeEvento)
+	MainForm.RootPane.AddNode(C, X, Y, Larghezza, 26)
+	Return C
+End Sub
+
+Private Sub AggiungiPulsante (NomeEvento As String, Testo As String, X As Int, Y As Int, Larghezza As Int) As Button
+	Dim P As Button
+	P.Initialize(NomeEvento)
+	P.Text = Testo
+	MainForm.RootPane.AddNode(P, X, Y, Larghezza, 32)
+	Return P
+End Sub
+
+
+' ===========================================================================
+' ELENCO
+' ===========================================================================
+
+Private Sub AggiornaElenco
+	Griglia.Items.Clear
+	IdRighe.Clear
+
+	Dim Elenco As List = Dati.Elenca(CasellaRicerca.Text)
+
+	For I = 0 To Elenco.Size - 1
+		Dim C As Cliente = Elenco.Get(I)
+
+		Griglia.Items.Add(Array As Object(C.Codice, C.RagioneSociale, _
+			C.PartitaIva, C.Comune, C.Provincia, C.Telefono))
+
+		IdRighe.Add(C.Id)
+	Next
+
+	If Elenco.Size = 1 Then
+		EtichettaStato.Text = "1 cliente"
+	Else
+		EtichettaStato.Text = Elenco.Size & " clienti"
+	End If
+End Sub
+
+' Si scatena a ogni lettera digitata nella casella di ricerca.
+Private Sub CasellaRicerca_TextChanged (Vecchio As String, Nuovo As String)
+	AggiornaElenco
+End Sub
+
+' Si scatena quando clicchi una riga dell'elenco.
+Private Sub Griglia_SelectedRowChanged (Indice As Int, Riga() As Object)
+	If Indice < 0 Or Indice >= IdRighe.Size Then Return
+
+	IdCorrente = IdRighe.Get(Indice)
+	MostraScheda(Dati.Leggi(IdCorrente))
+End Sub
+
+
+' ===========================================================================
+' SCHEDA
+' ===========================================================================
+
+' Dai dati alle caselle a video.
+Private Sub MostraScheda (C As Cliente)
+	IdCorrente = C.Id
+
+	CasellaCodice.Text = C.Codice
+	CasellaRagioneSociale.Text = C.RagioneSociale
+	CasellaPartitaIva.Text = C.PartitaIva
+	CasellaCodiceFiscale.Text = C.CodiceFiscale
+	CasellaIndirizzo.Text = C.Indirizzo
+	CasellaCap.Text = C.Cap
+	CasellaComune.Text = C.Comune
+	CasellaProvincia.Text = C.Provincia
+	CasellaEmail.Text = C.Email
+	CasellaTelefono.Text = C.Telefono
+End Sub
+
+' Dalle caselle a video ai dati.
+Private Sub LeggiScheda As Cliente
+	Dim C As Cliente = Dati.NuovoCliente
+
+	C.Id = IdCorrente
+	C.Codice = CasellaCodice.Text.Trim
+	C.RagioneSociale = CasellaRagioneSociale.Text.Trim
+	C.PartitaIva = CasellaPartitaIva.Text.Trim
+	C.CodiceFiscale = CasellaCodiceFiscale.Text.Trim.ToUpperCase
+	C.Indirizzo = CasellaIndirizzo.Text.Trim
+	C.Cap = CasellaCap.Text.Trim
+	C.Comune = CasellaComune.Text.Trim
+	C.Provincia = CasellaProvincia.Text.Trim.ToUpperCase
+	C.Email = CasellaEmail.Text.Trim
+	C.Telefono = CasellaTelefono.Text.Trim
+
+	Return C
+End Sub
+
+Private Sub SvuotaScheda
+	MostraScheda(Dati.NuovoCliente)
+End Sub
+
+
+' ===========================================================================
+' PULSANTI
+' ===========================================================================
+
+Private Sub PulsanteNuovo_Action
+	SvuotaScheda
+	CasellaRagioneSociale.RequestFocus
+End Sub
+
+Private Sub PulsanteSalva_Action
+	Dim C As Cliente = LeggiScheda
+
+	' I controlli tornano l'elenco di TUTTI i problemi trovati, non solo il
+	' primo: cosi' li sistemi in una volta invece di scoprirli uno per volta.
+	Dim Errori As List = Controlla(C)
+
+	If Errori.Size > 0 Then
+		Dim Messaggio As String = "Correggi questi punti prima di salvare:" & CRLF & CRLF
+		For I = 0 To Errori.Size - 1
+			Messaggio = Messaggio & "  - " & Errori.Get(I) & CRLF
+		Next
+		fx.Msgbox(MainForm, Messaggio, "Dati incompleti")
+		Return
+	End If
+
+	IdCorrente = Dati.Salva(C)
+	AggiornaElenco
+	EtichettaStato.Text = "Salvato."
+End Sub
+
+Private Sub PulsanteElimina_Action
+	If IdCorrente = 0 Then
+		fx.Msgbox(MainForm, "Non c'e' nessun cliente selezionato.", "Cloude")
+		Return
+	End If
+
+	Dim Risposta As Int = fx.Msgbox2(MainForm, _
+		"Eliminare definitivamente questo cliente?", _
+		"Conferma", "Si", "", "No", Null)
+
+	If Risposta <> fx.DialogResponse.POSITIVE Then Return
+
+	Dati.Elimina(IdCorrente)
+	SvuotaScheda
+	AggiornaElenco
+End Sub
+
+' Controlla la scheda prima del salvataggio.
+' Torna la lista dei problemi: lista vuota = tutto a posto.
+Private Sub Controlla (C As Cliente) As List
+	Dim Errori As List
+	Errori.Initialize
+
+	If C.RagioneSociale = "" Then
+		Errori.Add("Manca la ragione sociale.")
+	End If
+
+	If C.PartitaIva <> "" And Controlli.PartitaIvaValida(C.PartitaIva) = False Then
+		Errori.Add("La partita IVA non e' valida.")
+	End If
+
+	If C.CodiceFiscale.Length = 16 And Controlli.CodiceFiscaleValido(C.CodiceFiscale) = False Then
+		Errori.Add("Il codice fiscale non e' valido.")
+	End If
+
+	If C.PartitaIva = "" And C.CodiceFiscale = "" Then
+		Errori.Add("Serve almeno la partita IVA oppure il codice fiscale.")
+	End If
+
+	Return Errori
+End Sub
