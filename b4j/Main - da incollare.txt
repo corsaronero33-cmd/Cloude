@@ -7,7 +7,7 @@
 	' al nome del file .jar che hai nella cartella Additional Libraries,
 	' senza la parte finale .jar. Se il tuo file si chiama
 	' sqlite-jdbc-3.36.0.3.jar, allora qui va scritto sqlite-jdbc-3.36.0.3
-	#AdditionalJar: sqlite-jdbc-3.43.0.0
+	#AdditionalJar: sqlite-jdbc-3.53.4.0
 #End Region
 
 ' ---------------------------------------------------------------------------
