@@ -111,7 +111,10 @@ sotto: tutto il resto resta Testo, ed e' giusto cosi'.
 
 > Regola generale: nel dubbio, **Testo**. Un codice fiscale, un CAP o una
 > partita IVA sono testo, non numeri: se li fai numerici perdi gli zeri
-> iniziali.
+> iniziali. Vale anche per `Id`, che contiene un UUID.
+
+L'importazione crea **sempre** campi di tipo Testo: non esiste un'opzione per
+tipizzarli in ingresso. Non e' un errore, e' il funzionamento normale.
 
 **`Attrezzature`**
 - `AnnoInstallazione` -> Numero
@@ -217,6 +220,42 @@ per `Ordine`, `Numero`, `LimiteMin`, `LimiteMax`, e `Ora` per `OrarioAtteso1`
 e `OrarioAtteso2`.
 
 ## Passo 5 — I campi di sistema
+
+> **`Id` resta di tipo Testo, ed e' giusto cosi'.** Contiene un UUID, cioe' una
+> stringa: `Get ( UUID )` restituisce testo, non un numero. Di `Id` si cambia
+> il comportamento, non il tipo. Vale lo stesso per `CreatoDa` e
+> `ModificatoDa`, che contengono nomi di account.
+>
+> Gli unici due che cambiano tipo sono **`CreatoIl`** e **`ModificatoIl`**,
+> che diventano **Data e ora**. Prima il tipo, poi le opzioni: se imposti
+> l'immissione automatica mentre il campo e' ancora Testo, FileMaker ci
+> scrive dentro del testo.
+
+### Falli una volta sola, poi incolla
+
+Cinque campi per ventuno tabelle sono centocinque volte le stesse finestre.
+Non serve.
+
+**In `Gestisci Database` i campi si copiano e incollano fra tabelle, e si
+portano dietro tipo, immissione automatica e convalida.**
+
+1. Su una tabella qualsiasi (per esempio `Attrezzature`) sistema `Id`,
+   `CreatoIl`, `CreatoDa`, `ModificatoIl`, `ModificatoDa` **per bene**, come
+   nella tabella qui sotto.
+2. Selezionali tutti e cinque con Ctrl+clic e premi **Ctrl+C**.
+3. Vai su un'altra tabella. Se ha gia' quei cinque campi arrivati
+   dall'importazione, selezionali ed **Elimina** (sono vuoti, non si perde
+   niente), poi **Ctrl+V**.
+4. Ripeti. Sono due scorciatoie da tastiera per tabella.
+
+Per le sei tabelle importate da `import/dati/` non c'e' niente da eliminare:
+quei file non contengono i campi di sistema. Si incolla e basta.
+
+Da provare, perche' cambia fra le versioni: in `Gestisci Database` seleziona
+`CreatoIl` e `ModificatoIl` insieme, scegli il tipo **Data e ora** e premi
+**Cambia**. Dove funziona, si tipizzano piu' campi in un colpo.
+
+### Come vanno impostati
 
 Su **ogni** tabella, apri le opzioni (`Opzioni...` accanto al campo) e imposta:
 
