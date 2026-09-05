@@ -51,6 +51,12 @@ indietro della rintracciabilita'.
 **Fase 3 — quello che si aggiunge se serve:**
 `CampioniPasto`, `Documenti`, cruscotto delle scadenze, avvisi.
 
+**Trasversale, da mettere in fase 1 anche se sembra prematuro:**
+`Parametri`, `TipiAttivita`, `ModelliReparto`, `ModelliPuntoControllo`,
+`ModelliPianoSanificazione`. Servono perche' la soluzione va rivenduta ad
+altri locali: le motivazioni e l'uso stanno in `04-PRODOTTO.md`. Sono poche
+ore adesso e un rifacimento se aggiunte dopo.
+
 ---
 
 ## Convenzioni sui campi
@@ -310,6 +316,49 @@ imballaggi), `Quantita`, `UnitaMisura`, `DittaRitiro`,
 ### `Log` — registro delle modifiche
 `Tabella`, `IdRecord`, `Campo`, `ValorePrecedente`, `ValoreNuovo`,
 `DataOra`, `Account`, `Dispositivo`.
+
+---
+
+## Configurazione di prodotto
+
+Queste tabelle non contengono dati del locale: contengono il **prodotto**.
+Spiegazione estesa in `04-PRODOTTO.md`.
+
+### `Parametri` — chiave/valore
+`Chiave`, `Valore`, `Tipo` (testo / numero / si-no / data), `Descrizione`,
+`Categoria`, `ModificabileDalCliente`.
+
+Accende e spegne i moduli (bonifica pesce, frittura, campioni pasto, ricette,
+catering), contiene le soglie di avviso, la personalizzazione a video e la
+chiave `VersioneSchema`.
+
+Chiave/valore e non un campo per opzione: **aggiungere un'opzione deve essere
+un record, non una modifica di schema**. Con quindici clienti installati, una
+modifica di schema sono quindici migrazioni.
+
+All'avvio uno script ribalta la tabella in variabili globali
+(`$$PAR.BonificaPesce` e simili).
+
+### `TipiAttivita`
+`Codice`, `Descrizione`, `Note`, `Ordine`, `Attivo`.
+Ristorante con cucina, pizzeria, bar, gastronomia con laboratorio, pasticceria,
+mensa e catering, agriturismo.
+
+### `ModelliReparto`, `ModelliPuntoControllo`, `ModelliPianoSanificazione`
+Stessi campi delle tabelle vive corrispondenti, piu' `IdTipoAttivita`.
+
+Sono la libreria di configurazioni pronte: all'impianto di un locale nuovo
+vengono **copiate** nelle tabelle vive, che da quel momento il cliente
+modifica per conto suo. In `ModelliPuntoControllo` vive l'analisi HACCP gia'
+fatta, che e' il valore che il cliente compra.
+
+### Campi liberi
+Su `Prodotti`, `Fornitori`, `Lotti`, `Ricevimenti` e `Rilevazioni`:
+`Libero1`, `Libero2`, `Libero3` (testo), con etichetta a video letta dai
+`Parametri`.
+
+Servono a dire di si' a una richiesta particolare di un cliente senza aprire
+il suo file e biforcare il prodotto.
 
 ---
 

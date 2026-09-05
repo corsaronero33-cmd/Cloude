@@ -34,11 +34,19 @@ strumento giusto non e' la separazione ma il **FileMaker Data Migration Tool**
 contenitori inclusi). Verificare le condizioni di accesso, che dipendono dal
 programma partner Claris.
 
-**Quando riaprire la decisione.** Solo se questa soluzione viene rivenduta ad
-altri locali: da due o tre installazioni conviene procurarsi il Data Migration
-Tool restando a file unico; oltre la decina la separazione torna sensata,
-perche' a quel punto si stanno spedendo versioni per davvero. Il primo cliente
-si fa comunque a file unico.
+**La soluzione va rivenduta ad altri locali.** La decisione resta il file
+unico, ma il Data Migration Tool passa da comodita' a **requisito**: con un
+cliente si aggiorna il file dal vivo, con quindici no. Il DMT e' scriptabile,
+quindi quindici clienti sono un ciclo e non quindici serate.
+
+Da verificare prima di procedere oltre: che il DMT sia effettivamente
+ottenibile con la forma di adesione a Claris che si sceglie. **Se non lo
+fosse, questa decisione va riaperta subito**, perche' senza DMT e con molti
+clienti la separazione dati/interfaccia torna a essere la scelta giusta — e
+va presa ora, non a prodotto fatto.
+
+Un file per cliente, non un file unico con dentro tutti i clienti: le
+motivazioni in `04-PRODOTTO.md`.
 
 ### Cosa tiene aperta la porta
 
