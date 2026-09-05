@@ -26,6 +26,12 @@ Excel prima di importarli: Excel ci mette del suo e li rovina.
 
 ---
 
+> **Prima di cominciare, prova con una tabella sola.** Importa
+> `import/excel/Reparti.xlsx` e guarda come si chiamano i campi: devono essere
+> `Id`, `Codice`, `Descrizione`, `Ordine`, `Attivo`. Se sono `f1`, `f2`, `f3`
+> hai saltato la casella descritta al passo 2, e conviene scoprirlo su una
+> tabella invece che su ventuno.
+
 ## Passo 1 — Creare il file
 
 1. FileMaker Pro, `File` -> `Nuovo`.
@@ -44,10 +50,32 @@ Per **ognuno** dei 15 file in `import/schema/`:
 2. Scegli il `.tab`. Se il tipo di file non compare, imposta il filtro su
    tutti i file.
 3. Nella finestra di importazione:
-   - **Destinazione: `Nuova tabella`**
-   - spunta **"Il primo record contiene i nomi dei campi"**
+   - **Destinazione: `Nuova tabella`** (in alto a destra)
+   - **spunta la casella in basso a sinistra**: vedi il riquadro qui sotto,
+     e' il punto in cui si sbaglia sempre
    - codifica: **UTF-8**
 4. Importa.
+
+> ## ATTENZIONE: la casella che decide tutto
+>
+> In basso a sinistra della finestra **Ordine di importazione** c'e' la casella
+>
+> > **Non importare il primo record (contiene i nomi dei campi)**
+> > *(in inglese: "Don't import first record (contains field names)")*
+>
+> **Va spuntata prima di premere Importa.** In alcune versioni e' un menu a
+> tendina con le voci "Il primo record contiene i nomi dei campi" / "contiene
+> dati": stessa zona, stesso effetto.
+>
+> E' scritta male: sembra dire solo "salta la prima riga". In realta', quando
+> la destinazione e' **Nuova tabella**, fa due cose insieme: salta la riga
+> **e usa il suo contenuto per dare il nome ai campi**.
+>
+> Senza quella spunta FileMaker chiama i campi `f1`, `f2`, `f3`... Se succede:
+> `Gestisci` -> `Database` -> scheda `Tabelle`, elimina la tabella sbagliata e
+> rifai. Non rinominare i campi a mano, si fa prima a rifare l'importazione.
+
+
 
 FileMaker crea la tabella con il nome del file e tutti i campi **di tipo
 Testo**. I tipi si sistemano al passo 4.

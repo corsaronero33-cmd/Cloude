@@ -25,9 +25,31 @@ la tabella con tutti i campi. Un passaggio in meno.
    foglio con il nome della tabella
 4. Nella finestra **Ordine di importazione**:
    - in alto a destra, alla voce **Destinazione**, scegli **`Nuova tabella`**
-   - in basso a sinistra, nel menu a tendina, scegli
-     **"Il primo record contiene i nomi dei campi"**
+   - in basso a sinistra, **spunta la casella dei nomi di campo** (riquadro
+     qui sotto)
 5. `Importa`
+
+
+> ## ATTENZIONE: la casella che decide tutto
+>
+> In basso a sinistra della finestra **Ordine di importazione** c'e' la casella
+>
+> > **Non importare il primo record (contiene i nomi dei campi)**
+> > *(in inglese: "Don't import first record (contains field names)")*
+>
+> **Va spuntata prima di premere Importa.** In alcune versioni e' un menu a
+> tendina con le voci "Il primo record contiene i nomi dei campi" / "contiene
+> dati": stessa zona, stesso effetto.
+>
+> E' scritta male: sembra dire solo "salta la prima riga". In realta', quando
+> la destinazione e' **Nuova tabella**, fa due cose insieme: salta la riga
+> **e usa il suo contenuto per dare il nome ai campi**.
+>
+> Senza quella spunta FileMaker chiama i campi `f1`, `f2`, `f3`... Se succede:
+> `Gestisci` -> `Database` -> scheda `Tabelle`, elimina la tabella sbagliata e
+> rifai. Non rinominare i campi a mano, si fa prima a rifare l'importazione.
+
+
 
 FileMaker crea la tabella con il nome del file e tutti i campi di tipo
 **Testo**. I tipi si sistemano dopo, come descritto in `09-MONTAGGIO.md`.
@@ -43,9 +65,17 @@ Succede se l'account con cui sei entrato non ha accesso completo: creare
 tabelle e' un privilegio. Rientra nel file con l'account amministratore.
 
 **I campi si chiamano `f1`, `f2`, `f3`...**
-Non hai impostato "Il primo record contiene i nomi dei campi" **prima** di
-premere Importa. E' un menu a tendina in basso a sinistra nella finestra di
-importazione, facile da non vedere. Cancella la tabella e rifai.
+E' l'errore piu' comune: manca la spunta descritta nel riquadro sopra, e va
+messa **prima** di premere Importa. Cancella la tabella da `Gestisci` ->
+`Database` -> `Tabelle` e rifai l'importazione con la casella spuntata.
+
+**Piano B se la casella proprio non si trova.**
+`File` -> **`Apri`** e scegli direttamente il `.xlsx`. FileMaker chiede a
+chiare lettere se la prima riga sono **nomi di campo** oppure **dati**:
+rispondi nomi di campo. Ti crea un file FileMaker nuovo con la tabella gia'
+corretta, e da li' la importi dentro `Haccp.fmp12`. Importando da un file
+FileMaker i nomi dei campi arrivano dallo schema del file di origine e non
+dalla prima riga, quindi il problema non si ripresenta.
 
 **La tabella si chiama come il file, ma tu volevi un altro nome.**
 E' voluto: i file si chiamano gia' come le tabelle. Se rinomini il file,
