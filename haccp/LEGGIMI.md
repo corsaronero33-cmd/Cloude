@@ -15,12 +15,18 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | `02-MODELLO-DATI.md` | Tabelle, campi, relazioni, fasi di consegna | fatto |
 | `03-CONVENZIONI-FILEMAKER.md` | Regole di costruzione del file | fatto |
 | `04-PRODOTTO.md` | Scelte per rivendere la soluzione ad altri locali | fatto |
-| `05-CALCOLI.md` | Formule da incollare (esiti, scadenze, GS1-128, allergeni) | da fare |
-| `06-SCRIPT.md` | Script passo per passo | da fare |
-| `07-LAYOUT.md` | Maschere desktop / iPad / iPhone | da fare |
-| `08-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
-| `09-MONTAGGIO.md` | **Prima sessione davanti a FileMaker**: crea il file e importa tutto | fatto |
-| `10-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
+
+### Costruzione del file, in ordine
+
+| Passo | Documento | Contenuto | Stato |
+|---|---|---|---|
+| 1 | `09-MONTAGGIO.md` | Crea il file, importa le 21 tabelle, sistema tipi e campi di sistema | fatto |
+| 2 | `10-RELAZIONI.md` | Grafico a ancora e boe, liste valori | fatto |
+| 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | da fare |
+| 4 | `12-SCRIPT.md` | Script passo per passo | da fare |
+| 5 | `13-LAYOUT.md` | Maschere desktop / iPad / iPhone | da fare |
+| 6 | `14-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
+| 7 | `15-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
 
 Il file `Haccp.fmp12` non sta nel repository: e' binario e non si puo'
 confrontare fra due versioni. Qui stanno la specifica e i pezzi da incollare;
