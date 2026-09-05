@@ -20,9 +20,14 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | `07-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
 | `08-MONTAGGIO.md` | Istruzioni di assemblaggio del file | da fare |
 
-Il file `.fmp12` non sta nel repository: e' binario e non si puo' confrontare
-fra due versioni. Qui stanno la specifica e i pezzi da incollare; il file lo
-costruiamo seguendo `08-MONTAGGIO.md`.
+Il file `Haccp.fmp12` non sta nel repository: e' binario e non si puo'
+confrontare fra due versioni. Qui stanno la specifica e i pezzi da incollare;
+il file lo costruiamo seguendo `08-MONTAGGIO.md`, e ad ogni traguardo se ne
+esporta il rapporto struttura in `haccp/ddr/` per avere una storia leggibile
+dello schema.
+
+**Architettura: file unico**, non separazione dati/interfaccia. Le motivazioni
+stanno in `03-CONVENZIONI-FILEMAKER.md`.
 
 ## Ordine di lettura
 

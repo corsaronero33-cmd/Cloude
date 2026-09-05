@@ -6,6 +6,81 @@ in basso, niente strutture ingegnose.
 
 ---
 
+## Decisione: un file unico, non dati/interfaccia separati
+
+Il file e' uno solo: `Haccp.fmp12`. Niente modello a separazione fra file dati
+e file interfaccia.
+
+**Perche'.** La separazione nasce per poter spedire una versione nuova
+dell'interfaccia a molti clienti senza toccare i loro dati. Qui il file e'
+ospitato e il cliente e' uno: in FileMaker un file ospitato **si modifica dal
+vivo** (si apre con un account con accesso completo e si cambiano campi,
+layout e script mentre il locale lavora). Non esiste un rilascio da spedire,
+quindi il vantaggio della separazione non si presenta mai.
+
+I costi invece si presentano tutti:
+
+- le modifiche di schema restano comunque nel file dati, e il consulente HACCP
+  chiedera' campi nuovi, non solo layout;
+- account e insiemi di privilegi vanno tenuti allineati in due file;
+- le relazioni fra file costano prestazioni, e si sente sulla connessione del
+  locale in orario di servizio;
+- il rapporto struttura si spezza su due file e la diagnosi diventa piu' lenta;
+- il backup deve restare coerente su due file invece di uno.
+
+**Se un giorno serve rifare il file e portarci dentro i dati del cliente**, lo
+strumento giusto non e' la separazione ma il **FileMaker Data Migration Tool**
+(riga di comando: file nuovo vuoto piu' file vecchio pieno, travaso completo
+contenitori inclusi). Verificare le condizioni di accesso, che dipendono dal
+programma partner Claris.
+
+**Quando riaprire la decisione.** Solo se questa soluzione viene rivenduta ad
+altri locali: da due o tre installazioni conviene procurarsi il Data Migration
+Tool restando a file unico; oltre la decina la separazione torna sensata,
+perche' a quel punto si stanno spedendo versioni per davvero. Il primo cliente
+si fa comunque a file unico.
+
+### Cosa tiene aperta la porta
+
+Tre abitudini che costano poco e rendono economico un eventuale cambio:
+
+1. Niente logica nei layout: un pulsante chiama uno script, i calcoli riusati
+   stanno in funzioni personalizzate.
+2. Occorrenze a ancora e boe con prefisso di gruppo, gia' pronte da ridefinire
+   su origine dati esterna.
+3. Nessuno stato dell'interfaccia dentro le tabelle vere: campi globali e
+   variabili, mai una tabella di appoggio mescolata ai dati.
+
+---
+
+## Versioni e storia dello schema
+
+Il `.fmp12` e' binario e non si confronta fra due versioni. Per avere comunque
+una storia leggibile:
+
+- ad ogni traguardo si esporta il **DDR** (Strumenti, Rapporto struttura
+  database) in XML e si committa in `haccp/ddr/`;
+- si tiene un campo `Versione` nella tabella `Impresa` o in `Impostazioni`,
+  aggiornato ad ogni rilascio;
+- le modifiche si annotano in `haccp/DIARIO.md`.
+
+Cosi' fra un anno si puo' rispondere a "quando e' comparso questo campo e
+perche'" guardando un diff, invece che la memoria.
+
+---
+
+## Ambiente di lavoro
+
+Si sviluppa su una **copia locale**, non direttamente sul file del cliente.
+Quando la modifica e' provata, la si ripete sul file ospitato (oppure si
+travasa con il Data Migration Tool, se disponibile).
+
+Le modifiche di schema sul file ospitato si fanno **fuori orario di servizio**:
+sono operazioni che bloccano brevemente i record e nessuno vuole scoprirlo
+mentre arriva la merce.
+
+---
+
 ## Nomi
 
 - Tabelle al **plurale**, in italiano: `Fornitori`, `Rilevazioni`, `Lotti`.
