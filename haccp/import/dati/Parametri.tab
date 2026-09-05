@@ -1,0 +1,21 @@
+Chiave	Valore	Tipo	Descrizione	Categoria	ModificabileDalCliente
+VersioneSchema	1	numero	Versione dello schema del file. La aggiorna solo lo script di manutenzione	sistema	No
+NomeProdotto	Haccp	testo	Nome mostrato nelle intestazioni e nelle stampe	aspetto	No
+ColorePrimario	#1F4E5F	testo	Colore principale dell interfaccia	aspetto	No
+TipoAttivita	RC	testo	Tipo di attivita usato all impianto del locale	sistema	No
+BonificaPesce	Si	si-no	Attiva il registro della bonifica del pesce da consumare crudo	moduli	Si
+Frittura	Si	si-no	Attiva il registro degli oli di frittura	moduli	Si
+Abbattimento	Si	si-no	Attiva i registri di abbattimento e raffreddamento rapido	moduli	Si
+CampioniPasto	No	si-no	Attiva il registro dei campioni pasto conservati 72 ore	moduli	Si
+Ricette	No	si-no	Attiva ricettario e scheda allergeni	moduli	Si
+Catering	No	si-no	Attiva il passo avanti completo verso il destinatario	moduli	Si
+AnalisiAcqua	No	si-no	Attiva il registro di potabilita per i locali non allacciati all acquedotto	moduli	Si
+FirmaObbligatoria	No	si-no	Richiede la firma su ogni registrazione	comportamento	Si
+GiorniAvvisoScadenza	7	numero	Giorni di anticipo del semaforo giallo sulle scadenze	comportamento	Si
+TolleranzaRicevimentoRefrigerati	2	numero	Gradi di tolleranza fra accettazione con riserva e respingimento	comportamento	Si
+BloccaRilevazioneDopoSalvataggio	Si	si-no	Impedisce all operatore di modificare cio che ha gia salvato	comportamento	No
+GiorniValiditaDefaultDopoApertura	3	numero	Giorni di validita dopo apertura quando il prodotto non li specifica	comportamento	Si
+RisoluzioneFoto	1024	numero	Lato massimo in pixel delle foto acquisite da fotocamera	comportamento	No
+etichetta.Prodotti.Libero1		testo	Etichetta a video del campo libero 1 dei prodotti	campi liberi	Si
+etichetta.Fornitori.Libero1		testo	Etichetta a video del campo libero 1 dei fornitori	campi liberi	Si
+etichetta.Lotti.Libero1		testo	Etichetta a video del campo libero 1 dei lotti	campi liberi	Si

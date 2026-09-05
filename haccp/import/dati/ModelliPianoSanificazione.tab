@@ -1,0 +1,29 @@
+CodiceTipoAttivita	Reparto	Area	Frequenza	Prodotto	Dosaggio	TempoContatto	Modalita	Dpi	Ordine
+RC	CUC	Piani di lavoro in acciaio	dopo ogni utilizzo	Detergente sgrassante + disinfettante	secondo scheda tecnica	5 minuti	Rimuovere i residui, detergere, risciacquare, disinfettare, risciacquare, asciugare	Guanti	10
+RC	CUC	Taglieri	dopo ogni utilizzo	Detergente + disinfettante	secondo scheda tecnica	5 minuti	Lavaggio in lavastoviglie ad alta temperatura oppure a mano con disinfezione	Guanti	20
+RC	CUC	Coltelli e utensili	dopo ogni utilizzo	Detergente + disinfettante	secondo scheda tecnica	5 minuti	Lavaggio e disinfezione, asciugatura con carta monouso	Guanti	30
+RC	CUC	Affettatrice	dopo ogni utilizzo	Detergente + disinfettante alimentare	secondo scheda tecnica	5 minuti	Smontaggio delle parti removibili, lavaggio, disinfezione, rimontaggio a mani pulite	Guanti antitaglio	40
+RC	CUC	Tritacarne e cutter	dopo ogni utilizzo	Detergente + disinfettante alimentare	secondo scheda tecnica	5 minuti	Smontaggio completo, lavaggio, disinfezione, asciugatura	Guanti	50
+RC	CUC	Forno e piastre	giornaliera	Sgrassante per forni	secondo scheda tecnica	15 minuti	A forno tiepido, applicare, lasciare agire, rimuovere, risciacquare abbondantemente	Guanti e occhiali	60
+RC	CUC	Friggitrice	settimanale	Sgrassante alcalino	secondo scheda tecnica	20 minuti	A freddo, svuotare l olio, sgrassare la vasca, risciacquare e asciugare	Guanti e occhiali	70
+RC	CUC	Cappa aspirante e filtri	settimanale	Sgrassante alcalino	secondo scheda tecnica	20 minuti	Filtri in lavastoviglie o a immersione. Cappa sgrassata mensilmente	Guanti e occhiali	80
+RC	CUC	Abbattitore	giornaliera	Detergente + disinfettante alimentare	secondo scheda tecnica	5 minuti	A vuoto, pulizia interna e guarnizioni, asciugatura, sportello lasciato accostato	Guanti	90
+RC	CUC	Lavelli e rubinetteria	giornaliera	Detergente disincrostante + disinfettante	secondo scheda tecnica	5 minuti	Detergere, disincrostare, disinfettare, risciacquare	Guanti	100
+RC	CUC	Pavimenti cucina	due volte al giorno	Detergente disinfettante per pavimenti	secondo scheda tecnica	10 minuti	Scopatura a umido, lavaggio, risciacquo. Attrezzature dedicate al reparto	Guanti	110
+RC	CUC	Pareti piastrellate e battiscopa	settimanale	Detergente disinfettante	secondo scheda tecnica	10 minuti	Dal basso verso l alto, risciacquo	Guanti	120
+RC	CEC	Cella carne interno	settimanale	Detergente + disinfettante alimentare	secondo scheda tecnica	10 minuti	A cella vuota o con merce protetta, ripiani, pareti, guarnizioni, scarico	Guanti e giacca termica	200
+RC	CEP	Cella pesce interno e scarico	settimanale	Detergente + disinfettante alimentare	secondo scheda tecnica	10 minuti	Attenzione allo scarico dell acqua di fusione del ghiaccio	Guanti e giacca termica	210
+RC	CEL	Cella latticini e gastronomia	settimanale	Detergente + disinfettante alimentare	secondo scheda tecnica	10 minuti	Ripiani, pareti, guarnizioni. Verificare la separazione dei prodotti	Guanti	220
+RC	CEO	Cella ortofrutta	settimanale	Detergente + disinfettante alimentare	secondo scheda tecnica	10 minuti	Rimuovere residui vegetali e terriccio, disinfettare	Guanti	230
+RC	CON	Congelatore, sbrinamento e pulizia	mensile	Detergente alimentare	secondo scheda tecnica	10 minuti	Trasferire la merce, sbrinare, pulire, asciugare, riportare a regime prima di ricaricare	Guanti e giacca termica	240
+RC	LAV	Lavastoviglie, filtri e vasca	giornaliera	Detergente disincrostante	secondo scheda tecnica	10 minuti	Estrarre e lavare i filtri, disincrostare, verificare i livelli di brillantante e detergente	Guanti	300
+RC	MAG	Scaffalature magazzino secco	mensile	Detergente disinfettante	secondo scheda tecnica	10 minuti	Svuotare per settori, detergere, asciugare. Controllare tracce di infestanti	Guanti	310
+RC	RIF	Contenitori rifiuti	giornaliera	Detergente disinfettante	secondo scheda tecnica	10 minuti	Svuotamento, lavaggio, disinfezione, sostituzione del sacco	Guanti	320
+RC	RIF	Locale rifiuti	settimanale	Detergente disinfettante	secondo scheda tecnica	10 minuti	Lavaggio pavimento e pareti, verifica chiusure e assenza di infestanti	Guanti	330
+RC	SPO	Spogliatoio personale e armadietti	settimanale	Detergente disinfettante	secondo scheda tecnica	10 minuti	Armadietti a doppio scomparto: verificare la separazione fra abiti civili e da lavoro	Guanti	340
+RC	SEP	Servizi igienici personale	giornaliera	Detergente disinfettante per sanitari	secondo scheda tecnica	10 minuti	Sanitari, rubinetteria, pavimento. Rifornire sapone e asciugamani monouso	Guanti	350
+RC	SEC	Servizi igienici clienti	piu volte al giorno	Detergente disinfettante per sanitari	secondo scheda tecnica	10 minuti	Sanitari, pavimento, specchi. Rifornire i materiali di consumo	Guanti	360
+RC	SAL	Tavoli e sedute sala	dopo ogni servizio	Detergente disinfettante per superfici	secondo scheda tecnica	2 minuti	Panno pulito per tavolo o monouso. Sanificare anche i menu plastificati		370
+RC	BAR	Banco bar e attrezzature	fine servizio	Detergente disinfettante alimentare	secondo scheda tecnica	5 minuti	Banco, lavabicchieri, spine, superfici a contatto	Guanti	380
+RC	BAR	Macchina caffe e gruppo erogatore	giornaliera	Detergente specifico per macchina caffe	secondo scheda tecnica	5 minuti	Lavaggio del gruppo, portafiltri, lancia vapore dopo ogni uso		390
+RC	BAR	Macchina del ghiaccio	settimanale	Detergente disinfettante alimentare	secondo scheda tecnica	10 minuti	Svuotare, pulire vasca e paletta. La paletta non va tenuta dentro il ghiaccio	Guanti	400

@@ -1,0 +1,16 @@
+CodiceTipoAttivita	Codice	Descrizione	Ordine
+RC	CUC	Cucina	10
+RC	PRE	Zona preparazioni fredde	20
+RC	LAV	Zona lavaggio	30
+RC	MAG	Magazzino secco	40
+RC	CEC	Cella carne	50
+RC	CEP	Cella pesce	60
+RC	CEL	Cella latticini e gastronomia	70
+RC	CEO	Cella ortofrutta	80
+RC	CON	Congelatore	90
+RC	BAR	Bar	100
+RC	SAL	Sala	110
+RC	RIF	Locale rifiuti	120
+RC	SPO	Spogliatoio personale	130
+RC	SEP	Servizi igienici personale	140
+RC	SEC	Servizi igienici clienti	150

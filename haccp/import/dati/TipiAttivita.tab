@@ -1,0 +1,8 @@
+Codice	Descrizione	Note	Ordine	Attivo
+RC	Ristorante con cucina	Profilo completo: preparazione, cottura, abbattimento, servizio	10	Si
+PZ	Pizzeria	Impasti, forno, celle. Senza abbattimento se non produce in anticipo	20	Si
+BR	Bar e caffetteria	Bevande, snack, vetrine refrigerate. Poca o nessuna cottura	30	Si
+GA	Gastronomia con laboratorio	Produzione e vendita. Passo avanti piu' esteso	40	Si
+PA	Pasticceria	Creme e semilavorati, abbattimento centrale	50	Si
+MC	Mensa e catering	Produzione in serie, trasporto pasti, campioni obbligatori	60	Si
+AG	Agriturismo	Spesso con produzione propria e acqua da pozzo	70	Si

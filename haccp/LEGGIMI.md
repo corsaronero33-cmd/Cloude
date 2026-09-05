@@ -19,7 +19,7 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | `06-SCRIPT.md` | Script passo per passo | da fare |
 | `07-LAYOUT.md` | Maschere desktop / iPad / iPhone | da fare |
 | `08-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
-| `09-MONTAGGIO.md` | Istruzioni di assemblaggio del file | da fare |
+| `09-MONTAGGIO.md` | **Prima sessione davanti a FileMaker**: crea il file e importa tutto | fatto |
 | `10-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
 
 Il file `Haccp.fmp12` non sta nel repository: e' binario e non si puo'
@@ -34,6 +34,13 @@ ogni locale. Le motivazioni stanno in `03-CONVENZIONI-FILEMAKER.md`.
 **La soluzione nasce come prodotto**, non come lavoro su misura per un solo
 cliente: le conseguenze di questa scelta stanno in `04-PRODOTTO.md` e vanno
 lette prima di costruire il file.
+
+## Si comincia da qui
+
+Per costruire il file: **`09-MONTAGGIO.md`**. I file da importare stanno in
+`import/schema/` (15 tabelle vuote) e `import/dati/` (6 tabelle gia' piene,
+compresi i 33 punti di controllo dell'analisi HACCP). Una serata di lavoro,
+quasi tutta importazione.
 
 ## Ordine di lettura
 
