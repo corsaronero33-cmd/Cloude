@@ -22,6 +22,7 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 |---|---|---|---|
 | 1 | `09-MONTAGGIO.md` | Crea il file, importa le 21 tabelle, sistema tipi e campi di sistema | fatto |
 | 2 | `10-RELAZIONI.md` | Grafico a ancora e boe, liste valori | fatto |
+| - | `COLLAUDO-v002.md` | Verifica del file reale sul rapporto struttura v002 | fatto |
 | 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | da fare |
 | 4 | `12-SCRIPT.md` | Script passo per passo | da fare |
 | 5 | `13-LAYOUT.md` | Maschere desktop / iPad / iPhone | da fare |

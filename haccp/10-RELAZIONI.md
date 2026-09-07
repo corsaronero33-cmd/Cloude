@@ -18,6 +18,18 @@ Sembra uno spreco. Non lo e': e' il motivo per cui fra sei mesi potrai
 cambiare una relazione del ricevimento merci senza scoprire tre giorni dopo
 che si e' rotto il registro delle sanificazioni.
 
+> **Il nome dell'occorrenza non e' la tabella di base.** Quando premi `+` e
+> scegli la tabella dall'elenco, controlla di aver preso quella giusta: nei
+> nomi vicini si sbaglia facilmente. In particolare **`PuntiControllo` e
+> `ModelliPuntoControllo` sono due tabelle diverse**, e cosi'
+> `PianoSanificazione` e `ModelliPianoSanificazione`, `Reparti` e
+> `ModelliReparto`. Le occorrenze dei gruppi operativi (`ATT`, `PCO`, `RIL`,
+> `SAN`, `PSA`) usano **sempre** le tabelle vive; solo il gruppo `MOD` usa
+> quelle modello.
+>
+> Se la relazione non si chiude perche' "manca un campo", quasi sempre non
+> manca il campo: e' l'occorrenza che punta alla tabella sbagliata.
+
 **Nomenclatura:** `SIGLA|Tabella`, per esempio `RIC|Fornitori`.
 La sigla dice a quale gruppo appartiene l'occorrenza. La barra verticale
 (`|`, AltGr + backslash) e' ammessa da FileMaker nei nomi delle occorrenze.
