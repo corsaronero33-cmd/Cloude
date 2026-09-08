@@ -255,7 +255,7 @@ predefinito): cosi' si puo' ordinare e cercare.
 | `vl_TipoPuntoControllo` | CCP / CP / PRP |
 | `vl_FasePuntoControllo` | ricevimento / conservazione / cottura / abbattimento / mantenimento / rigenerazione / bonifica / frittura / sanificazione / altro |
 | `vl_Grandezza` | temperatura / tempo / percentuale / pH / visivo |
-| `vl_Frequenza` | ad evento / giornaliera / due volte al giorno / settimanale / mensile / trimestrale / semestrale / annuale |
+| `vl_Frequenza` | ad evento / dopo ogni utilizzo / dopo ogni servizio / fine servizio / piu volte al giorno / due volte al giorno / giornaliera / settimanale / mensile / trimestrale / semestrale / annuale |
 | `vl_EsitoRilevazione` | conforme / non conforme |
 | `vl_EsitoRiga` | accettato / accettato con riserva / respinto |
 | `vl_EsitoRicevimento` | accettato / accettato parzialmente / respinto |
@@ -267,7 +267,9 @@ predefinito): cosi' si puo' ordinare e cercare.
 | `vl_TipoAttrezzatura` | frigorifero / congelatore / abbattitore / forno / friggitrice / lavastoviglie / vetrina / cella / altro |
 | `vl_TipoConservazione` | ambiente / refrigerato / congelato |
 | `vl_CategoriaProdotto` | carne / pesce / ortofrutta / latticini / secco / bevande / detergenti / altro |
-| `vl_UnitaMisura` | kg / g / l / ml / pz / cf / ct |
+| `vl_UnitaMisura` | kg / g / l / ml / pz / cf / ct (quantita' di merce: `Prodotti`, `Lotti`, `RigheRicevimento`) |
+| `vl_UnitaMisuraControllo` | C / % / minuti / ore / pH (misura di un controllo: `PuntiControllo`) |
+| `vl_TipoParametro` | testo / numero / si-no / data (per `Parametri::Tipo`) |
 
 I valori devono essere scritti **esattamente** cosi': sono gli stessi che
 compaiono nei file di `import/dati/`, e i calcoli dell'esito li confronteranno
