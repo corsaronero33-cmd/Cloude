@@ -25,6 +25,7 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | - | `COLLAUDO-v002.md` | Verifica del file reale sul rapporto struttura v002 | fatto |
 | - | `CORREZIONI-DA-FARE.md` | Lista di lavoro delle correzioni del collaudo v002 | fatto |
 | - | `COLLAUDO-v003.md` | Verifica dopo le correzioni: schema a posto, restano le liste valori | fatto |
+| - | `COLLAUDO-v004.md` | Schema chiuso: nessun problema strutturale, una sola voce da aggiungere | fatto |
 | 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | da fare |
 | 4 | `12-SCRIPT.md` | Script passo per passo | da fare |
 | 5 | `13-LAYOUT.md` | Maschere desktop / iPad / iPhone | da fare |
