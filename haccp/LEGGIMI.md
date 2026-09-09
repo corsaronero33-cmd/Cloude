@@ -45,6 +45,9 @@ ogni locale. Le motivazioni stanno in `03-CONVENZIONI-FILEMAKER.md`.
 cliente: le conseguenze di questa scelta stanno in `04-PRODOTTO.md` e vanno
 lette prima di costruire il file.
 
+Ambiente: **FileMaker Pro 22, interfaccia in italiano**, Windows. Le
+convenzioni che ne derivano stanno in `CLAUDE.md`, in questa cartella.
+
 ## Si comincia da qui
 
 Per costruire il file: **`09-MONTAGGIO.md`**. I file da importare stanno in

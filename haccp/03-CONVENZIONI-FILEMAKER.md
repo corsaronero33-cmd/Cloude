@@ -89,6 +89,12 @@ mentre arriva la merce.
 
 ---
 
+## Ambiente
+
+FileMaker Pro 22 con **interfaccia in italiano**, su Windows. I percorsi di
+menu in questi documenti sono scritti in italiano. Le conseguenze sui nomi dei
+parametri stanno in `CLAUDE.md`, in questa stessa cartella.
+
 ## Nomi
 
 - Tabelle al **plurale**, in italiano: `Fornitori`, `Rilevazioni`, `Lotti`.
