@@ -20,6 +20,18 @@ un esito, si cambia li' e cambia dappertutto.
 formula. Arrivano sempre da `PuntiControllo` o da `Prodotti`, passati come
 parametri. Se in un calcolo compare il numero 75, e' un errore.
 
+### I nomi dei parametri
+
+Un parametro non puo' chiamarsi come una funzione di FileMaker. E' il caso di
+**`codice`**: in italiano `Codice` e' una funzione vera (l'equivalente di
+`Code`, che da' il codice numerico di un carattere), quindi FileMaker rifiuta
+il nome.
+
+Per questo i parametri delle funzioni GS1 hanno la **`p`** davanti:
+`pCodice`. Se in futuro FileMaker ne rifiuta un altro, mettici la `p` davanti
+allo stesso modo e ricordati di cambiarlo **anche dentro il calcolo**, non
+solo nell'elenco dei parametri.
+
 ### Memorizzato o non memorizzato
 
 E' la distinzione piu' importante di questo documento.
@@ -266,38 +278,38 @@ Case (
 > incolla il codice vero. Altrimenti l'editor non riconosce il nome mentre lo
 > stai scrivendo.
 
-## 9. `GS1Estrai ( codice ; ai )`
+## 9. `GS1Estrai ( pCodice ; ai )`
 
 Quella che userai. Pulisce la stringa e avvia la scansione.
 
 ```
 GS1Scorri (
-  Substitute ( Trim ( codice ) ; [ Char ( 13 ) ; "" ] ; [ Char ( 10 ) ; "" ] ) ;
+  Substitute ( Trim ( pCodice ) ; [ Char ( 13 ) ; "" ] ; [ Char ( 10 ) ; "" ] ) ;
   ai
 )
 ```
 
-## 10. `GS1Lotto ( codice )`
+## 10. `GS1Lotto ( pCodice )`
 
 ```
-GS1Estrai ( codice ; "10" )
+GS1Estrai ( pCodice ; "10" )
 ```
 
-## 11. `GS1Gtin ( codice )`
+## 11. `GS1Gtin ( pCodice )`
 
 ```
-GS1Estrai ( codice ; "01" )
+GS1Estrai ( pCodice ; "01" )
 ```
 
-## 12. `GS1Scadenza ( codice )`
+## 12. `GS1Scadenza ( pCodice )`
 
 Prende la data di scadenza `17`, e se non c'e' ripiega sul termine minimo di
 conservazione `15`. Torna una **data vera**, non un testo.
 
 ```
 Let ( [
-  d  = GS1Estrai ( codice ; "17" ) ;
-  d2 = If ( IsEmpty ( d ) ; GS1Estrai ( codice ; "15" ) ; d )
+  d  = GS1Estrai ( pCodice ; "17" ) ;
+  d2 = If ( IsEmpty ( d ) ; GS1Estrai ( pCodice ; "15" ) ; d )
 ] ;
 Case (
   Length ( d2 ) < 6 ; "" ;
