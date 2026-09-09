@@ -353,6 +353,25 @@ Tabella **`Lotti`**, tutti e tre **calcolo** con
 Nella prima formula il riferimento al prodotto lo scegli con il selettore dei
 campi: e' `GiorniValiditaDopoApertura` nell'occorrenza `LOT|Prodotti`.
 
+> ## Il contesto del calcolo
+>
+> In cima alla finestra del calcolo c'e' il menu **"Valuta questo calcolo dal
+> contesto di:"**. Su tutti e tre i campi va impostato su **`LOT|Lotti`**.
+>
+> Se resta sull'occorrenza `Lotti` (quella senza sigla, nata
+> dall'importazione) FileMaker rifiuta il riferimento ai prodotti con il
+> messaggio *"Questo campo proviene da una tabella non correlata"*: la
+> relazione verso `LOT|Prodotti` appartiene al gruppo LOT, e dalla `Lotti`
+> nuda non si vede.
+>
+> E' il prezzo del metodo a ancora e boe. **Regola generale: ogni volta che in
+> un calcolo compare un campo con il `::` davanti, controlla prima il menu del
+> contesto.** E' la causa numero uno di quel messaggio.
+>
+> `Parametri::gGiorniAvviso` fa eccezione perche' e' un campo globale, e i
+> globali si leggono da qualunque contesto senza relazione. Impostare
+> `LOT|Lotti` anche li' e' comunque la cosa giusta.
+
 ---
 
 # Collaudo
