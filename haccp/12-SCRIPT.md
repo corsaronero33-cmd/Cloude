@@ -35,11 +35,18 @@ Tabella `Rilevazioni`, quattro campi nuovi, tutti con
 | `gValoreTesto` | Testo |
 | `gNote` | Testo |
 
-### La tredicesima funzione: `Parametro ( pChiave )`
+### La tredicesima funzione
 
 I parametri stanno in una tabella, ma gli script devono poterli leggere
 ovunque senza relazioni. Lo script di avvio li carica tutti in una variabile
 globale, e questa funzione ne pesca uno.
+
+| Casella nella finestra | Cosa scriverci |
+|---|---|
+| Nome funzione | `Parametro` |
+| Parametri funzione | `pChiave` |
+
+Si usa cosi': `Parametro ( "GiorniAvvisoScadenza" )`.
 
 ```
 Let ( [
