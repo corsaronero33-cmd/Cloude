@@ -6,11 +6,21 @@ Con le formule il file sa **capire**. Con gli script comincia a **fare**: si
 ricorda chi sei, apre da solo una non conformita' quando una misura e' fuori
 limite, e legge lotto e scadenza dal cartone.
 
-> **Nomi dei passi script.** L'interfaccia e' in italiano, quindi i passi si
-> chiamano `Imposta variabile`, `Imposta campo`, `Vai al formato`, `Se`,
-> `Fine se`, `Ciclo`. In FileMaker italiano **layout si dice formato**. Nella
-> finestra dello script c'e' una casella di ricerca in alto a sinistra: se un
-> nome non corrisponde esattamente, cercalo li'.
+> **I passi script non si incollano.** FileMaker non accetta testo incollato
+> nell'elenco dei passi: ogni passo va scelto dalla lista a sinistra, che ha
+> una casella di ricerca in alto. I listati qui sotto servono a leggere e a
+> capire, non a copiare.
+>
+> **Le finestre dei calcoli invece il copia-incolla lo accettano**, ed e' li'
+> che stanno le formule lunghe. La tabella di marcia pubblicata come pagina
+> web presenta gli stessi script riga per riga, con il nome del passo da
+> cercare e i valori da incollare.
+>
+> **Nomi dei passi.** L'interfaccia e' in italiano: `Imposta variabile`,
+> `Imposta campo`, `Vai al formato`, `Se`, `Fine se`, `Ciclo`. In FileMaker
+> italiano **layout si dice formato**. Se un nome non corrisponde
+> esattamente, cercalo nella casella: la traduzione puo' variare di una
+> parola.
 
 ---
 
