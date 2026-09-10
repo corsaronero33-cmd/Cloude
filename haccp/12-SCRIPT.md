@@ -16,6 +16,22 @@ limite, e legge lotto e scadenza dal cartone.
 > web presenta gli stessi script riga per riga, con il nome del passo da
 > cercare e i valori da incollare.
 >
+> **Da quale occorrenza vengono i campi.** Un riferimento come
+> `Parametri::Chiave` si legge **dall'occorrenza su cui e' basato il formato in
+> cui lo script si trova in quel momento**. Per questo ogni `Vai al formato`
+> dichiara l'occorrenza: da li' in poi tutti i campi vengono da quella.
+> Sbagliare occorrenza **non da' errore**, restituisce il vuoto.
+>
+> Unica eccezione: i **campi globali** (quelli con la `g` davanti) hanno un
+> solo valore per tutto il file e si leggono uguali da qualunque occorrenza.
+> `Parametri::gGiorniAvviso` e' uno di questi.
+>
+> **Commenti.** Ogni script comincia con un blocco di commenti che dice cosa
+> fa, da chi viene chiamato e cosa legge, e ne ha uno prima di ogni fase. Il
+> passo si chiama `Commento` ed e' una riga di testo senza opzioni. Vanno
+> scritti: sono il motivo per cui fra sei mesi si riapre lo script e si capisce
+> subito dove mettere le mani.
+>
 > **Nomi dei passi.** L'interfaccia e' in italiano: `Imposta variabile`,
 > `Imposta campo`, `Vai al formato`, `Se`, `Fine se`, `Ciclo`. In FileMaker
 > italiano **layout si dice formato**. Se un nome non corrisponde
@@ -84,21 +100,37 @@ operatori a destra nella finestra del calcolo.
 Legge tutta la tabella `Parametri` e la mette in una variabile globale.
 
 ```
+# === 01 - UTILITA - CARICA PARAMETRI ===
+# Legge tutta la tabella Parametri e la mette in una sola variabile globale,
+# una riga per parametro nella forma chiave=valore.
+# Da li' in poi qualsiasi script legge un parametro con Parametro ( "chiave" ).
+# Chiamato da: 00 - Avvio.
+
+# --- vai sui parametri e prendili tutti ---
 Vai al formato [ "Parametri" (Parametri) ]
 Mostra tutti i record
 Imposta variabile [ $$PARAMETRI ; Valore: "" ]
 Vai a record/richiesta/pagina [ Primo ]
+
+# --- un giro per ogni parametro: accoda chiave=valore e va a capo ---
 Ciclo
     Imposta variabile [ $$PARAMETRI ; Valore:
         $$PARAMETRI & Parametri::Chiave & "=" & Parametri::Valore & "¶" ]
     Vai a record/richiesta/pagina [ Successivo ; Esci dopo l'ultimo: Attivato ]
 Fine ciclo
+
+# --- il semaforo delle scadenze legge da un campo globale, non dalla variabile ---
 Imposta campo [ Parametri::gGiorniAvviso ;
     GetAsNumber ( Parametro ( "GiorniAvvisoScadenza" ) ) ]
 ```
 
 Un ciclo esplicito, una riga per volta. Si mette in debug e si vede cosa
 succede: e' il motivo per cui non si usa niente di piu' furbo.
+
+`Parametri::Chiave` e `Parametri::Valore` vengono dall'occorrenza **`Parametri`
+senza sigla**, che e' quella su cui e' basato il formato `Parametri` dove lo
+script si trova. `gGiorniAvviso` invece e' globale: da qualunque occorrenza lo
+si guardi, e' lo stesso valore.
 
 ---
 
