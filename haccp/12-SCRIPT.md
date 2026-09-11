@@ -186,6 +186,27 @@ formato dei parametri.
 
 **E' il pezzo che trasforma un registro in un sistema di autocontrollo.**
 
+### Prima serve un formato tecnico
+
+Questo script legge `RIL|PuntiControllo::LimiteMin`, e quei limiti si vedono
+**solo dall'ancora `RIL|Rilevazioni`**. I formati esistenti sono tutti quelli
+nudi nati dall'importazione, e dal formato `Rilevazioni` nudo non c'e' nessuna
+relazione verso i punti di controllo: i limiti tornerebbero vuoti e l'esito
+sarebbe sempre "conforme".
+
+1. `Visualizza` -> `Modifica formato`
+2. `Formati` -> `Nuovo formato/rapporto`
+3. **Mostra record da: `RIL|Rilevazioni`** (non l'occorrenza senza sigla)
+4. Nome: **`Z_RIL Rilevazioni`**, tipo Modulo
+5. `Formati` -> `Imposta formato`, togli *Includi nel menu dei formati*
+
+Il prefisso **`Z_`** marca i formati **tecnici**: servono agli script, non li
+vede nessun operatore, e finiscono in fondo all'elenco. Quando arriveranno le
+maschere vere non si confonderanno con quelle.
+
+E' l'unico formato tecnico che serve: gli altri quattro script leggono
+soltanto campi della propria tabella, quindi i formati nudi bastano.
+
 Registra la misura, calcola l'esito con i limiti del punto di controllo, e se
 la misura e' fuori limite **apre da sola la non conformita'** portandosi
 dentro l'azione correttiva gia' scritta nel punto di controllo.
@@ -206,7 +227,7 @@ Se [ IsEmpty ( Rilevazioni::gValore ) and IsEmpty ( Rilevazioni::gValoreTesto ) 
 Fine se
 
 # --- crea la rilevazione ---
-Vai al formato [ "Rilevazioni" (RIL|Rilevazioni) ]
+Vai al formato [ "Z_RIL Rilevazioni" (RIL|Rilevazioni) ]
 Nuovo record/richiesta
 Imposta campo [ Rilevazioni::IdPuntoControllo ; Rilevazioni::gIdPuntoControllo ]
 Imposta campo [ Rilevazioni::DataOra ; Get ( IndicatoreDataOraCorrente ) ]
