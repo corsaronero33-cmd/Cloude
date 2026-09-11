@@ -340,9 +340,13 @@ Se [ Get ( PiattaformaSistema ) = 3 ]
         Tipo: Codice a barre ; Fotocamera: Posteriore ]
 Altrimenti
     Mostra finestra di dialogo personalizzata [
-        "Codice etichetta" ;
-        "Sul telefono questo si legge con la fotocamera. Qui incollalo a mano." ;
-        Campo immissione 1: RigheRicevimento::CodiceScansionato ]
+        # scheda "Finestra di dialogo generale"
+        Titolo: "Codice etichetta" ;
+        Messaggio: "Sul telefono si legge con la fotocamera. Qui incollalo a mano." ;
+        Pulsante predefinito: "OK" ; Pulsante 2: "Annulla" ;
+        # scheda "Campi di immissione"
+        Mostra campo di immissione 1 -> RigheRicevimento::CodiceScansionato ,
+        etichetta "Codice" ]
     Se [ Get ( UltimaSceltaMessaggio ) = 2 ]
         Esci dallo script [ Risultato del testo: "" ]
     Fine se
@@ -379,6 +383,15 @@ Fine se
 prodotto. Agganciare il prodotto dal codice GTIN richiede una relazione in
 piu' nel grafico: si fa nella sessione delle maschere, quando sappiamo come
 si presenta il ricevimento a video.
+
+> **Le opzioni di `Mostra finestra di dialogo personalizzata` stanno su due
+> schede.** Titolo, messaggio e pulsanti sulla prima; il campo di immissione
+> sulla seconda, dove va spuntato *Mostra campo di immissione 1* e poi premuto
+> *Specifica* per scegliere il campo.
+>
+> Il **Pulsante 2** non e' facoltativo: e' quello che il passo successivo
+> riconosce come Annulla con `Get ( UltimaSceltaMessaggio ) = 2`. Senza, quel
+> controllo non scatta mai e l'operatore non puo' rinunciare alla scansione.
 
 **Sul PC il passo della fotocamera non funziona**, ed e' giusto cosi':
 `Inserisci da dispositivo` esiste solo su FileMaker Go. Per questo lo script
