@@ -320,6 +320,17 @@ conformita', si chiude, e ti ritrovi esattamente dov'eri.
 
 Da eseguire con il cursore su una riga di ricevimento.
 
+> **Qui i campi si scrivono `RigheRicevimento::`, senza sigla, ed e' voluto.**
+> E' l'unico dei cinque script che **non naviga**: lavora sulla riga che hai
+> gia' davanti, e se facesse `Vai al formato` perderebbe proprio il record su
+> cui deve scrivere. Di conseguenza i suoi riferimenti si risolvono
+> sull'occorrenza del formato **da cui lo lanci**, che oggi e' quello nudo.
+>
+> Mettere `RIC|RigheRicevimento::` stando sul formato nudo darebbe il vuoto:
+> e' l'errore opposto a quello dello script 20. Quando ci sara' la maschera del
+> ricevimento questi riferimenti andranno riscritti col prefisso `RIC|`
+> (debito n. 3 in `DEBITI.md`).
+
 ```
 Consenti annullamento utente [ Disattivato ]
 Imposta acquisizione errori [ Attivato ]
