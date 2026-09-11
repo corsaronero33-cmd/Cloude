@@ -216,12 +216,12 @@ Consenti annullamento utente [ Disattivato ]
 Imposta acquisizione errori [ Attivato ]
 
 # --- controlli prima di scrivere qualsiasi cosa ---
-Se [ IsEmpty ( Rilevazioni::gIdPuntoControllo ) ]
+Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
     Mostra finestra di dialogo personalizzata [ "Manca il punto di controllo." ]
     Esci dallo script [ Risultato del testo: "" ]
 Fine se
 
-Se [ IsEmpty ( Rilevazioni::gValore ) and IsEmpty ( Rilevazioni::gValoreTesto ) ]
+Se [ IsEmpty ( RIL|Rilevazioni::gValore ) and IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ]
     Mostra finestra di dialogo personalizzata [ "Manca il valore rilevato." ]
     Esci dallo script [ Risultato del testo: "" ]
 Fine se
@@ -229,32 +229,32 @@ Fine se
 # --- crea la rilevazione ---
 Vai al formato [ "Z_RIL Rilevazioni" (RIL|Rilevazioni) ]
 Nuovo record/richiesta
-Imposta campo [ Rilevazioni::IdPuntoControllo ; Rilevazioni::gIdPuntoControllo ]
-Imposta campo [ Rilevazioni::DataOra ; Get ( IndicatoreDataOraCorrente ) ]
-Imposta campo [ Rilevazioni::IdOperatore ; $$UTENTE.Id ]
-Imposta campo [ Rilevazioni::Valore ; Rilevazioni::gValore ]
-Imposta campo [ Rilevazioni::ValoreTesto ; Rilevazioni::gValoreTesto ]
-Imposta campo [ Rilevazioni::Note ; Rilevazioni::gNote ]
+Imposta campo [ RIL|Rilevazioni::IdPuntoControllo ; RIL|Rilevazioni::gIdPuntoControllo ]
+Imposta campo [ RIL|Rilevazioni::DataOra ; Get ( IndicatoreDataOraCorrente ) ]
+Imposta campo [ RIL|Rilevazioni::IdOperatore ; $$UTENTE.Id ]
+Imposta campo [ RIL|Rilevazioni::Valore ; RIL|Rilevazioni::gValore ]
+Imposta campo [ RIL|Rilevazioni::ValoreTesto ; RIL|Rilevazioni::gValoreTesto ]
+Imposta campo [ RIL|Rilevazioni::Note ; RIL|Rilevazioni::gNote ]
 Conferma record/richieste [ Con dialogo: Disattivato ]
 
 # --- l'esito, letto dai limiti del punto di controllo ---
 Imposta variabile [ $esito ; Valore:
     If ( RIL|PuntiControllo::Grandezza = "visivo" ;
-         Rilevazioni::ValoreTesto ;
+         RIL|Rilevazioni::ValoreTesto ;
          EsitoRilevazione (
-             Rilevazioni::Valore ;
+             RIL|Rilevazioni::Valore ;
              RIL|PuntiControllo::LimiteMin ;
              RIL|PuntiControllo::LimiteMax ) ) ]
-Imposta campo [ Rilevazioni::Esito ; $esito ]
-Imposta campo [ Rilevazioni::Bloccato ; "Si" ]
+Imposta campo [ RIL|Rilevazioni::Esito ; $esito ]
+Imposta campo [ RIL|Rilevazioni::Bloccato ; "Si" ]
 Conferma record/richieste [ Con dialogo: Disattivato ]
-Imposta variabile [ $idRilevazione ; Valore: Rilevazioni::Id ]
+Imposta variabile [ $idRilevazione ; Valore: RIL|Rilevazioni::Id ]
 
 # --- se e' fuori limite, apri la non conformita' ---
 Se [ $esito = "non conforme" ]
     Imposta variabile [ $descrizione ; Valore:
         "Fuori limite: " & RIL|PuntiControllo::Descrizione &
-        ". Valore rilevato " & Rilevazioni::Valore & " " &
+        ". Valore rilevato " & RIL|Rilevazioni::Valore & " " &
         RIL|PuntiControllo::UnitaMisura &
         ", limiti ammessi da " & RIL|PuntiControllo::LimiteMin &
         " a " & RIL|PuntiControllo::LimiteMax & "." ]
@@ -276,7 +276,7 @@ Se [ $esito = "non conforme" ]
     Imposta variabile [ $idNC ; Valore: NonConformita::Id ]
     Chiudi finestra [ Finestra corrente ]
 
-    Imposta campo [ Rilevazioni::IdNonConformita ; $idNC ]
+    Imposta campo [ RIL|Rilevazioni::IdNonConformita ; $idNC ]
     Conferma record/richieste [ Con dialogo: Disattivato ]
 
     Mostra finestra di dialogo personalizzata [
@@ -285,13 +285,24 @@ Se [ $esito = "non conforme" ]
 Fine se
 
 # --- svuota i campi di immissione ---
-Imposta campo [ Rilevazioni::gIdPuntoControllo ; "" ]
-Imposta campo [ Rilevazioni::gValore ; "" ]
-Imposta campo [ Rilevazioni::gValoreTesto ; "" ]
-Imposta campo [ Rilevazioni::gNote ; "" ]
+Imposta campo [ RIL|Rilevazioni::gIdPuntoControllo ; "" ]
+Imposta campo [ RIL|Rilevazioni::gValore ; "" ]
+Imposta campo [ RIL|Rilevazioni::gValoreTesto ; "" ]
+Imposta campo [ RIL|Rilevazioni::gNote ; "" ]
 ```
 
 ### Due punti che sembrano dettagli e non lo sono
+
+**Ogni campo delle rilevazioni si scrive `RIL|Rilevazioni::`, mai
+`Rilevazioni::`.** Sono **due occorrenze diverse** della stessa tabella: dal
+formato `Z_RIL Rilevazioni` l'occorrenza nuda non e' correlata, quindi
+restituisce il vuoto. Come sempre in questi casi, senza nessun messaggio di
+errore. Prendendo i campi con il selettore a sinistra, con *Tabella corrente*
+selezionata in alto, FileMaker ci mette da solo l'occorrenza giusta.
+
+I campi **globali** (quelli con la `g` davanti) sarebbero l'eccezione, perche'
+hanno un solo valore per tutto il file: si scrivono comunque `RIL|` per non
+doversi chiedere ogni volta quali lo siano.
 
 **Il `Conferma record/richieste` dopo aver scritto `IdPuntoControllo`.**
 Finche' il record non e' confermato la relazione non si aggancia, e
