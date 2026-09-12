@@ -32,6 +32,12 @@ limite, e legge lotto e scadenza dal cartone.
 > scritti: sono il motivo per cui fra sei mesi si riapre lo script e si capisce
 > subito dove mettere le mani.
 >
+> **Quanti pulsanti su una finestra di dialogo.** Due servono **solo** se lo
+> script poi guarda quale e' stato premuto, cioe' se c'e' un
+> `Get ( UltimaSceltaMessaggio )` dopo. In tutto il progetto capita **una volta
+> sola**: la finestra che chiede il codice a mano nello script `10`. Tutte le
+> altre hanno un pulsante: si lasciano **Pulsante 2 e 3 vuoti**.
+>
 > **Nomi dei passi.** L'interfaccia e' in italiano: `Imposta variabile`,
 > `Imposta campo`, `Vai al formato`, `Se`, `Fine se`, `Ciclo`. In FileMaker
 > italiano **layout si dice formato**. Se un nome non corrisponde
@@ -217,12 +223,14 @@ Imposta acquisizione errori [ Attivato ]
 
 # --- controlli prima di scrivere qualsiasi cosa ---
 Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
-    Mostra finestra di dialogo personalizzata [ "Manca il punto di controllo." ]
+    Mostra finestra di dialogo personalizzata [
+        "Manca un dato" ; "Scegli il punto di controllo." ; Pulsante 1: "OK" ]
     Esci dallo script [ Risultato del testo: "" ]
 Fine se
 
 Se [ IsEmpty ( RIL|Rilevazioni::gValore ) and IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ]
-    Mostra finestra di dialogo personalizzata [ "Manca il valore rilevato." ]
+    Mostra finestra di dialogo personalizzata [
+        "Manca un dato" ; "Scrivi il valore rilevato." ; Pulsante 1: "OK" ]
     Esci dallo script [ Risultato del testo: "" ]
 Fine se
 
@@ -281,7 +289,8 @@ Se [ $esito = "non conforme" ]
 
     Mostra finestra di dialogo personalizzata [
         "Valore fuori limite" ;
-        $descrizione & "¶¶Azione correttiva da eseguire:¶" & $azione ]
+        $descrizione & "¶¶Azione correttiva da eseguire:¶" & $azione ;
+        Pulsante 1: "Ho capito" ]
 Fine se
 
 # --- svuota i campi di immissione ---
@@ -309,6 +318,12 @@ Finche' il record non e' confermato la relazione non si aggancia, e
 `RIL|PuntiControllo::LimiteMin` risulta vuoto: l'esito verrebbe sempre
 "conforme". E' l'errore piu' insidioso di tutto il progetto, perche' il
 programma non da' nessun messaggio, dice solo che va tutto bene.
+
+**Il pulsante scritto "Ho capito" e non "OK".**
+Quella finestra non informa: consegna all'operatore un'azione correttiva da
+eseguire. Il testo del pulsante e' l'unica cosa che gli fa registrare di aver
+preso un impegno invece di aver chiuso un avviso. Costa niente e cambia come
+viene usato il programma.
 
 **La finestra nuova per creare la non conformita'.**
 Serve a non perdere il record su cui stai lavorando: si apre, si crea la non
@@ -372,6 +387,7 @@ Conferma record/richieste [ Con dialogo: Disattivato ]
 
 Se [ IsEmpty ( $lotto ) and IsEmpty ( $scadenza ) ]
     Mostra finestra di dialogo personalizzata [
+        Pulsante 1: "OK" ;
         "Etichetta non riconosciuta" ;
         "Il codice e' stato salvato ma non contiene lotto ne' scadenza in "
         & "formato GS1. Scrivili a mano e segnalamelo: potrebbe essere "
