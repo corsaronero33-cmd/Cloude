@@ -418,23 +418,76 @@ adesso.
 
 # Collaudo
 
-| Prova | Come | Deve succedere |
+## Due cose da saper fare
+
+**Eseguire uno script.** Menu `Script`: se compare nell'elenco, si clicca.
+Altrimenti `Script` -> `Area di lavoro script` (Ctrl+Maiusc+S), si seleziona a
+sinistra e si preme il triangolo **Esegui**.
+
+**Guardare un valore.** `Strumenti` -> `Visualizzatore dati`, scheda
+**Controlla**, pulsante `+`. Nella casella **Espressione** si scrive cosa si
+vuole vedere e si preme **Monitora**. Il valore compare accanto e si aggiorna
+da solo, quindi la finestra si puo' lasciare aperta mentre si lavora.
+
+Nella casella si possono scrivere tre cose diverse:
+
+| Cosa | Esempio |
+|---|---|
+| una **variabile** | `$$PARAMETRI` |
+| un **campo** | `Parametri::gGiorniAvviso` |
+| la **chiamata a una funzione** | `Parametro ( "GiorniAvvisoScadenza" )` |
+
+Nell'ultimo caso FileMaker esegue davvero la funzione e mostra cosa risponde.
+E' cosi' che si prova una funzione senza costruirle intorno una maschera.
+
+## Preparazione: un punto di controllo su cui provare
+
+`PuntiControllo` e' **vuota**: i 33 punti stanno in `ModelliPuntoControllo`,
+che e' la libreria del prodotto, e ci finiranno con lo script di impianto.
+Per collaudare adesso ne serve uno vero.
+
+Formato `PuntiControllo`, nuovo record:
+
+| Campo | Valore |
+|---|---|
+| `Codice` | `CON-01` |
+| `Descrizione` | `Temperatura frigorifero 1` |
+| `Tipo` | `CCP` |
+| `Fase` | `conservazione` |
+| `Grandezza` | `temperatura` |
+| `UnitaMisura` | `C` |
+| `LimiteMin` | `0` |
+| `LimiteMax` | `4` |
+| `Frequenza` | `due volte al giorno` |
+| `AzioneCorrettiva` | `Trasferire la merce in un altro frigorifero, verificare guarnizioni e carico, chiamare il manutentore.` |
+| `Attivo` | `Si` |
+
+Sono gli stessi valori della riga `CON-01` dei punti modello: cosi' la sesta
+prova mostra l'azione correttiva vera.
+
+## Le nove prove
+
+L'elenco completo, con i passi da fare e cosa guardare se qualcosa non torna,
+sta nella tabella di marcia pubblicata come pagina. In sintesi:
+
+| # | Prova | Deve dare |
 |---|---|---|
-| Parametri caricati | Esegui `01`, poi nel visualizzatore dati guarda `$$PARAMETRI` | una riga per ogni parametro, `chiave=valore` |
-| Funzione parametro | `Parametro ( "GiorniAvvisoScadenza" )` | `7` |
-| Campo globale | guarda `Parametri::gGiorniAvviso` | `7` |
-| Operatore | crea un operatore con `AccountFileMaker` = `Admin`, esegui `02`, guarda `$$UTENTE.Nome` | il nome dell'operatore |
-| Rilevazione conforme | metti `gIdPuntoControllo` di un frigo, `gValore` = `3`, esegui `20` | nuova rilevazione, `Esito` = `conforme`, nessuna non conformita' |
-| Rilevazione fuori limite | stesso punto, `gValore` = `9`, esegui `20` | `Esito` = `non conforme`, finestra con l'azione correttiva, e **una non conformita' nuova** con dentro quell'azione |
-| Legame fra i due | apri la non conformita' appena nata | `IdRilevazione` valorizzato, `Gravita` = `alta` se il punto e' un CCP |
-| Etichetta | esegui `10` su una riga di ricevimento e incolla `010800123456789010LOTTO123` | `Lotto` = `LOTTO123` |
-| Etichetta con scadenza | incolla `01080012345678901725013110LOTTO123` | `Lotto` = `LOTTO123`, `DataScadenza` = `31/01/2025` |
+| 1 | esegui `01`, guarda `$$PARAMETRI` | 20 righe `chiave=valore` |
+| 2 | `Parametro ( "GiorniAvvisoScadenza" )` | `7` |
+| 3 | `Parametri::gGiorniAvviso` | `7` |
+| 4 | crea un operatore con il tuo account, esegui `02`, guarda `$$UTENTE.Nome` | il tuo nome |
+| 5 | `gValore` = 3 sul frigo, esegui `20` | esito conforme, nessuna finestra |
+| 6 | `gValore` = 9, esegui `20` | **finestra con l'azione correttiva, esito non conforme** |
+| 7 | guarda l'ultima non conformita' | nata da sola, con dentro l'azione correttiva e gravita' alta |
+| 8 | esegui `10`, incolla `010800123456789010LOTTO123` | `Lotto` = `LOTTO123` |
+| 9 | incolla `01080012345678901725013110LOTTO123` | lotto e scadenza 31/01/2025 |
 
-La prova che conta e' la sesta: **una misura fuori limite deve generare da
-sola la non conformita' con l'azione correttiva gia' scritta dentro**. Se
-funziona quella, il cuore del sistema c'e'.
+La prova che conta e' la **sesta**. Se una misura fuori limite genera da sola
+la non conformita' con l'azione correttiva gia' dentro, il cuore del sistema
+c'e'.
 
----
+Se la sesta dice "conforme" con valore 9, il colpevole e' quasi sempre il
+`Conferma record/richieste` prima della lettura dei limiti.
 
 ## Cosa viene dopo
 
