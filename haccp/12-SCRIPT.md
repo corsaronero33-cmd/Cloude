@@ -395,6 +395,19 @@ Se [ IsEmpty ( $lotto ) and IsEmpty ( $scadenza ) ]
 Fine se
 ```
 
+**Quando scatta l'avviso.** Solo se non si e' capito **niente**: la condizione
+usa `and`, non `or`. Se l'etichetta porta il lotto ma non la scadenza, lo
+script riempie il lotto e tace.
+
+Non e' pigrizia: moltissime etichette dei fornitori portano solo il lotto, e un
+avviso che scatta ad ogni consegna nel giro di due settimane viene chiuso senza
+leggerlo. **Un avviso che scatta sempre e' un avviso spento.**
+
+Il controllo di completezza va fatto dove ha senso, cioe' al **salvataggio
+della riga di ricevimento**: li' il programma sa, da `Prodotti::RichiedeLotto`
+e `Prodotti::RichiedeScadenza`, se *quel* prodotto li esige davvero, e puo'
+bloccare solo chi deve essere bloccato. Vedi `DEBITI.md`.
+
 **Limite dichiarato:** per adesso lo script compila lotto e scadenza, non il
 prodotto. Agganciare il prodotto dal codice GTIN richiede una relazione in
 piu' nel grafico: si fa nella sessione delle maschere, quando sappiamo come
@@ -479,7 +492,7 @@ sta nella tabella di marcia pubblicata come pagina. In sintesi:
 | 5 | `gValore` = 3 sul frigo, esegui `20` | esito conforme, nessuna finestra |
 | 6 | `gValore` = 9, esegui `20` | **finestra con l'azione correttiva, esito non conforme** |
 | 7 | guarda l'ultima non conformita' | nata da sola, con dentro l'azione correttiva e gravita' alta |
-| 8 | esegui `10`, incolla `010800123456789010LOTTO123` | `Lotto` = `LOTTO123` |
+| 8 | esegui `10`, incolla `010800123456789010LOTTO123` | `Lotto` = `LOTTO123`, **nessun avviso** (manca la scadenza ma il lotto c'e') |
 | 9 | incolla `01080012345678901725013110LOTTO123` | lotto e scadenza 31/01/2025 |
 
 La prova che conta e' la **sesta**. Se una misura fuori limite genera da sola

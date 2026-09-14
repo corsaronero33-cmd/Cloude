@@ -58,7 +58,31 @@ quei riferimenti andranno riscritti con il prefisso `RIC|`.
 
 ---
 
-## 4. Le tabelle di fase 2 sono vuote
+## 4. Manca il controllo di completezza della riga di ricevimento
+
+**Cosa.** Nessuno verifica che una riga di ricevimento abbia lotto e scadenza
+quando il prodotto li richiede. Lo script che legge l'etichetta riempie quello
+che trova e avvisa soltanto se non ha capito niente, ed e' giusto cosi': un
+avviso che scatta ad ogni consegna viene chiuso senza leggerlo, e da quel
+momento non serve piu'.
+
+**Dove va fatto.** Al salvataggio della riga, dove si puo' leggere da
+`Prodotti::RichiedeLotto` e `Prodotti::RichiedeScadenza` se *quel* prodotto li
+esige, e bloccare solo chi deve essere bloccato.
+
+**Perche' rimandato.** Il salvataggio della riga non esiste ancora: oggi le
+righe si creano a mano sul formato nudo.
+
+**Quando si salda.** Sessione delle maschere, insieme al ricevimento merci.
+
+**Cosa succede se si dimentica.** Si puo' chiudere un ricevimento senza il
+lotto di un prodotto che lo richiede, e la rintracciabilita' di quella merce
+si perde. E' il tipo di buco che si scopre durante un'allerta alimentare,
+cioe' nel momento peggiore.
+
+---
+
+## 5. Le tabelle di fase 2 sono vuote
 
 `Utilizzi` esiste ed e' collegata, ma niente la riempie: serve `Preparazioni`,
 che e' di fase 2. Finche' non c'e', la rintracciabilita' copre il **passo
