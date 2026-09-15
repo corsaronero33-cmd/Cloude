@@ -2,6 +2,12 @@
 
 Prerequisito: motore completo e collaudato (`COLLAUDO-v006.md`).
 
+> **Questo documento e' la mappa d'insieme**: le decisioni prese una volta, i
+> nomi, il modello elenco/scheda, cosa cambia da un'anagrafica all'altra.
+> La costruzione vera, oggetto per oggetto e con tutte le coordinate, sta nei
+> documenti `13a`, `13b`, ... — **uno per maschera**, nell'ordine in cui si
+> costruiscono. Si comincia da `13a-D_REPARTI-SCHEDA.md`.
+
 Si comincia dal back office, e non per comodita': **senza le anagrafiche non
 c'e' niente da monitorare**. I punti di controllo, le attrezzature e i
 fornitori si inseriscono al PC; il telefono serve dopo, quando c'e' qualcosa
@@ -68,15 +74,27 @@ chiamata da molti punti.
 # Sposta l'utente sul formato ricevuto come parametro.
 # Lo chiamano tutti i pulsanti di navigazione: un solo script invece di uno
 # per ogni destinazione.
+# Se il formato non esiste ancora lo dice con garbo, invece di lasciare
+# comparire l'errore di FileMaker: costruendo le maschere una per volta,
+# ci sono sempre pulsanti che puntano a qualcosa che arriva domani.
 # Parametro: il nome esatto del formato, fra virgolette.
 
+Imposta acquisizione errori [ Attivato ]
 Imposta variabile [ $formato ; Valore: Get ( ParametroScript ) ]
 
 Se [ IsEmpty ( $formato ) ]
     Esci dallo script [ Risultato del testo: "" ]
 Fine se
 
-Vai al formato [ Nome del formato: $formato ]
+Vai al formato [ Nome del formato per calcolo: $formato ]
+
+Se [ Get ( UltimoErrore ) <> 0 ]
+    Mostra finestra di dialogo personalizzata
+        [ "Non ancora pronto" ;
+          "La maschera " & $formato & " non c'e' ancora." ]
+    Esci dallo script [ Risultato del testo: "" ]
+Fine se
+
 Mostra tutti i record
 ```
 
@@ -152,6 +170,9 @@ quindi la scheda si apre gia' sul reparto giusto.
 > funzionanti, se la riga cliccabile ti manca la aggiungiamo.
 
 ### `D_Reparti scheda`
+
+> Costruzione completa, con il disegno in scala e le coordinate di ogni
+> oggetto: **`13a-D_REPARTI-SCHEDA.md`**. Qui sotto solo l'impianto.
 
 `Formati` -> `Nuovo formato/rapporto` -> **Modulo**, su `REP|Reparti`.
 
