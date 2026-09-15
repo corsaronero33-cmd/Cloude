@@ -27,10 +27,11 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | - | `COLLAUDO-v003.md` | Verifica dopo le correzioni: schema a posto, restano le liste valori | fatto |
 | - | `COLLAUDO-v004.md` | Schema chiuso: nessun problema strutturale, una sola voce da aggiungere | fatto |
 | - | `COLLAUDO-v005.md` | Verifica di funzioni e script: due correzioni | fatto |
+| - | `COLLAUDO-v006.md` | Correzioni verificate: il motore e' completo | fatto |
 | - | `DEBITI.md` | Cose rimandate di proposito, con il motivo e quando si chiudono | vivo |
 | 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | fatto |
 | 4 | `12-SCRIPT.md` | Script: avvio, registrazione con non conformita' automatica, lettura etichetta | fatto |
-| 5 | `13-LAYOUT.md` | Maschere desktop / iPad / iPhone | da fare |
+| 5 | `13-LAYOUT.md` | Maschere desktop / iPad / iPhone | **prossimo** |
 | 6 | `14-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
 | 7 | `15-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
 
