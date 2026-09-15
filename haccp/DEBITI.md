@@ -18,7 +18,9 @@ significherebbe rimettere le mani su script gia' finiti per un guadagno che
 arriva due sessioni dopo.
 
 **Quando si salda.** Nella sessione delle maschere (`13-LAYOUT.md`), insieme
-alla pulizia dei 23 formati automatici. Li' si creano i formati definitivi e
+alla pulizia dei 23 formati automatici. **Iniziata:** le maschere desktop si
+costruiscono sulle occorrenze ancora, quindi i formati automatici diventano
+cancellabili mano a mano che vengono sostituiti. Li' si creano i formati definitivi e
 si ripuntano gli script tutti in una volta, con il file davanti.
 
 **Cosa succede se si dimentica.** Cancellando i formati automatici i passi

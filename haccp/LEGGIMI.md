@@ -31,7 +31,7 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | - | `DEBITI.md` | Cose rimandate di proposito, con il motivo e quando si chiudono | vivo |
 | 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | fatto |
 | 4 | `12-SCRIPT.md` | Script: avvio, registrazione con non conformita' automatica, lettura etichetta | fatto |
-| 5 | `13-LAYOUT.md` | Maschere desktop / iPad / iPhone | **prossimo** |
+| 5 | `13-LAYOUT.md` | Maschere: si parte dal desktop, menu e modello elenco/scheda | fatto |
 | 6 | `14-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
 | 7 | `15-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
 
