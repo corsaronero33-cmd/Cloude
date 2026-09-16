@@ -19,6 +19,15 @@ sembreranno fatte dalla stessa mano.
 Formato largo **780**. Parti: Intestazione **100**, Corpo **270**,
 Pie' di pagina **34**.
 
+## Il tema
+
+**Apex blu**, quello di serie di FileMaker, con **una sola modifica**:
+l'intestazione, che di suo e' azzurro chiaro, diventa **`#1B3A5C`**.
+
+Conseguenza pratica: **i colori non si scrivono a mano**. Nelle tabelle che
+seguono la colonna Aspetto dice quasi sempre *lascia com'e'* — si danno le
+misure, il tema mette il resto. Meno lavoro e piu' uniforme.
+
 ---
 
 ## Fase 0 — Prima: sistemare lo script di navigazione
@@ -58,7 +67,9 @@ che un errore di FileMaker.
    - **Tipo:** Modulo
 4. Nella scelta dei campi **non aggiungerne nessuno**: si mettono a mano, cosi'
    finiscono dove vogliamo noi. Avanti fino a Fine.
-5. `Formati` › `Imposta formato` › scheda Generale: togli la spunta
+5. **Il tema:** `Formati` › `Cambia tema` › **Apex blu**. Se l'hai gia'
+   scelto nella creazione del formato, salta.
+6. `Formati` › `Imposta formato` › scheda Generale: togli la spunta
    **Includi nel menu dei formati**. Ci si arriva dai pulsanti.
 
 ### Altezze delle parti
@@ -77,28 +88,37 @@ in basso: spostalo prima.
 
 ---
 
-## Fase 2 — L'intestazione
+## Fase 2 — L'intestazione: l'unico colore che cambiamo
 
-Due fasce sovrapposte: sopra la barra scura con il titolo, sotto la barra
-bianca con i pulsanti. **Questa si copiera' su tutte le altre maschere**, va
-fatta bene.
+L'azzurro chiaro di Apex **non si copre con un rettangolo**: si colora
+**la parte**. E' un clic, e soprattutto **finisce dentro il tema**, quindi
+tutte le maschere successive nascono gia' con l'intestazione giusta.
 
-Metodo, da qui in avanti sempre uguale: **disegna a occhio, poi scrivi i
-numeri** nell'Ispettore, scheda Posizione.
+1. Clicca l'etichetta grigia **Intestazione** sul bordo sinistro: selezioni la
+   parte, non un oggetto.
+2. Ispettore › **Aspetto** › Riempimento: da Sfumatura passa a **Tinta unita**,
+   poi **Altro colore** e scrivi `#1B3A5C`.
+3. Testo `Reparto`, misure dalla tabella. Il colore **bianco lo metti a mano**:
+   il tema lo farebbe scuro, e su fondo scuro non si leggerebbe.
+4. Testo a destra, **esattamente** `<<$$UTENTE.Nome>>`. Anche bianco.
+5. Rettangolo della fascia pulsanti: bianco, bordo **solo sotto**
+   (Ispettore › Aspetto › Bordo: accendi il lato di sotto, spegni gli altri).
 
 | Oggetto | X | Y | Largh. | Alt. | Aspetto |
 |---|---|---|---|---|---|
-| Rettangolo barra | 0 | 0 | 780 | 56 | Riempimento `#1F4E5F`, nessun bordo |
-| Testo "Reparto" | 24 | 16 | 300 | 24 | Segoe UI 15, semigrassetto, bianco |
-| Testo `<<$$UTENTE.Nome>>` | 456 | 20 | 300 | 20 | 11 pt, bianco, allineato a destra |
-| Rettangolo pulsanti | 0 | 56 | 780 | 44 | Riempimento bianco, bordo **solo sotto** 1 pt `#D5DDE1` |
+| **La parte Intestazione** | — | — | — | 100 | Riempimento tinta unita `#1B3A5C` |
+| Testo "Reparto" | 24 | 16 | 300 | 24 | 15 pt, semigrassetto, **bianco** |
+| Testo `<<$$UTENTE.Nome>>` | 456 | 20 | 300 | 20 | 11 pt, **bianco**, allineato a destra |
+| Rettangolo fascia pulsanti | 0 | 56 | 780 | 44 | Bianco, bordo **solo sotto** 1 pt |
 
-Per il bordo di un lato solo: Ispettore › Aspetto › Bordo, accendi il lato di
-sotto e spegni gli altri tre.
+**Perche' la parte e non un rettangolo sopra.** Il riempimento di una parte fa
+parte del tema: colorandola qui e salvando il tema alla fase 6, ogni maschera
+nuova avra' l'intestazione gia' cosi'. Un rettangolo andrebbe copiato venti
+volte, e la ventunesima te lo dimentichi.
 
 **Perche' la variabile di unione e non un campo.** `<<$$UTENTE.Nome>>` mostra
-il contenuto della variabile globale che lo script di avvio ha riempito. E'
-anche una verifica gratuita: se in alto a destra compare il nome,
+il contenuto della variabile globale riempita dallo script di avvio. E' anche
+una verifica gratuita: se in alto a destra compare il nome,
 `02 - Riconosci operatore` ha funzionato.
 
 ---
@@ -114,12 +134,13 @@ l'etichetta si scrive nel campo in alto di quella stessa finestra.
 | `+ Nuovo` | 126 | 64 | 94 | 28 | Esegui passo script | `Nuovo record/richiesta` |
 | `Elimina` | 228 | 64 | 94 | 28 | Esegui passo script | `Elimina record/richiesta`, finestra di conferma **attivata** |
 
-Aspetto:
+L'aspetto **non lo imposti, ci pensa Apex blu**. In cima alla scheda Aspetto
+dell'Ispettore c'e' l'elenco degli stili del tema.
 
-| Quale | Riempimento | Bordo | Testo |
-|---|---|---|---|
-| `+ Nuovo` (principale) | `#1F4E5F` | nessuno | bianco, 12,5 pt, semigrassetto |
-| Gli altri due | bianco | 1 pt `#D5DDE1`, raggio 2 | `#1E2A32`, 12,5 pt |
+| Quale | Cosa fare |
+|---|---|
+| `+ Nuovo` | Applica lo stile **pieno** del tema (il blu con testo bianco, in genere il primo) |
+| `← Elenco` e `Elimina` | Lascia lo stile normale di Apex, chiaro con il bordo |
 
 > **Le virgolette nel parametro non sono facoltative.** Scrivendo
 > `D_Reparti elenco` senza, FileMaker lo valuta come formula, non trova niente
@@ -133,22 +154,23 @@ Aspetto:
 
 ## Fase 4 — Il corpo
 
-Parte Corpo: riempimento `#F4F6F7`.
+La parte Corpo **non si tocca**: il grigio-azzurro chiaro glielo da' gia'
+Apex blu.
 
 | Oggetto | X | Y | Largh. | Alt. | Aspetto |
 |---|---|---|---|---|---|
 | **Il riquadro** | | | | | |
-| Rettangolo riquadro | 24 | 20 | 732 | 220 | Bianco, bordo 1 pt `#D5DDE1`, raggio 3 |
-| Testo "DATI DEL REPARTO" | 44 | 32 | 320 | 16 | 10,5 pt semigrassetto, `#1F4E5F`, maiuscolo |
-| Linea | 44 | 56 | 692 | 1 | 1 pt `#D5DDE1` |
-| **Le etichette** — tutte larghe 150, allineate a destra, 12 pt `#6B7A83` | | | | | |
+| Rettangolo riquadro | 24 | 20 | 732 | 220 | Bianco, bordo 1 pt, raggio 3 |
+| Testo "DATI DEL REPARTO" | 44 | 32 | 320 | 16 | 10,5 pt semigrassetto, maiuscolo, colore dell'intestazione |
+| Linea | 44 | 56 | 692 | 1 | lascia com'e' |
+| **Le etichette** — larghe 150, allineate a destra; colore e corpo li mette il tema | | | | | |
 | "Codice" | 44 | 72 | 150 | 29 | centrata in verticale |
-| "Descrizione" | 44 | 110 | 150 | 29 | |
-| "Ordine" | 44 | 148 | 150 | 29 | |
-| "Attivo" | 44 | 186 | 150 | 29 | |
-| **I campi** — tutti alti 29, bianchi, bordo 1 pt `#D5DDE1`, raggio 2, testo 13 pt | | | | | |
-| `REP\|Reparti::Codice` | 208 | 72 | 120 | 29 | |
-| `REP\|Reparti::Descrizione` | 208 | 110 | 400 | 29 | |
+| "Descrizione" | 44 | 110 | 150 | 29 | lascia com'e' |
+| "Ordine" | 44 | 148 | 150 | 29 | lascia com'e' |
+| "Attivo" | 44 | 186 | 150 | 29 | lascia com'e' |
+| **I campi** — alti 29; riempimento, bordo e corpo li mette il tema | | | | | |
+| `REP\|Reparti::Codice` | 208 | 72 | 120 | 29 | lascia com'e' |
+| `REP\|Reparti::Descrizione` | 208 | 110 | 400 | 29 | lascia com'e' |
 | `REP\|Reparti::Ordine` | 208 | 148 | 80 | 29 | allineato a destra |
 | `REP\|Reparti::Attivo` | 208 | 186 | 100 | 29 | `Formato` › `Controllo` › Menu a discesa, lista `vl_SiNo` |
 
@@ -160,18 +182,21 @@ spostala e ridimensionala secondo la tabella, oppure cancellala e rifalla.
 compila, e `Id` e' un codice lungo che confonde. Il programma li riempie da
 solo.
 
-**Il passo di 38 non e' un numero a caso.** Campo alto 29 piu' 9 di aria.
-Quando si aggiunge un campo, va a 38 dal precedente senza pensarci.
+> **Un controllo da fare qui.** Apex blu ha i suoi margini interni ai campi:
+> **29 di altezza potrebbe stargli stretto**. Se il testo sembra schiacciato,
+> porta i campi a **31** e il passo da 38 a **40** (Y: 72 / 112 / 152 / 192).
+> Si decide su questa maschera: da qui in poi e' la misura di tutto il
+> progetto.
 
 ---
 
 ## Fase 5 — Il pie' di pagina
 
-Parte: riempimento bianco, bordo **solo sopra** 1 pt `#D5DDE1`.
+Parte: riempimento bianco, bordo **solo sopra** 1 pt.
 
 | Oggetto | X | Y | Largh. | Alt. | Aspetto |
 |---|---|---|---|---|---|
-| Testo contatore | 24 | 9 | 400 | 16 | 11 pt `#6B7A83` |
+| Testo contatore | 24 | 9 | 400 | 16 | 11 pt, lascia il colore del tema |
 
 Contenuto: scrivi `Record`, poi `Inserisci` › `Simbolo` › **Numero record**,
 poi `di`, poi `Inserisci` › `Simbolo` › **Conteggio record trovati**.
@@ -181,33 +206,45 @@ vedono come `{{RecordNumber}}` e diventano numeri veri uscendo dalla modifica.
 
 ---
 
-## Fase 6 — Salvare gli stili
+## Fase 6 — Salvare il tema: Apex blu diventa Haccp
 
-E' il passaggio che fa risparmiare piu' tempo in assoluto. Uno stile e' un
-aspetto salvato con un nome: si applica con un clic, e cambiandolo si
-aggiornano tutti gli oggetti che lo usano **in tutte le maschere del file**.
+Apex blu e' un tema di FileMaker e **non si puo' modificare**. Se ne salva una
+copia con un nome nostro, che si porta dietro le due sole cose cambiate:
+**l'intestazione scura** e i due stili di testo che Apex non ha.
+
+### Prima i due stili che mancano
+
+Uno **stile** e' un aspetto salvato con un nome: si applica con un clic, e
+cambiandolo si aggiornano tutti gli oggetti che lo usano **in tutte le
+maschere del file**. Apex blu ne porta gia' tanti; a noi ne mancano due.
 
 Seleziona l'oggetto gia' formattato, Ispettore › scheda **Aspetto**, in cima
 c'e' l'elenco degli stili del tema; dal menu con la freccia scegli
 **Salva come nuovo stile**.
 
-| Nome dello stile | Da quale oggetto salvarlo |
-|---|---|
-| `Etichetta` | l'etichetta "Codice" |
-| `Campo` | il campo `Codice` |
-| `Titolo riquadro` | il testo "DATI DEL REPARTO" |
-| `Pulsante principale` | il pulsante `+ Nuovo` |
-| `Pulsante secondario` | il pulsante `Elimina` |
+| Nome dello stile | Da quale oggetto | Perche' |
+|---|---|---|
+| `Titolo maschera` | il testo bianco "Reparto" | Apex non ha un testo pensato per il fondo scuro |
+| `Titolo riquadro` | il testo "DATI DEL REPARTO" | il maiuscoletto dei riquadri torna in ogni scheda |
 
-Poi seleziona gli altri oggetti dello stesso genere e clicca lo stile
-nell'elenco: diventano identici.
+Etichette, campi e pulsanti **non** hanno bisogno di uno stile nostro: quelli
+di Apex blu vanno bene cosi'.
 
-Alla fine: `Formati` › **Salva come tema**, nome **`Haccp`**. Da qui in avanti
-tutte le maschere useranno questo tema e questi stili.
+### Poi il tema
 
-> Il giorno che il cliente dira' "le scritte sono piccole", si cambia lo stile
-> `Etichetta` una volta e si aggiornano tutte le maschere. Senza stili si
-> cambiano a mano una per una — e a quel punto si smette di cambiarle.
+`Formati` › **Salva come tema**, nome **`Haccp`**. Da adesso, quando crei un
+formato nuovo scegli `Haccp` e non piu' Apex blu: nasce gia' con
+l'intestazione scura e i due stili in piu'.
+
+> **Perche' non restare su Apex blu e basta.** Perche' il riempimento
+> dell'intestazione vive *dentro* il tema. Restando su Apex, ogni maschera
+> nuova nasce con l'azzurro chiaro e va riscurita a mano; con `Haccp` nasce
+> gia' giusta. Ed e' anche il posto dove, fra sei mesi, si cambia quel blu una
+> volta sola per tutte le maschere.
+
+> **Aggiornare il tema dopo.** Modificato uno stile e vuoi che resti? Torna in
+> `Formati` › `Salva come tema` e risalva su `Haccp`. Altrimenti la modifica
+> vale solo su quella maschera.
 
 ---
 
@@ -217,14 +254,15 @@ Esci dalla modifica formato (Ctrl+L).
 
 | # | Cosa fai | Deve succedere |
 |---|---|---|
-| 1 | Guardi in alto a destra | C'e' il tuo nome. Se e' vuoto, esegui prima `00 - Avvio` |
-| 2 | Premi `+ Nuovo` | Record vuoto, cursore nel primo campo |
-| 3 | Scrivi `CUC`, `Cucina`, `10` | I campi accettano il testo |
-| 4 | Clicchi su `Attivo` | Si apre la tendina con `Si` e `No` |
-| 5 | Clicchi fuori dai campi | Il record si conferma; il contatore in basso si aggiorna |
-| 6 | Premi `← Elenco` | Compare **"La maschera D_Reparti elenco non c'e' ancora"**. **E' giusto cosi'**: il messaggio dimostra che il pulsante e lo script funzionano |
-| 7 | Premi `Elimina` e poi Annulla | Chiede conferma e non cancella niente |
-| 8 | Crei un secondo reparto, `MAG` / `Magazzino secco` / `40` | Il contatore dice `Record 2 di 2` |
+| 1 | Guardi l'intestazione | E' **scura**, non azzurra. Se e' ancora azzurra hai colorato un rettangolo invece della parte |
+| 2 | Guardi in alto a destra | C'e' il tuo nome. Se e' vuoto, esegui prima `00 - Avvio` |
+| 3 | Premi `+ Nuovo` | Record vuoto, cursore nel primo campo |
+| 4 | Scrivi `CUC`, `Cucina`, `10` | I campi accettano il testo |
+| 5 | Clicchi su `Attivo` | Si apre la tendina con `Si` e `No` |
+| 6 | Clicchi fuori dai campi | Il record si conferma; il contatore in basso si aggiorna |
+| 7 | Premi `← Elenco` | Compare **"La maschera D_Reparti elenco non c'e' ancora"**. **E' giusto cosi'**: il messaggio dimostra che il pulsante e lo script funzionano |
+| 8 | Premi `Elimina` e poi Annulla | Chiede conferma e non cancella niente |
+| 9 | Crei un secondo reparto, `MAG` / `Magazzino secco` / `40` | Il contatore dice `Record 2 di 2` |
 
 Se una prova non torna, ci si ferma li'. L'elenco si costruira' **duplicando
 questa scheda**: un difetto qui se lo porterebbe dietro.
@@ -236,3 +274,6 @@ questa scheda**: un difetto qui se lo porterebbe dietro.
 `D_Reparti elenco`, che si costruisce duplicando questa e cambiando il tipo di
 vista. Poi `D_Menu`. Poi si duplica tutto per attrezzature, punti di
 controllo, fornitori, prodotti, operatori.
+
+Il tema `Haccp` le segue tutte: **da qui in poi l'intestazione scura non si
+costruisce piu'**, c'e' gia'.

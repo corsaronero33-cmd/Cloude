@@ -49,15 +49,31 @@ Provare a fare tutto in una maschera sola produce una griglia con venti
 colonne in cui non si legge niente e non si scrive comodi. E' l'errore che si
 vede in meta' dei gestionali.
 
-### Un tema solo
+### Un tema solo: `Haccp`, derivato da **Apex blu**
 
-Scegli un tema e usalo per **tutti** i formati desktop. Quando un colore non
-va, si cambia nel tema e cambia dappertutto. Se ogni formato ha il suo, fra
-venti maschere non li riallinei piu'.
+Si parte dal tema di serie **Apex blu** e si cambia **una cosa sola**:
+l'intestazione, che di suo e' azzurro chiaro, diventa **`#1B3A5C`**. Poi
+`Formati` -> `Salva come tema` con il nome **`Haccp`**, e da li' in avanti i
+formati nuovi si creano su `Haccp`.
 
-FileMaker non ha le pagine mastro: l'intestazione con i pulsanti si costruisce
-**una volta** e si copia e incolla sugli altri formati. Fallo bene la prima
-volta.
+Due conseguenze, tutte e due buone:
+
+- **I colori non si scrivono a mano.** Campi, etichette e pulsanti li veste
+  Apex blu. Nelle guide di costruzione si danno le **misure**; la colonna
+  Aspetto dice quasi sempre *lascia com'e'*. Meno lavoro e piu' uniforme.
+- **L'intestazione si costruisce una volta.** Il riempimento di una *parte* fa
+  parte del tema: colorata una volta e salvata in `Haccp`, ogni formato nuovo
+  nasce gia' con l'intestazione giusta, senza copiare e incollare niente.
+
+Un tema di FileMaker non si modifica: se ne salva una copia con un nome
+nostro. Quando piu' avanti si cambia uno stile e lo si vuole ovunque, si
+rifa' `Formati` -> `Salva come tema` su `Haccp`; altrimenti la modifica vale
+solo sulla maschera dove l'hai fatta.
+
+FileMaker non ha le pagine mastro: la **fascia dei pulsanti** e i pulsanti
+stessi si costruiscono **una volta** e si copiano e incollano sugli altri
+formati. Fallo bene la prima volta. Il colore di fondo dell'intestazione no:
+quello viaggia dentro il tema.
 
 ---
 

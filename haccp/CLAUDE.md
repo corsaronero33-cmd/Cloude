@@ -11,6 +11,7 @@ Valgono in aggiunta al `CLAUDE.md` alla radice del repository.
 | Lingua dell'interfaccia | **italiano** |
 | Sistema | Windows |
 | File | `Haccp.fmp12`, un file unico (vedi `03-CONVENZIONI-FILEMAKER.md`) |
+| Tema dei formati | **`Haccp`**, copia di **Apex blu** con l'intestazione `#1B3A5C` |
 
 Conseguenze pratiche, tutte e tre importanti:
 
@@ -37,6 +38,24 @@ aggiorna da solo.
 `Case`, `Let`, `Middle`, `Get ( CurrentDate )`. FileMaker li accetta anche
 nella versione italiana. Restano cosi' in tutta la documentazione: sono
 quelli che si trovano scritti ovunque.
+
+## I colori non si dettano
+
+Il tema e' **`Haccp`**, derivato dal tema di serie **Apex blu**: campi,
+etichette e pulsanti li veste lui. Nelle istruzioni di costruzione si danno
+le **misure** (X, Y, larghezza, altezza) e la colonna Aspetto dice
+*lascia com'e'*.
+
+Si scrive un codice colore **solo** dove il tema non arriva, e sono tre casi:
+
+- il riempimento dell'**intestazione**, `#1B3A5C`, che e' l'unica modifica
+  nostra ad Apex blu;
+- il **testo bianco** sopra quel fondo scuro, perche' il tema lo farebbe
+  scuro;
+- il riquadro **bianco** che stacca i campi dallo sfondo del corpo.
+
+Elencare hex dove il tema gia' provvede fa perdere tempo e, alla prima
+maschera dimenticata, produce due grigi diversi nello stesso file.
 
 ## Come si consegna il lavoro
 
