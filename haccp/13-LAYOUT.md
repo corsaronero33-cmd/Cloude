@@ -167,7 +167,12 @@ venti minuti, e poi si ripete uguale su tutte le altre.
 
 ### `D_Reparti elenco`
 
-`Formati` -> `Nuovo formato/rapporto` -> **Elenco**, su `REP|Reparti`.
+> Costruzione completa: **`13b-D_REPARTI-ELENCO.md`**. Non si crea da zero,
+> si **duplica la scheda** e si cambia `Visualizza come` in Elenco: cosi' il
+> tema, l'intestazione e i pulsanti arrivano gia' fatti.
+
+`Formati` -> `Duplica formato` da `D_Reparti scheda`, poi `Imposta formato`
+-> **Visualizza come: Elenco**.
 
 | Parte | Cosa ci va |
 |---|---|

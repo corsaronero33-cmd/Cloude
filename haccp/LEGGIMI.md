@@ -32,7 +32,8 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | fatto |
 | 4 | `12-SCRIPT.md` | Script: avvio, registrazione con non conformita' automatica, lettura etichetta | fatto |
 | 5 | `13-LAYOUT.md` | Maschere desktop: mappa d'insieme, nomi, modello elenco/scheda | fatto |
-| 5a | `13a-D_REPARTI-SCHEDA.md` | Prima maschera, costruita oggetto per oggetto con le misure | in corso |
+| 5a | `13a-D_REPARTI-SCHEDA.md` | Prima maschera, costruita oggetto per oggetto con le misure | fatto |
+| 5b | `13b-D_REPARTI-ELENCO.md` | L'elenco, duplicando la scheda: colonne, righe, ordinamento | in corso |
 | 6 | `14-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
 | 7 | `15-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
 
