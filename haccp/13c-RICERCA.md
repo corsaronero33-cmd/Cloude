@@ -1,6 +1,10 @@
 # Passo 5c — La ricerca sugli elenchi
 
-Prerequisito: `13b-D_REPARTI-ELENCO.md` finito.
+Scheda di lavoro passo passo, con il disegno e i calcoli da copiare:
+<https://claude.ai/artifact/M8YkvJgCjPHtiLcYYAxM81>
+
+Prerequisiti: `13b-D_REPARTI-ELENCO.md` finito e i **cinque ritocchi** di
+`COLLAUDO-v007.md` applicati (la casella va in un formato largo 685).
 
 ## Prima: oggi si cerca gia'
 
