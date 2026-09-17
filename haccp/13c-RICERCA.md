@@ -173,9 +173,62 @@ nessuna tabella: e' la casella che gli passa il proprio contenuto. Sull'elenco
 dei fornitori bastera' scrivere `FOR|Fornitori::gCerca` nel parametro di
 **quella** casella, senza toccare lo script.
 
-**Pulsante `Tutti`:** Esegui script `91 - Reparti - Entra nell'elenco`, senza
-parametro. Chiama `91` e non `92` perche' deve fare esattamente quello che fa
-entrare nell'elenco — ed e' gia' scritto.
+### Il pulsante `Tutti`, finestra per finestra
+
+E' un **pulsante** normale. Nasce duplicando `+ Nuovo` (Ctrl+D) per **ereditare
+l'aspetto**: carattere bianco in grassetto, nessun riempimento. Disegnandolo
+nuovo prenderebbe lo stile di serie del tema — chiaro con il bordo — e su
+fondo blu sarebbe un'altra cosa.
+
+**Misure**, Ispettore -> scheda Posizione:
+
+| Voce | Valore |
+|---|---|
+| Posizione › Sinistra | 588 |
+| Posizione › Superiore | 57 |
+| Dimensioni › Larghezza | 73 |
+| Dimensioni › Altezza | 35 |
+
+Chiude a **661**, cioe' 24 dal bordo destro (685): lo stesso margine di tutto
+il resto.
+
+> Se la parola "Tutti" viene tagliata, non allargare solo il pulsante —
+> sposteresti il margine. Cambia i due valori che si compensano: casella da
+> **180** a **160** (resta a x 400), pulsante da x **588** a **568** e da
+> **73** a **93**. Chiude sempre a 661.
+
+**Etichetta e azione**, doppio clic -> finestra `Imposta pulsante`:
+
+| # | Cosa c'e' nella finestra | Cosa ci metti |
+|---|---|---|
+| 1 | L'**icona**, in alto | C'e' il `+` ereditato da "Nuovo". Cliccala e scegli **nessuna icona** |
+| 2 | Il **testo** del pulsante | Cancelli `Nuovo`, scrivi `Tutti` |
+| 3 | Tendina **Azione** | **Esegui script** |
+| 4 | Compare la riga dello script | Premi **Specifica** |
+| 5 | Finestra **Specifica script** | `91 - Reparti - Entra nell'elenco` |
+| 6 | **Parametro script facoltativo** | **Vuoto.** Niente, nemmeno due virgolette |
+| 7 | | OK, OK |
+
+**Senza icona, e non per fretta.** Gli altri due pulsanti hanno la freccia e il
+piu' perche' *fanno succedere* qualcosa. `Tutti` **annulla**, e sta attaccato
+alla casella: il solo testo lo fa leggere come la coda della ricerca invece
+che come un terzo comando della barra.
+
+**Chiama `91`, non `92`**, perche' deve fare esattamente le tre cose che fa
+entrare nell'elenco — svuotare la casella, mostrare tutto, ordinare — e sono
+gia' scritte.
+
+> **Errore da non fare: chiamare `92` con parametro vuoto.** Sembra
+> equivalente: `92` con `$cerca` vuoto fa `Mostra tutti i record` ed esce. Ma
+> **non svuota la casella**: ti ritroveresti l'elenco completo con ancora
+> scritto `cuc` nel riquadro, e non sapresti piu' se stai guardando tutto o un
+> risultato.
+
+> **Rifinitura che per ora non farei.** Ispettore -> scheda Dati -> **Nascondi
+> oggetto quando**, calcolo `IsEmpty ( REP|Reparti::gCerca )`: il pulsante
+> comparirebbe solo a ricerca attiva. E' elegante, ma un pulsante che va e
+> viene si nota piu' di uno fermo, e `Tutti` serve anche ad annullare una
+> ricerca fatta con `Ctrl+F`.
 
 ---
 
