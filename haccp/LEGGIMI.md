@@ -35,6 +35,7 @@ Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
 | 5a | `13a-D_REPARTI-SCHEDA.md` | Prima maschera, costruita oggetto per oggetto con le misure | fatto |
 | 5b | `13b-D_REPARTI-ELENCO.md` | L'elenco, duplicando la scheda: colonne, righe, ordinamento | fatto |
 | 5c | `13c-RICERCA.md` | La ricerca sugli elenchi: `Esegui ricerca rapida`, un solo script | in corso |
+| - | `COLLAUDO-v008.md` | Verifica della ricerca: il parametro del trigger manca, la ricerca non cerca | fatto |
 | - | `COLLAUDO-v007.md` | Verifica delle due maschere sul file reale: nessun errore, cinque ritocchi | fatto |
 | 6 | `14-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
 | 7 | `15-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |

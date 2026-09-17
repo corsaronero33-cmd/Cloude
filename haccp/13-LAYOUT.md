@@ -87,6 +87,11 @@ costruzione erano una proposta, il file e' la verita'.
 Larghezza formato: **685**, uguale per elenco e scheda, cosi' la finestra non
 cambia misura quando si passa dall'uno all'altro.
 
+**Margini: 24 a sinistra, il contenuto chiude a 680 a destra.** Il margine
+destro e' quindi 5, non 24: e' asimmetrico, ma e' cosi' da prima ed e'
+coerente in tutto il file. Ci finiscono `<<$$UTENTE.Nome>>`, l'ultima colonna
+dell'elenco, la casella di ricerca e il pulsante `Tutti`.
+
 ### Intestazione
 
 | | Scheda | Elenco |
@@ -131,6 +136,15 @@ spenti. Bordo superiore della parte 1 pt grigio chiaro: e' il filo fra le righe.
 
 **Etichetta di colonna e campo devono avere la stessa X e la stessa
 larghezza.** Si spostano selezionandoli insieme, mai uno per volta.
+
+### La ricerca, sugli elenchi
+
+| Oggetto | X | Y | Largh. | Alt. |
+|---|---|---|---|---|
+| Casella `<OCC>::gCerca` | 273 | 58 | 307 | 32 |
+| Pulsante `Tutti` | 585 | 58 | 95 | 35 |
+
+Dettagli, trigger e parametri: `13c-RICERCA.md`.
 
 ### Pie' di pagina
 

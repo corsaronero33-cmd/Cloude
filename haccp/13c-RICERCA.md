@@ -116,8 +116,12 @@ nome.
 
 | Oggetto | X | Y | Largh. | Alt. | Aspetto |
 |---|---|---|---|---|---|
-| Campo `REP\|Reparti::gCerca` | 400 | 57 | 180 | 35 | riempimento **bianco**, raggio 3, segnaposto `Cerca...` |
-| Pulsante `Tutti` | 588 | 57 | 73 | 35 | come gli altri pulsanti |
+| Campo `REP\|Reparti::gCerca` | 273 | 58 | 307 | 32 | riempimento **bianco**, raggio 3, segnaposto `Cerca...` |
+| Pulsante `Tutti` | 585 | 58 | 95 | 35 | come gli altri pulsanti |
+
+Chiudono a **680**, che e' il bordo destro del contenuto di questo formato:
+ci finiscono anche `<<$$UTENTE.Nome>>` (425 + 255) e la colonna `Attivo`
+(610 + 70). Il formato e' largo 685.
 
 **Segnaposto:** Ispettore -> scheda **Dati** -> **Testo segnaposto** ->
 `Cerca...`.
@@ -184,18 +188,18 @@ fondo blu sarebbe un'altra cosa.
 
 | Voce | Valore |
 |---|---|
-| Posizione › Sinistra | 588 |
-| Posizione › Superiore | 57 |
-| Dimensioni › Larghezza | 73 |
+| Posizione › Sinistra | 585 |
+| Posizione › Superiore | 58 |
+| Dimensioni › Larghezza | 95 |
 | Dimensioni › Altezza | 35 |
 
-Chiude a **661**, cioe' 24 dal bordo destro (685): lo stesso margine di tutto
-il resto.
+Chiude a **680**, allineato con `<<$$UTENTE.Nome>>` sopra e con la colonna
+`Attivo` sotto.
 
-> Se la parola "Tutti" viene tagliata, non allargare solo il pulsante —
-> sposteresti il margine. Cambia i due valori che si compensano: casella da
-> **180** a **160** (resta a x 400), pulsante da x **588** a **568** e da
-> **73** a **93**. Chiude sempre a 661.
+> La larghezza 95 serve perche' con il carattere del tema `HACCP` la parola
+> "Tutti" in 73 viene tagliata. Se la allarghi ancora, sposta di conseguenza
+> la X in modo che **chiuda sempre a 680**: e' quello il bordo, non la
+> larghezza del pulsante.
 
 **Etichetta e azione**, doppio clic -> finestra `Imposta pulsante`:
 
