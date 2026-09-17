@@ -19,6 +19,13 @@ sembreranno fatte dalla stessa mano.
 Formato largo **780**. Parti: Intestazione **100**, Corpo **270**,
 Pie' di pagina **34**.
 
+> **Attenzione, misure superate.** Le coordinate di questo documento sono
+> quelle *proposte*. Costruendo, le misure sono cambiate in meglio (campi piu'
+> alti, pulsanti sul blu senza fascia bianca, niente riquadro). Le misure
+> valide sono in **`13-LAYOUT.md`, sezione *Misure standard***; il perche' di
+> ogni differenza sta in `COLLAUDO-v007.md`. Qui restano validi il **metodo**
+> e le **motivazioni**.
+
 ## Il tema
 
 **Apex blu**, quello di serie di FileMaker, con **una sola modifica**:

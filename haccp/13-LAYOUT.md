@@ -77,6 +77,87 @@ quello viaggia dentro il tema.
 
 ---
 
+## Misure standard
+
+**Queste sono le misure del file reale**, rilevate dall'esportazione XML del
+17/09/2026 e verificate in `COLLAUDO-v007.md`. Dove divergono da quello che
+era scritto in `13a` e `13b`, **vince questa tabella**: le guide di
+costruzione erano una proposta, il file e' la verita'.
+
+Larghezza formato: **685**, uguale per elenco e scheda, cosi' la finestra non
+cambia misura quando si passa dall'uno all'altro.
+
+### Intestazione
+
+| | Scheda | Elenco |
+|---|---|---|
+| Altezza | 100 | 143 |
+| Fondo | `#1B3A5C` (dalla parte, quindi dal tema) | idem |
+| Titolo | x 24, y 16 — stile `Titolo maschera` | idem |
+| Operatore | `<<$$UTENTE.Nome>>` x 425, y 18, largh. 255, allineato a destra | idem |
+| Pulsanti | y **57**, alt. **35**, largh. **117**, passo **122** (x 24, 146, 268) | idem, due soli |
+| Linea sotto i pulsanti | — | y 101, da bordo a bordo |
+| Fascia bianca colonne | — | x 0, y 110, alt. 32 |
+| Etichette colonna | — | y **115**, alt. 22 |
+
+I pulsanti stanno **direttamente sul blu**, senza fascia bianca: testo bianco
+e icona SVG. Nessun pulsante in colore pieno — su fondo scuro sparirebbe.
+
+### Corpo della scheda
+
+| | |
+|---|---|
+| Altezza parte | 270 |
+| Campi | x **123**, largh. **329** tutti uguali, alt. **32** |
+| Passo verticale | **36** (primo campo a y 39 dall'inizio della parte) |
+| Etichette | allineate a destra, **bordo destro a 112** |
+| Niente riquadro | ne' rettangolo bianco, ne' titolo di sezione, ne' linea |
+
+Il riquadro torna utile **solo quando i campi sono tanti**: su `PuntiControllo`
+si raggruppa, su un'anagrafica da quattro campi no.
+
+### Corpo dell'elenco
+
+Altezza parte **32**. Campi a **y 1, alt. 28**, sfondo trasparente e bordi
+spenti. Bordo superiore della parte 1 pt grigio chiaro: e' il filo fra le righe.
+
+| Colonna | X | Largh. |
+|---|---|---|
+| `Apri` (pulsante) | 24 | 51 |
+| Codice | 85 | 169 |
+| Descrizione | 264 | 276 |
+| Ordine | 540 | 70 (allineato a destra) |
+| Attivo | 610 | 70 |
+
+**Etichetta di colonna e campo devono avere la stessa X e la stessa
+larghezza.** Si spostano selezionandoli insieme, mai uno per volta.
+
+### Pie' di pagina
+
+Altezza **38**, fondo bianco, bordo solo sopra. Il contatore e' fatto di
+**quattro oggetti** a y 5, alti 23:
+
+| Oggetto | X | Largh. |
+|---|---|---|
+| `Record` | 24 | 55 |
+| `{{RecordNumber}}` | 84 | 70 — fondo grigio chiaro |
+| `Di` | 157 | 19 |
+| `{{FoundCount}}` | 179 | 70 — fondo grigio chiaro |
+
+Il fondo grigio sui due simboli distingue a colpo d'occhio il testo fisso dal
+numero che cambia.
+
+### Stili del tema `HACCP`
+
+| Stile | Su cosa |
+|---|---|
+| `Titolo maschera` | il titolo bianco dell'intestazione |
+
+Etichette, campi e pulsanti usano gli stili di Blu Apex: non ne servono di
+nostri.
+
+---
+
 ## Lo script di navigazione
 
 Un solo script per tutti gli spostamenti, che riceve come parametro il nome

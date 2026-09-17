@@ -11,7 +11,7 @@ Valgono in aggiunta al `CLAUDE.md` alla radice del repository.
 | Lingua dell'interfaccia | **italiano** |
 | Sistema | Windows |
 | File | `Haccp.fmp12`, un file unico (vedi `03-CONVENZIONI-FILEMAKER.md`) |
-| Tema dei formati | **`Haccp`**, copia di **Apex blu** con l'intestazione `#1B3A5C` |
+| Tema dei formati | **`HACCP`**, copia di **Blu Apex** con l'intestazione `#1B3A5C` |
 
 Conseguenze pratiche, tutte e tre importanti:
 
@@ -56,6 +56,20 @@ Si scrive un codice colore **solo** dove il tema non arriva, e sono tre casi:
 
 Elencare hex dove il tema gia' provvede fa perdere tempo e, alla prima
 maschera dimenticata, produce due grigi diversi nello stesso file.
+
+## Le misure stanno in un posto solo
+
+Coordinate e altezze dei formati: **`13-LAYOUT.md`, sezione *Misure
+standard***. Quella tabella e' rilevata dal file reale, non proposta a
+tavolino.
+
+Quando si scrive una guida per una maschera nuova, le misure si **copiano da
+li'**, non si reinventano. Se costruendo emerge che una misura non va, si
+cambia nel file e poi si aggiorna quella tabella: **il file vince sempre sulla
+guida**, e la guida va allineata prima di passare alla maschera successiva.
+
+Le guide `13a`, `13b`, ... restano per il metodo e per il perche' delle
+scelte. Le loro tabelle di coordinate sono storia.
 
 ## Come si consegna il lavoro
 
