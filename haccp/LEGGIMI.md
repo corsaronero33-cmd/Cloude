@@ -52,6 +52,7 @@ ognuna parte da dove finisce la precedente.
 | 01 | `guide/01-reparti-scheda.md` | <https://claude.ai/artifact/EFA6wMJavrYWEY6wQXnQzu> |
 | 02 | `guide/02-reparti-elenco.md` | <https://claude.ai/artifact/3T9i9JSG3sa88ZKnC2hc1J> |
 | 03 | `guide/03-ricerca.md` | <https://claude.ai/artifact/M8YkvJgCjPHtiLcYYAxM81> |
+| 04 | `guide/04-menu.md` | <https://claude.ai/artifact/FKXgh6FMjL2NGxS2th9vdb> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione

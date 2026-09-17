@@ -10,16 +10,14 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**`D_Menu`.** Il formato esiste gia' come segnaposto: occorrenza `IMP|Impresa`
-(giusta), parte **Navigazione superiore** invece di Intestazione (buona idea,
-quella parte non scorre), ma **e' vuoto e usa il tema `Minimalista`**.
+**`D_Menu`** — scheda di lavoro: `guide/04-menu.md`.
 
-Prima di costruirlo: `Formati` -> `Cambia tema` -> **HACCP**.
+Dodici pulsanti, di cui uno solo funzionante: gli altri diranno "non ancora
+pronto". Finito quello, il giro e' chiuso — menu, anagrafica, record,
+indietro — e da li' in avanti e' tutta ripetizione.
 
-Dopo il menu, il giro e' chiuso — si parte dal menu, si va a un'anagrafica, si
-apre un record, si torna — e da li' e' tutta ripetizione: **attrezzature,
-punti di controllo, fornitori, prodotti, operatori**, duplicando la coppia
-elenco+scheda e la ricerca.
+Poi le cinque anagrafiche (attrezzature, punti di controllo, fornitori,
+prodotti, operatori), duplicando la coppia elenco+scheda e la ricerca.
 
 ---
 
