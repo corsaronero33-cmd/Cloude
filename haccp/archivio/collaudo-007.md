@@ -39,7 +39,7 @@ che conta.
 ## Le modifiche fatte durante la costruzione
 
 Sono migliorie. **Vince il file**: diventano lo standard, e le misure sono
-riportate in `13-LAYOUT.md`, sezione *Misure standard*.
+riportate in `../09-MASCHERE.md`, sezione *Misure standard*.
 
 ### 1. I pulsanti stanno sul blu, con l'icona
 

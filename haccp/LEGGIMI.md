@@ -1,80 +1,83 @@
-# HACCP - Tracciabilita' e rintracciabilita' per ristorazione
+# HACCP — Tracciabilita' e rintracciabilita' per ristorazione
 
-Applicazione FileMaker per la gestione dell'autocontrollo alimentare di un
-ristorante: registri HACCP, rintracciabilita' dei lotti, non conformita',
-sanificazioni, formazione.
+Applicazione **Claris FileMaker Pro 22** (interfaccia italiana, Windows) per
+l'autocontrollo alimentare di un ristorante: registri HACCP, rintracciabilita'
+dei lotti, non conformita', sanificazioni, formazione.
 
-Piattaforma: **Claris FileMaker**, file ospitato, accesso da desktop e da
-**FileMaker Go** su iPhone/iPad (fotocamera, lettura codici a barre, firma).
+File ospitato, accesso da desktop e da **FileMaker Go** su iPhone/iPad
+(fotocamera, lettura codici a barre, firma).
 
-## Stato
+---
 
-| Documento | Contenuto | Stato |
-|---|---|---|
-| `01-ANALISI-HACCP.md` | Normativa, fasi, pericoli, CCP, limiti critici, registri | fatto |
-| `02-MODELLO-DATI.md` | Tabelle, campi, relazioni, fasi di consegna | fatto |
-| `03-CONVENZIONI-FILEMAKER.md` | Regole di costruzione del file | fatto |
-| `04-PRODOTTO.md` | Scelte per rivendere la soluzione ad altri locali | fatto |
+## Si riprende da qui
 
-### Costruzione del file, in ordine
+| | |
+|---|---|
+| **Cosa e' aperto** | **`DA-FARE.md`** — prossimo passo, ritocchi, debiti. Tutto in una pagina |
+| **Come si scrive qui dentro** | `CLAUDE.md` — convenzioni, valide per chiunque, persona o assistente |
+| **Ultima verifica del file reale** | `archivio/collaudo-008.md` |
 
-| Passo | Documento | Contenuto | Stato |
+Il file `Haccp.fmp12` **non sta nel repository**: e' binario e non si confronta
+fra due versioni. Qui stanno la specifica e i pezzi da incollare. Ad ogni
+traguardo se ne esporta la struttura in XML dentro `ddr/`.
+
+---
+
+## I documenti
+
+Nove riferimenti, da leggere in ordine la prima volta, da consultare poi.
+
+| | Documento | Cosa contiene | Stato |
 |---|---|---|---|
-| 1 | `09-MONTAGGIO.md` | Crea il file, importa le 21 tabelle, sistema tipi e campi di sistema | fatto |
-| 2 | `10-RELAZIONI.md` | Grafico a ancora e boe, liste valori | fatto |
-| - | `COLLAUDO-v002.md` | Verifica del file reale sul rapporto struttura v002 | fatto |
-| - | `CORREZIONI-DA-FARE.md` | Lista di lavoro delle correzioni del collaudo v002 | fatto |
-| - | `COLLAUDO-v003.md` | Verifica dopo le correzioni: schema a posto, restano le liste valori | fatto |
-| - | `COLLAUDO-v004.md` | Schema chiuso: nessun problema strutturale, una sola voce da aggiungere | fatto |
-| - | `COLLAUDO-v005.md` | Verifica di funzioni e script: due correzioni | fatto |
-| - | `COLLAUDO-v006.md` | Correzioni verificate: il motore e' completo | fatto |
-| - | `DEBITI.md` | Cose rimandate di proposito, con il motivo e quando si chiudono | vivo |
-| 3 | `11-CALCOLI.md` | Formule (esiti, scadenze, GS1-128, partita IVA) | fatto |
-| 4 | `12-SCRIPT.md` | Script: avvio, registrazione con non conformita' automatica, lettura etichetta | fatto |
-| 5 | `13-LAYOUT.md` | Maschere desktop: mappa d'insieme, nomi, modello elenco/scheda | fatto |
-| 5a | `13a-D_REPARTI-SCHEDA.md` | Prima maschera, costruita oggetto per oggetto con le misure | fatto |
-| 5b | `13b-D_REPARTI-ELENCO.md` | L'elenco, duplicando la scheda: colonne, righe, ordinamento | fatto |
-| 5c | `13c-RICERCA.md` | La ricerca sugli elenchi: `Esegui ricerca rapida`, un solo script | in corso |
-| - | `COLLAUDO-v008.md` | Verifica della ricerca: il parametro del trigger manca, la ricerca non cerca | fatto |
-| - | `COLLAUDO-v007.md` | Verifica delle due maschere sul file reale: nessun errore, cinque ritocchi | fatto |
-| 6 | `14-STAMPE.md` | Registri in PDF per l'ispezione | da fare |
-| 7 | `15-NUOVO-CLIENTE.md` | Procedura di impianto di un locale | da fare |
+| 01 | `01-ANALISI.md` | Normativa, fasi di lavorazione, pericoli, CCP, limiti critici, registri obbligatori | fatto |
+| 02 | `02-DATI.md` | Le 26 tabelle, i campi, le relazioni, le fasi di consegna | fatto |
+| 03 | `03-CONVENZIONI.md` | Come si costruisce dentro FileMaker: file unico, ancore e boe, prefissi | fatto |
+| 04 | `04-PRODOTTO.md` | Cosa cambia per poter **rivendere** la soluzione ad altri locali | fatto |
+| 05 | `05-MONTAGGIO.md` | Creare il file e importare le 21 tabelle | fatto |
+| 06 | `06-RELAZIONI.md` | Grafico a ancore e boe, 42 relazioni, 23 liste valori | fatto |
+| 07 | `07-CALCOLI.md` | Le 13 funzioni personalizzate (esiti, scadenze, GS1-128, partita IVA) | fatto |
+| 08 | `08-SCRIPT.md` | Gli script del motore: avvio, registrazione con non conformita' automatica, lettura etichetta | fatto |
+| 09 | `09-MASCHERE.md` | Le maschere desktop: decisioni, modello elenco+scheda, **misure standard** | fatto |
+| 10 | `10-STAMPE.md` | I registri in PDF per l'ispezione | da fare |
+| 11 | `11-NUOVO-CLIENTE.md` | Procedura di impianto di un locale nuovo | da fare |
 
-Il file `Haccp.fmp12` non sta nel repository: e' binario e non si puo'
-confrontare fra due versioni. Qui stanno la specifica e i pezzi da incollare;
-il file lo costruiamo seguendo `09-MONTAGGIO.md`, e ad ogni traguardo se ne
-esporta il rapporto struttura in `haccp/ddr/` per avere una storia leggibile
-dello schema.
+## Le schede di lavoro — `guide/`
 
-**Architettura: file unico**, non separazione dati/interfaccia, e un file per
-ogni locale. Le motivazioni stanno in `03-CONVENZIONI-FILEMAKER.md`.
+Una maschera per volta, passo per passo, con il disegno in scala, le
+coordinate di ogni oggetto e le prove di collaudo. Si seguono **in ordine**:
+ognuna parte da dove finisce la precedente.
 
-**La soluzione nasce come prodotto**, non come lavoro su misura per un solo
-cliente: le conseguenze di questa scelta stanno in `04-PRODOTTO.md` e vanno
-lette prima di costruire il file.
+| | Scheda | Pagina |
+|---|---|---|
+| 01 | `guide/01-reparti-scheda.md` | <https://claude.ai/artifact/EFA6wMJavrYWEY6wQXnQzu> |
+| 02 | `guide/02-reparti-elenco.md` | <https://claude.ai/artifact/3T9i9JSG3sa88ZKnC2hc1J> |
+| 03 | `guide/03-ricerca.md` | <https://claude.ai/artifact/M8YkvJgCjPHtiLcYYAxM81> |
 
-Ambiente: **FileMaker Pro 22, interfaccia in italiano**, Windows. Le
-convenzioni che ne derivano stanno in `CLAUDE.md`, in questa cartella.
+> **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
+> sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione
+> *Misure standard*, e sono prese dal file reale. Le schede restano per il
+> **metodo** e per il **perche'** di ogni scelta.
 
-## Si comincia da qui
+## Le altre cartelle
 
-Per costruire il file: **`09-MONTAGGIO.md`**. I file da importare stanno in
-`import/schema/` (15 tabelle vuote) e `import/dati/` (6 tabelle gia' piene,
-compresi i 33 punti di controllo dell'analisi HACCP). Una serata di lavoro,
-quasi tutta importazione.
+| | |
+|---|---|
+| `archivio/` | I collaudi, uno per giro di verifica: il diario di cosa si e' rotto e come si e' aggiustato |
+| `ddr/` | Le ultime due esportazioni XML del file reale. Le precedenti stanno nella storia di git (`git log -- haccp/ddr`) |
+| `import/` | I file da importare: `schema/` (15 tabelle vuote), `dati/` (6 gia' piene, compresi i 33 punti di controllo) |
 
-## Ordine di lettura
+---
 
-1. `01-ANALISI-HACCP.md` — cosa chiede la legge e cosa deve registrare il locale
-2. `02-MODELLO-DATI.md` — come si traduce in tabelle
-3. `03-CONVENZIONI-FILEMAKER.md` — come si scrive dentro FileMaker
-4. `04-PRODOTTO.md` — cosa cambia per poterlo rivendere
+## Le tre decisioni che spiegano tutto il resto
 
-## Avvertenza
+**File unico**, non separazione dati/interfaccia, e un file per ogni locale.
+Il perche' sta in `03-CONVENZIONI.md`.
 
-L'analisi qui dentro e' quella tipica di un ristorante con cucina, e i limiti
-critici sono valori di riferimento comuni. **Vanno confrontati con il manuale
-di autocontrollo del locale**: e' quello il documento che fa fede davanti
-all'ispettore, non questo. Dove i due divergono, vince il manuale e noi
-adeguiamo i parametri (che infatti sono dati in tabella, non scritti nel
-codice).
+**Nasce come prodotto**, non come lavoro su misura per un cliente solo. Le
+conseguenze stanno in `04-PRODOTTO.md` e vanno lette **prima** di costruire.
+
+**I limiti critici stanno nei dati, mai nel codice.** Perche' il documento che
+fa fede davanti all'ispettore e' il manuale di autocontrollo del locale, non
+questo. L'analisi qui dentro e' quella tipica di un ristorante con cucina e i
+limiti sono valori di riferimento comuni: **vanno confrontati con il manuale
+del locale**, e dove i due divergono vince il manuale.

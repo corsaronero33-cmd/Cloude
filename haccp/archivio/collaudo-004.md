@@ -38,4 +38,4 @@ che il controllo in accettazione funziona davvero.
 
 ## Conclusione
 
-Aggiunta quella voce, **lo schema e' chiuso**. Si passa a `11-CALCOLI.md`.
+Aggiunta quella voce, **lo schema e' chiuso**. Si passa a `../07-CALCOLI.md`.

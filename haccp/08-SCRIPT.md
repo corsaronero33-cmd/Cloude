@@ -1,6 +1,6 @@
 # Passo 4 — Gli script
 
-Prerequisito: le dodici funzioni create e collaudate (`11-CALCOLI.md`).
+Prerequisito: le dodici funzioni create e collaudate (`07-CALCOLI.md`).
 
 Con le formule il file sa **capire**. Con gli script comincia a **fare**: si
 ricorda chi sei, apre da solo una non conformita' quando una misura e' fuori
@@ -344,7 +344,7 @@ Da eseguire con il cursore su una riga di ricevimento.
 > Mettere `RIC|RigheRicevimento::` stando sul formato nudo darebbe il vuoto:
 > e' l'errore opposto a quello dello script 20. Quando ci sara' la maschera del
 > ricevimento questi riferimenti andranno riscritti col prefisso `RIC|`
-> (debito n. 3 in `DEBITI.md`).
+> (debito n. 3 in `DA-FARE.md`).
 
 ```
 Consenti annullamento utente [ Disattivato ]
@@ -406,7 +406,7 @@ leggerlo. **Un avviso che scatta sempre e' un avviso spento.**
 Il controllo di completezza va fatto dove ha senso, cioe' al **salvataggio
 della riga di ricevimento**: li' il programma sa, da `Prodotti::RichiedeLotto`
 e `Prodotti::RichiedeScadenza`, se *quel* prodotto li esige davvero, e puo'
-bloccare solo chi deve essere bloccato. Vedi `DEBITI.md`.
+bloccare solo chi deve essere bloccato. Vedi `DA-FARE.md`.
 
 **Limite dichiarato:** per adesso lo script compila lotto e scadenza, non il
 prodotto. Agganciare il prodotto dal codice GTIN richiede una relazione in
@@ -504,5 +504,5 @@ Se la sesta dice "conforme" con valore 9, il colpevole e' quasi sempre il
 
 ## Cosa viene dopo
 
-`13-LAYOUT.md`: le maschere. La prima vera e' il ricevimento merci su iPhone,
+`09-MASCHERE.md`: le maschere. La prima vera e' il ricevimento merci su iPhone,
 con la fotocamera e il pulsante che chiama lo script `10`.

@@ -1,12 +1,12 @@
 # Passo 5 — Le maschere per il PC
 
-Prerequisito: motore completo e collaudato (`COLLAUDO-v006.md`).
+Prerequisito: motore completo e collaudato (`archivio/collaudo-006.md`).
 
 > **Questo documento e' la mappa d'insieme**: le decisioni prese una volta, i
 > nomi, il modello elenco/scheda, cosa cambia da un'anagrafica all'altra.
 > La costruzione vera, oggetto per oggetto e con tutte le coordinate, sta nei
 > documenti `13a`, `13b`, ... — **uno per maschera**, nell'ordine in cui si
-> costruiscono. Si comincia da `13a-D_REPARTI-SCHEDA.md`.
+> costruiscono. Si comincia da `guide/01-reparti-scheda.md`.
 
 Si comincia dal back office, e non per comodita': **senza le anagrafiche non
 c'e' niente da monitorare**. I punti di controllo, le attrezzature e i
@@ -19,7 +19,7 @@ da registrare.
 
 ### Nomi
 
-Prefisso **`D_`** per il desktop, come da `03-CONVENZIONI-FILEMAKER.md`.
+Prefisso **`D_`** per il desktop, come da `03-CONVENZIONI.md`.
 Arriveranno poi `T_` per iPad e `F_` per iPhone.
 
 Ogni anagrafica ha **due formati**: l'elenco e la scheda.
@@ -80,7 +80,7 @@ quello viaggia dentro il tema.
 ## Misure standard
 
 **Queste sono le misure del file reale**, rilevate dall'esportazione XML del
-17/09/2026 e verificate in `COLLAUDO-v007.md`. Dove divergono da quello che
+17/09/2026 e verificate in `archivio/collaudo-007.md`. Dove divergono da quello che
 era scritto in `13a` e `13b`, **vince questa tabella**: le guide di
 costruzione erano una proposta, il file e' la verita'.
 
@@ -144,7 +144,7 @@ larghezza.** Si spostano selezionandoli insieme, mai uno per volta.
 | Casella `<OCC>::gCerca` | 273 | 58 | 307 | 32 |
 | Pulsante `Tutti` | 585 | 58 | 95 | 35 |
 
-Dettagli, trigger e parametri: `13c-RICERCA.md`.
+Dettagli, trigger e parametri: `guide/03-ricerca.md`.
 
 ### Pie' di pagina
 
@@ -262,7 +262,7 @@ venti minuti, e poi si ripete uguale su tutte le altre.
 
 ### `D_Reparti elenco`
 
-> Costruzione completa: **`13b-D_REPARTI-ELENCO.md`**. Non si crea da zero,
+> Costruzione completa: **`guide/02-reparti-elenco.md`**. Non si crea da zero,
 > si **duplica la scheda** e si cambia `Visualizza come` in Elenco: cosi' il
 > tema, l'intestazione e i pulsanti arrivano gia' fatti.
 
@@ -288,7 +288,7 @@ quindi la scheda si apre gia' sul reparto giusto.
 ### `D_Reparti scheda`
 
 > Costruzione completa, con il disegno in scala e le coordinate di ogni
-> oggetto: **`13a-D_REPARTI-SCHEDA.md`**. Qui sotto solo l'impianto.
+> oggetto: **`guide/01-reparti-scheda.md`**. Qui sotto solo l'impianto.
 
 `Formati` -> `Nuovo formato/rapporto` -> **Modulo**, su `REP|Reparti`.
 
@@ -369,6 +369,6 @@ dalle maschere e non a mano, il giro e' chiuso.
 
 ## Cosa viene dopo
 
-`14-STAMPE.md`, oppure le maschere per iPhone: dipende da cosa serve prima al
+`10-STAMPE.md`, oppure le maschere per iPhone: dipende da cosa serve prima al
 cliente. La stampa dei registri e' quello che l'ispettore chiede; il telefono
 e' quello che fa compilare il registro davvero.

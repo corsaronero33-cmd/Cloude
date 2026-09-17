@@ -2,8 +2,9 @@
 
 Fonte: `ddr/v008/HACCP_Revisione_6.xml` (Salva come XML, 17/09/2026).
 
-**Esito: un bug che impedisce alla ricerca di funzionare**, un punto minore, e
-un errore mio da correggere nella specifica.
+**Esito: la ricerca funziona, verificata sul file reale.** Nessun errore nel
+file. Due errori miei, corretti qui: avevo segnalato un parametro mancante che
+c'era, e avevo dato una misura sbagliata nella specifica.
 
 ---
 
@@ -19,59 +20,45 @@ un errore mio da correggere nella specifica.
 
 ---
 
-## Il bug: il trigger della casella non passa il parametro
+## Errore mio: avevo dato il parametro per mancante
 
-```
-Edit Box  REP|Reparti::gCerca
-   TRIGGER OnObjectExit -> 92 - Utilita - Cerca | PARAMETRO: (vuoto)
-```
+Avevo scritto che il trigger della casella chiama `92` senza parametro e che
+quindi la ricerca non avrebbe mai cercato niente. **Falso.** Il parametro c'e'
+ed e' quello giusto:
 
-**Cosa succede, passo per passo:**
-
-1. Scrivi `cuc` nella casella e premi Invio.
-2. Parte il trigger e chiama `92` **senza parametro**.
-3. Passo 05: `$cerca = Get ( ParametroScript )` -> **vuoto**.
-4. Passo 07: `IsEmpty ( $cerca )` -> **vero**.
-5. Passo 08: `Mostra tutti i record`.
-6. Passo 09: `Esci dallo script`.
-
-Risultato: **la ricerca non cerchera' mai niente.** Scrivi `cuc`, e ti
-ritrovi tutti i reparti. Nessun messaggio, nessun errore: sembra solo che non
-abbia trovato quello che cercavi.
-
-`Esegui ricerca rapida` non viene mai raggiunto.
-
-**La correzione.** Sulla casella: tasto destro -> `Imposta trigger di script`
--> la riga dell'evento -> `Specifica script` -> riquadro **Parametro script
-facoltativo**:
-
-```
-REP|Reparti::gCerca
+```xml
+<ScriptTrigger action="OnObjectExit">
+  <ScriptReference name="92 - Utilita - Cerca">
+    <Calculation><Text>REP|Reparti::gCerca</Text></Calculation>
+  </ScriptReference>
+</ScriptTrigger>
 ```
 
-**Senza virgolette**, perche' quel riquadro e' un calcolo e deve leggere il
-contenuto del campo, non il suo nome.
+Il parametro sta dentro `<ScriptReference>`, non fra i figli diretti di
+`<ScriptTrigger>`; il mio lettore lo cercava solo al primo livello e non lo
+trovava. Errore dello strumento con cui leggo il DDR, non del file.
+
+**Da qui in avanti**, quando verifico un trigger leggo tutto il sottoalbero,
+non solo i figli diretti. La ricerca nel file reale funziona.
 
 ---
 
-## Punto minore: `OnObjectExit` invece di `OnObjectSave`
+## Unica osservazione rimasta: `OnObjectExit` invece di `OnObjectSave`
 
-Con il parametro corretto funzionerebbero tutti e due. La differenza:
+Funzionano tutti e due, ed e' verificato che funziona. La differenza:
 
 | | Quando scatta |
 |---|---|
 | `OnObjectSave` | solo se **hai cambiato** il contenuto, quando esci |
 | `OnObjectExit` | **ogni volta** che esci, anche senza aver scritto niente |
 
-C'e' un caso in cui si sente. Il cursore e' nella casella, clicchi `Apri` su
-una riga: con `OnObjectExit` uscire dal campo fa comunque partire la ricerca,
-il gruppo trovato cambia sotto al clic, e `Apri` puo' portarti su un record
-diverso da quello che avevi puntato. Con `OnObjectSave`, non avendo scritto
-niente, non succede nulla.
+Il caso in cui si sente: il cursore e' nella casella, clicchi `Apri` su una
+riga. Con `OnObjectExit` uscire dal campo fa comunque ripartire la ricerca, il
+gruppo trovato cambia sotto al clic, e `Apri` puo' portarti su un record
+diverso da quello puntato.
 
-Consiglio di spostarlo su `OnObjectSave`: nella stessa finestra, togli la
-spunta da `OnObjectExit` e mettila su `OnObjectSave`, poi rimetti lo script e
-**il parametro**.
+Non e' urgente e non e' un errore: se capitera' di aprire il reparto sbagliato
+cliccando `Apri` con il cursore ancora nella casella, la causa e' questa.
 
 ---
 
@@ -95,7 +82,7 @@ corrette, non il file.
 
 Il formato e' largo 685: margine sinistro 24, destro 5. Asimmetrico, ma e'
 cosi' da prima della ricerca e la coerenza interna vale piu' della simmetria.
-`13-LAYOUT.md` e `13c-RICERCA.md` sono aggiornati con i numeri veri.
+`../09-MASCHERE.md` e `../guide/03-ricerca.md` sono aggiornati con i numeri veri.
 
 ---
 
@@ -121,7 +108,7 @@ cosi' da prima della ricerca e la coerenza interna vale piu' della simmetria.
 
 ---
 
-## Ritocchi di `COLLAUDO-v007.md` ancora aperti
+## Ritocchi di `collaudo-007.md` ancora aperti
 
 | | Stato |
 |---|---|
@@ -131,5 +118,5 @@ cosi' da prima della ricerca e la coerenza interna vale piu' della simmetria.
 | D — stile `Titolo Riquadro` -> `Titolo maschera` | **non fatto** |
 | E — `D_Menu` sul tema `HACCP` | **non fatto**: e' ancora `Minimalista` |
 
-Nessuno di questi impedisce di andare avanti. Il **parametro del trigger**
-si'.
+Nessuno di questi impedisce di andare avanti. Sono raccolti, insieme a tutto
+il resto di aperto, in `../DA-FARE.md`.

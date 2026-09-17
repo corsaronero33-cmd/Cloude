@@ -191,7 +191,7 @@ uno nuovo.
 
 ## Aggiornamenti: come si spedisce la versione nuova
 
-Si resta a **file unico** (vedi `03-CONVENZIONI-FILEMAKER.md`), ma da
+Si resta a **file unico** (vedi `03-CONVENZIONI.md`), ma da
 rivenditore cambia lo strumento:
 
 1. si sviluppa sulla copia di lavoro;

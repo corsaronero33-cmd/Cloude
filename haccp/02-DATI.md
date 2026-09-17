@@ -1,6 +1,6 @@
 # Modello dati
 
-Tabelle, campi e relazioni. Deriva direttamente da `01-ANALISI-HACCP.md`.
+Tabelle, campi e relazioni. Deriva direttamente da `01-ANALISI.md`.
 
 ---
 
@@ -389,7 +389,7 @@ Attrezzature --< Manutenzioni
 ```
 
 Nel grafico delle relazioni di FileMaker ogni maschera avra' il proprio gruppo
-di occorrenze: vedi `03-CONVENZIONI-FILEMAKER.md`.
+di occorrenze: vedi `03-CONVENZIONI.md`.
 
 ---
 

@@ -1,4 +1,46 @@
-# Debiti tecnici da saldare
+# Da fare
+
+**Tutto quello che e' aperto sta qui dentro.** Se una cosa non e' in questa
+pagina, o e' fatta o non esiste.
+
+Tre sezioni: il **prossimo passo**, i **ritocchi** (piccoli, dalla verifica
+del file reale), i **debiti** (rimandati di proposito, con il motivo).
+
+---
+
+## Prossimo passo
+
+**`D_Menu`.** Il formato esiste gia' come segnaposto: occorrenza `IMP|Impresa`
+(giusta), parte **Navigazione superiore** invece di Intestazione (buona idea,
+quella parte non scorre), ma **e' vuoto e usa il tema `Minimalista`**.
+
+Prima di costruirlo: `Formati` -> `Cambia tema` -> **HACCP**.
+
+Dopo il menu, il giro e' chiuso — si parte dal menu, si va a un'anagrafica, si
+apre un record, si torna — e da li' e' tutta ripetizione: **attrezzature,
+punti di controllo, fornitori, prodotti, operatori**, duplicando la coppia
+elenco+scheda e la ricerca.
+
+---
+
+## Ritocchi
+
+Piccoli, nessuno blocca. Dalla verifica in `archivio/collaudo-007.md`.
+
+| | Cosa | Dove |
+|---|---|---|
+| A | `Apri` sta a x **1**, tocca il bordo: portalo a **24**, e con lui `Codice` a 85 e `Descrizione` a 264 (larghezza 276) | `D_Reparti elenco` |
+| B | L'etichetta di colonna `Ordine` sta a y **113**, le altre tre a **115** | `D_Reparti elenco` |
+| C | La scheda finisce a **452**, l'elenco a **685**: passando da una all'altra la finestra salta. Porta la scheda a 685 e `<<$$UTENTE.Nome>>` a x 425 | `D_Reparti scheda` |
+| D | Lo stile si chiama `Titolo Riquadro` ma e' applicato al titolo dell'intestazione, e i riquadri non esistono piu': rinominalo **`Titolo maschera`** e risalva il tema | tema `HACCP` |
+| E | `OnObjectExit` sulla casella di ricerca: funziona, ma `OnObjectSave` evita che la ricerca riparta uscendo dal campo per cliccare `Apri` | `D_Reparti elenco` |
+
+Le misure a cui riportarsi stanno in `09-MASCHERE.md`, sezione *Misure
+standard*.
+
+---
+
+## Debiti
 
 Cose sapute, rimandate di proposito, con il motivo e il momento in cui vanno
 chiuse. Non sono dimenticanze: sono decisioni di rinviare.
@@ -17,7 +59,7 @@ campi della propria tabella, quindi l'occorrenza nuda basta. Rifarli adesso
 significherebbe rimettere le mani su script gia' finiti per un guadagno che
 arriva due sessioni dopo.
 
-**Quando si salda.** Nella sessione delle maschere (`13-LAYOUT.md`), insieme
+**Quando si salda.** Nella sessione delle maschere (`09-MASCHERE.md`), insieme
 alla pulizia dei 23 formati automatici. **Iniziata:** le maschere desktop si
 costruiscono sulle occorrenze ancora, quindi i formati automatici diventano
 cancellabili mano a mano che vengono sostituiti. Li' si creano i formati definitivi e

@@ -52,7 +52,7 @@ la tabella con tutti i campi. Un passaggio in meno.
 
 
 FileMaker crea la tabella con il nome del file e tutti i campi di tipo
-**Testo**. I tipi si sistemano dopo, come descritto in `09-MONTAGGIO.md`.
+**Testo**. I tipi si sistemano dopo, come descritto in `../05-MONTAGGIO.md`.
 
 ---
 

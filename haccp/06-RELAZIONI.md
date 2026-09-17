@@ -1,7 +1,7 @@
 # Passo 2 — Il grafico delle relazioni
 
 Prerequisito: le 21 tabelle esistono, con i tipi sistemati e i cinque campi di
-sistema funzionanti (`09-MONTAGGIO.md`).
+sistema funzionanti (`05-MONTAGGIO.md`).
 
 Tempo stimato: **una serata.** E' un lavoro di pazienza, non di difficolta'.
 
@@ -315,7 +315,7 @@ Alla fine, esporta di nuovo il rapporto struttura in `haccp/ddr/v002/`.
 
 ## Cosa viene dopo
 
-`11-CALCOLI.md`: l'esito conforme o non conforme letto dai limiti del punto di
+`07-CALCOLI.md`: l'esito conforme o non conforme letto dai limiti del punto di
 controllo, il semaforo delle scadenze, la scadenza dopo apertura, la
 validazione della partita IVA e il parser del codice a barre GS1-128 che tira
 fuori lotto e data di scadenza dal cartone.

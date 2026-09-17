@@ -341,7 +341,7 @@ lo dici e lo sistemo.
 ## Cosa viene dopo, in ordine
 
 1. **Relazioni** fra le tabelle (gruppi a ancora e boe).
-2. **`05-CALCOLI.md`**: esito conforme/non conforme letto dai limiti, semaforo
+2. **`07-CALCOLI.md`**: esito conforme/non conforme letto dai limiti, semaforo
    scadenze, scadenza dopo apertura, partita IVA, parser GS1-128.
 3. **Script di avvio** e caricamento dei parametri in variabili globali.
 4. **Prima maschera vera**: ricevimento merci su iPhone, con fotocamera e

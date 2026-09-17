@@ -3,7 +3,7 @@
 Pagina con il disegno in scala:
 <https://claude.ai/artifact/3T9i9JSG3sa88ZKnC2hc1J>
 
-Prerequisito: `13a-D_REPARTI-SCHEDA.md` finito e collaudato.
+Prerequisito: `01-reparti-scheda.md` finito e collaudato.
 
 **Non si costruisce, si duplica.** La scheda porta gia' il tema `Haccp`,
 l'intestazione scura, i pulsanti e il pie' di pagina. Qui cambiano il tipo di
@@ -18,8 +18,8 @@ Le X delle colonne, che valgono per **tutti** gli elenchi del progetto:
 > **Attenzione, misure superate.** Le coordinate di questo documento sono
 > quelle *proposte*. Costruendo, le misure sono cambiate in meglio (campi piu'
 > alti, pulsanti sul blu senza fascia bianca, niente riquadro). Le misure
-> valide sono in **`13-LAYOUT.md`, sezione *Misure standard***; il perche' di
-> ogni differenza sta in `COLLAUDO-v007.md`. Qui restano validi il **metodo**
+> valide sono in **`../09-MASCHERE.md`, sezione *Misure standard***; il perche' di
+> ogni differenza sta in `../archivio/collaudo-007.md`. Qui restano validi il **metodo**
 > e le **motivazioni**.
 
 ---

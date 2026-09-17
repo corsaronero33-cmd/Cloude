@@ -10,7 +10,7 @@ Valgono in aggiunta al `CLAUDE.md` alla radice del repository.
 | Programma | **Claris FileMaker Pro 22** (2025) |
 | Lingua dell'interfaccia | **italiano** |
 | Sistema | Windows |
-| File | `Haccp.fmp12`, un file unico (vedi `03-CONVENZIONI-FILEMAKER.md`) |
+| File | `Haccp.fmp12`, un file unico (vedi `03-CONVENZIONI.md`) |
 | Tema dei formati | **`HACCP`**, copia di **Blu Apex** con l'intestazione `#1B3A5C` |
 
 Conseguenze pratiche, tutte e tre importanti:
@@ -57,9 +57,22 @@ Si scrive un codice colore **solo** dove il tema non arriva, e sono tre casi:
 Elencare hex dove il tema gia' provvede fa perdere tempo e, alla prima
 maschera dimenticata, produce due grigi diversi nello stesso file.
 
+## Dove sta cosa
+
+| | |
+|---|---|
+| Quello che e' aperto | **`DA-FARE.md`**, e solo li'. Chiusa una voce, si toglie da li' |
+| Le misure dei formati | **`09-MASCHERE.md`**, sezione *Misure standard* |
+| Le schede di lavoro | `guide/`, numerate nell'ordine in cui si costruiscono |
+| I collaudi | `archivio/`, uno per giro di verifica |
+
+Non si aprono documenti nuovi in radice: una cosa nuova o entra in uno dei
+nove riferimenti numerati, o e' una scheda in `guide/`, o e' un collaudo in
+`archivio/`.
+
 ## Le misure stanno in un posto solo
 
-Coordinate e altezze dei formati: **`13-LAYOUT.md`, sezione *Misure
+Coordinate e altezze dei formati: **`09-MASCHERE.md`, sezione *Misure
 standard***. Quella tabella e' rilevata dal file reale, non proposta a
 tavolino.
 
@@ -68,8 +81,8 @@ li'**, non si reinventano. Se costruendo emerge che una misura non va, si
 cambia nel file e poi si aggiorna quella tabella: **il file vince sempre sulla
 guida**, e la guida va allineata prima di passare alla maschera successiva.
 
-Le guide `13a`, `13b`, ... restano per il metodo e per il perche' delle
-scelte. Le loro tabelle di coordinate sono storia.
+Le schede in `guide/` restano per il metodo e per il perche' delle scelte.
+Le loro tabelle di coordinate sono storia.
 
 ## Come si consegna il lavoro
 
@@ -96,6 +109,19 @@ Le istruzioni vanno scritte come **tabella di marcia**:
 I documenti numerati (`01-`, `02-`, ...) restano come riferimento e come
 registro delle decisioni. Le liste di lavoro si pubblicano come pagina web,
 perche' si tengono aperte di fianco a FileMaker e le spunte si salvano.
+
+## Leggere un DDR esportato
+
+L'esportazione `Salva come XML` porta i **formati per intero** — ogni oggetto
+con le sue coordinate — ma **non il corpo degli script** e **non le spunte
+della Ricerca rapida**. Quelle due cose si verificano solo dal comportamento,
+con le prove di collaudo.
+
+Quando si cerca un valore dentro l'XML si guarda **tutto il sottoalbero**, mai
+i soli figli diretti. Esempio vero: il parametro di un trigger non sta sotto
+`<ScriptTrigger>` ma un livello piu' in fondo, dentro `<ScriptReference>`.
+Cercandolo al primo livello risulta mancante, e si segnala un errore che non
+c'e'.
 
 ## Lingua
 

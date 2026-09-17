@@ -70,7 +70,8 @@ una storia leggibile:
   database) in XML e si committa in `haccp/ddr/`;
 - si tiene un campo `Versione` nella tabella `Impresa` o in `Impostazioni`,
   aggiornato ad ogni rilascio;
-- le modifiche si annotano in `haccp/DIARIO.md`.
+- ogni verifica del DDR contro la specifica si annota in `archivio/`,
+  un file per giro (`archivio/collaudo-008.md` e' l'ultimo).
 
 Cosi' fra un anno si puo' rispondere a "quando e' comparso questo campo e
 perche'" guardando un diff, invece che la memoria.
@@ -134,7 +135,7 @@ maschera lontana che non stavi guardando.
 ## Campi di sistema
 
 Ogni tabella ha `Id`, `CreatoIl`, `CreatoDa`, `ModificatoIl`, `ModificatoDa`
-come descritto in `02-MODELLO-DATI.md`.
+come descritto in `02-DATI.md`.
 
 Tutti e cinque vanno impostati con **"Non consentire la modifica del valore
 durante l'immissione dati"**. Non e' pignoleria: e' il requisito di

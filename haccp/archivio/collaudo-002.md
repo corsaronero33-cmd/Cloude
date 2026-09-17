@@ -15,7 +15,7 @@ pulizie.
 ## 1. I tipi dei campi non sono stati convertiti — BLOCCANTE
 
 Nel file tutti i campi sono **Testo**, tranne `CreatoIl` e `ModificatoIl` che
-sono correttamente Data e ora. Il passo 4 di `09-MONTAGGIO.md` e' rimasto
+sono correttamente Data e ora. Il passo 4 di `../05-MONTAGGIO.md` e' rimasto
 indietro.
 
 Non e' un dettaglio estetico, e' quello che impedisce di andare avanti:
@@ -139,7 +139,7 @@ relazione e' nato il campo `idAttrezzatuea` — con il refuso, e dentro la
 tabella sbagliata.
 
 **Colpa del documento, non tua:** nel grafico i due nomi sono adiacenti
-nell'elenco di scelta e `10-RELAZIONI.md` non diceva esplicitamente quale
+nell'elenco di scelta e `../06-RELAZIONI.md` non diceva esplicitamente quale
 fosse la tabella di base di ogni occorrenza. Adesso lo dice.
 
 Rimedio:

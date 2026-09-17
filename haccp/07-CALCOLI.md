@@ -1,6 +1,6 @@
 # Passo 3 — I calcoli
 
-Prerequisito: schema chiuso (`COLLAUDO-v004.md`).
+Prerequisito: schema chiuso (`archivio/collaudo-004.md`).
 
 Qui il programma comincia a ragionare: capire da solo se una misura e' fuori
 limite, quanto manca a una scadenza, se una partita IVA e' scritta bene, e
@@ -59,7 +59,7 @@ tabella senza relazioni.
 1. Tabella `Parametri`, nuovo campo `gGiorniAvviso`, tipo **Numero**
 2. `Opzioni` -> `Archiviazione` -> spunta **"Utilizza archiviazione globale"**
 3. Lo script di avvio lo riempira' leggendo il record con
-   `Chiave = "GiorniAvvisoScadenza"` (lo scriviamo in `12-SCRIPT.md`)
+   `Chiave = "GiorniAvvisoScadenza"` (lo scriviamo in `08-SCRIPT.md`)
 
 Finche' lo script non c'e', scrivici dentro `7` a mano per provare.
 
@@ -417,6 +417,6 @@ che dentro una maschera.
 
 ## Cosa viene dopo
 
-`12-SCRIPT.md`: lo script di avvio che carica i parametri, quello che registra
+`08-SCRIPT.md`: lo script di avvio che carica i parametri, quello che registra
 una rilevazione aprendo da sola la non conformita' quando la misura e' fuori
 limite, e quello che scansiona il cartone in accettazione merce.

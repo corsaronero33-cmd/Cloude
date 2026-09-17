@@ -48,4 +48,4 @@ Il **motore e' completo**. Il file sa:
 Quello che manca e' **l'interfaccia**: oggi tutto questo si comanda dai
 formati automatici dell'importazione, che nessun operatore potrebbe usare.
 
-Prossimo passo: `13-LAYOUT.md`, a partire dal ricevimento merci su iPhone.
+Prossimo passo: `../09-MASCHERE.md`, a partire dal ricevimento merci su iPhone.
