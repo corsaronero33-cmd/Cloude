@@ -120,14 +120,58 @@ nome.
 | Pulsante `Tutti` | 588 | 57 | 73 | 35 | come gli altri pulsanti |
 
 **Segnaposto:** Ispettore -> scheda **Dati** -> **Testo segnaposto** ->
-`Cerca...`. Risparmia l'etichetta.
+`Cerca...`.
 
-**Trigger:** tasto destro sulla casella -> `Imposta trigger di script` ->
-**OnObjectSave** -> `92 - Utilita - Cerca`, e nel **parametro facoltativo**,
-come calcolo: `REP|Reparti::gCerca`.
+**Spunta della Ricerca rapida:** va **tolta** da questa casella (Ispettore ->
+scheda Dati), altrimenti il programma cerca dentro la casella di ricerca.
 
-E' il parametro del trigger che porta il testo. Per questo lo stesso script
-funzionera' su tutti gli altri elenchi senza toccarci niente.
+### Il trigger, finestra per finestra
+
+| # | Dove sei | Cosa fai |
+|---|---|---|
+| 1 | Sul formato, in modifica | Clicchi la casella `gCerca` per selezionarla |
+| 2 | | Tasto destro -> **Imposta trigger di script...** (equivale a `Formati` -> `Imposta trigger di script`) |
+| 3 | Finestra **Imposta trigger di script** | Nell'elenco degli eventi, spunta **OnObjectSave** |
+| 4 | Finestra **Specifica script** (si apre da sola) | Scegli `92 - Utilita - Cerca` |
+| 5 | Stessa finestra, in basso | Riquadro **Parametro script facoltativo**. Se accanto c'e' **Modifica...**, premilo: si apre la finestra di calcolo |
+| 6 | Nel parametro | Scrivi `REP\|Reparti::gCerca` — **senza virgolette** |
+| 7 | | OK fino a chiudere tutto |
+
+**Qui le virgolette NON ci vanno, ed e' l'opposto di tutti gli altri parametri
+del progetto.** Il riquadro del parametro e' un **calcolo**:
+
+- `REP|Reparti::gCerca` -> FileMaker legge **il contenuto** della casella e
+  passa allo script `cuc`;
+- `"REP|Reparti::gCerca"` -> FileMaker passa allo script **quelle 21 lettere**,
+  e lo script cerchera' i reparti che contengono la parola "REP".
+
+La regola: **fra virgolette un testo fisso, senza virgolette il nome di un
+campo**.
+
+**Perche' OnObjectSave e non OnObjectExit.** `OnObjectSave` scatta solo se hai
+**cambiato** il contenuto, uscendo con `Invio`, `Tab` o un clic fuori.
+`OnObjectExit` scatterebbe ogni volta che esci, anche passandoci sopra con il
+Tab senza scrivere niente, e rifarebbe la stessa ricerca a vuoto.
+
+### Tutti i parametri del progetto, in un posto solo
+
+| Chi chiama | Dove sta | Script | Parametro |
+|---|---|---|---|
+| Pulsante `← Elenco` | D_Reparti scheda | `90` | `"D_Reparti elenco"` |
+| Pulsante `← Menù` | D_Reparti elenco | `90` | `"D_Menu"` |
+| Pulsante `Apri` | D_Reparti elenco, nel corpo | `90` | `"D_Reparti scheda"` |
+| **Trigger OnObjectSave** | sulla casella `gCerca` | `92` | `REP\|Reparti::gCerca` — **senza virgolette** |
+| **Trigger OnLayoutEnter** | su D_Reparti elenco | `91` | *nessuno* |
+| Pulsante `Tutti` | D_Reparti elenco | `91` | *nessuno* |
+| Pulsanti `Nuovo`, `Elimina` | entrambi i formati | *passo script diretto* | *—* |
+
+I primi tre passano **un testo fisso** (il nome di un formato) e vogliono le
+virgolette. Il quarto passa **il contenuto di un campo** e non le vuole.
+
+**Perche' il parametro esiste.** Lo script `92` non nomina nessun campo e
+nessuna tabella: e' la casella che gli passa il proprio contenuto. Sull'elenco
+dei fornitori bastera' scrivere `FOR|Fornitori::gCerca` nel parametro di
+**quella** casella, senza toccare lo script.
 
 **Pulsante `Tutti`:** Esegui script `91 - Reparti - Entra nell'elenco`, senza
 parametro. Chiama `91` e non `92` perche' deve fare esattamente quello che fa
@@ -187,7 +231,8 @@ Per ogni anagrafica — **lo script `92` non si tocca**:
 
 1. Campo `gCerca` globale nella sua tabella.
 2. Casella e pulsante `Tutti` sull'elenco, alle stesse misure.
-3. Nel parametro del trigger: `<OCC>|<Tabella>::gCerca`, quella di casa sua.
+3. Nel parametro del trigger: `<OCC>|<Tabella>::gCerca`, quella di casa sua,
+   **senza virgolette**. Per i fornitori: `FOR|Fornitori::gCerca`.
 4. Un `Imposta campo` in cima al suo script `91`.
 5. Le spunte della Ricerca rapida.
 
