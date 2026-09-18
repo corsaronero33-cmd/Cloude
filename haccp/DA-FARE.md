@@ -10,14 +10,15 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**`D_Menu`** — scheda di lavoro: `guide/04-menu.md`.
+**Le quattro anagrafiche meccaniche** — scheda di lavoro:
+`guide/05-anagrafiche.md`.
 
-Dodici pulsanti, di cui uno solo funzionante: gli altri diranno "non ancora
-pronto". Finito quello, il giro e' chiuso — menu, anagrafica, record,
-indietro — e da li' in avanti e' tutta ripetizione.
+Attrezzature, Fornitori, Prodotti, Operatori: stessa procedura in sette passi,
+duplicando la coppia elenco+scheda dei reparti. La scheda porta le coordinate
+di Attrezzature per intero e i dati pronti per le altre tre.
 
-Poi le cinque anagrafiche (attrezzature, punti di controllo, fornitori,
-prodotti, operatori), duplicando la coppia elenco+scheda e la ricerca.
+Poi **PuntiControllo**, che avra' una scheda sua: e' la maschera piu'
+importante del back office, diciannove campi e dieci tendine.
 
 ---
 
