@@ -95,6 +95,39 @@ database`, oppure `File > Salva con nome > XML`) e archiviato in
 schema che vive dentro un file binario, e per verificare il lavoro fatto
 invece di fidarsi.
 
+## Come si numerano gli script
+
+Il numero dice **che tipo di script e'**, non quanti ne esistono. Non e' un
+progressivo: due script possono avere lo stesso numero, e spesso **devono**.
+
+Il nome e' fatto di tre pezzi: `NN - Ambito - Cosa fa`.
+
+| Numero | A cosa serve | Quanti |
+|---|---|---|
+| `00` | avvio del file | uno |
+| `01`, `02` | utilita' chiamate dall'avvio | uno ciascuna |
+| `10` | ricevimento merci | uno |
+| `20` | registrazione di una rilevazione | uno |
+| `90` | navigazione fra i formati | **uno per tutto il file** |
+| `91` | entrare in un elenco: svuota la ricerca, mostra tutti, ordina | **uno per tabella** |
+| `92` | ricerca rapida | **uno per tutto il file** |
+
+Quindi `91 - Reparti - Entra nell'elenco` e
+`91 - Attrezzature - Entra nell'elenco` **hanno lo stesso 91**, e cosi' avranno
+quelli di fornitori, prodotti, operatori e punti di controllo.
+
+**Perche' non 93, 94, 95.** Perche' il numero smetterebbe di dire qualcosa.
+Con `91` ovunque, nell'elenco degli script i sei "entra nell'elenco" stanno
+tutti insieme e si vede a colpo d'occhio che sono la stessa cosa applicata a
+sei tabelle. Con numeri diversi diventano sei script scollegati, e il
+settimo non si sa piu' dove metterlo.
+
+**La regola per decidere il numero di uno script nuovo:** se fa una cosa che
+esiste gia' su un'altra tabella, prende **lo stesso numero** e cambia
+l'ambito. Se fa una cosa nuova, prende un numero nuovo nella decina giusta.
+
+FileMaker dei numeri non se ne accorge: servono a noi.
+
 ## Una maschera per volta, sempre lo stesso formato
 
 Le schede di lavoro in `guide/` hanno tutte la stessa forma, e non si cambia:

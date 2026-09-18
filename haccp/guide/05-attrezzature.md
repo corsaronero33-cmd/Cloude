@@ -51,6 +51,13 @@ script **con dentro i riferimenti vecchi** e non te lo dice. Un
 `Ordina record` lasciato sui reparti non da' errore: ordina secondo una
 tabella che non c'entra, cioe' non ordina.
 
+**Sì, lo stesso numero 91.** Non e' un progressivo: il numero dice *che tipo
+di script e'*, e l'ambito in mezzo dice *di quale tabella*. Avranno tutti `91`
+anche fornitori, prodotti, operatori e punti di controllo — cosi' nell'elenco
+degli script stanno insieme e si vede che sono la stessa cosa su sei tabelle.
+Con 93, 94, 95 diventerebbero sei script scollegati. La regola completa e' in
+`../CLAUDE.md`.
+
 **Perche' `Codice` e non `Ordine`.** I reparti hanno `Ordine` perche' si
 vogliono in un ordine deciso da noi. Le attrezzature no: quel campo non esiste
 nella tabella, e l'ordine alfabetico di codice e' quello giusto.
