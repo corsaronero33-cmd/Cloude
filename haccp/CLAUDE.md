@@ -95,6 +95,24 @@ database`, oppure `File > Salva con nome > XML`) e archiviato in
 schema che vive dentro un file binario, e per verificare il lavoro fatto
 invece di fidarsi.
 
+## Una maschera per volta, sempre lo stesso formato
+
+Le schede di lavoro in `guide/` hanno tutte la stessa forma, e non si cambia:
+
+1. **Una maschera sola per scheda.** Mai due, mai quattro. Anche quando la
+   procedura e' identica, la scheda successiva si prepara **dopo** che la
+   precedente e' collaudata.
+2. **Il disegno in scala** della maschera finita, con le misure.
+3. **Fasi numerate.** Ogni fase e' una tabella *dove sei / cosa fai*, oppure
+   un elenco numerato: percorsi di menu per esteso, un clic per riga.
+4. Le tabelle di coordinate **dentro** la fase che le usa, mai da sole.
+5. Ogni scelta non ovvia ha **una riga di perche'**, subito sotto.
+6. **Un collaudo numerato** in fondo, con scritto per ogni prova cosa deve
+   succedere e quale fase rifare se non succede.
+
+Un elenco di dati senza i passi non e' una scheda di lavoro: e' una tabella,
+e va dentro una fase o in appendice.
+
 ## Come si scrivono le istruzioni operative
 
 Chi lavora al file sta davanti a FileMaker, non sta leggendo un manuale.

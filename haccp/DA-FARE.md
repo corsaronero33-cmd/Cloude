@@ -10,15 +10,14 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**Le quattro anagrafiche meccaniche** — scheda di lavoro:
-`guide/05-anagrafiche.md`.
+**`D_Attrezzature`** — scheda di lavoro: `guide/05-attrezzature.md`.
 
-Attrezzature, Fornitori, Prodotti, Operatori: stessa procedura in sette passi,
-duplicando la coppia elenco+scheda dei reparti. La scheda porta le coordinate
-di Attrezzature per intero e i dati pronti per le altre tre.
+Dieci fasi, dallo stampo dei reparti. Le stesse dieci varranno per Fornitori,
+Prodotti e Operatori: cambiano i campi, non i passi. Per ultima
+**PuntiControllo**, che avra' una scheda sua.
 
-Poi **PuntiControllo**, che avra' una scheda sua: e' la maschera piu'
-importante del back office, diciannove campi e dieci tendine.
+Una anagrafica per volta: la scheda della successiva si prepara quando la
+precedente e' collaudata.
 
 ---
 
