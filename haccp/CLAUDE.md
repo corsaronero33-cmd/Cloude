@@ -70,6 +70,47 @@ Non si aprono documenti nuovi in radice: una cosa nuova o entra in uno dei
 nove riferimenti numerati, o e' una scheda in `guide/`, o e' un collaudo in
 `archivio/`.
 
+## Misure vincolanti e misure di partenza
+
+Chi costruisce **non segue le misure alla lettera**, e fa bene: davanti ha i
+caratteri veri del tema, i margini interni veri dei campi e il
+ridimensionamento vero di Windows. Le misure delle guide sono calcolate su un
+modello, non misurate su uno schermo.
+
+Percio' ogni misura va data dicendo **a quale delle due famiglie appartiene**.
+
+### Vincolanti — sono relazioni, non numeri
+
+Se saltano si vede, o qualcosa si rompe. Il valore puo' cambiare; quello che
+non puo' cambiare e' che **tutti gli oggetti coinvolti abbiano lo stesso**.
+
+| Vincolo | Se non lo rispetti |
+|---|---|
+| Etichetta di colonna e campo sotto: **stessa X, stessa larghezza** | l'intestazione scivola rispetto ai dati |
+| **Tutti** gli oggetti chiudono allo stesso bordo destro (oggi 680) | il margine destro balla da una maschera all'altra |
+| Margine sinistro uguale ovunque (oggi 24) | idem a sinistra |
+| Fascia blu **alta uguale** su tutti i formati | la finestra "salta" passando da una maschera all'altra |
+| Passo verticale **costante dentro una maschera** | le righe sembrano storte |
+| Elenco e scheda della stessa anagrafica **larghi uguali** | la finestra cambia misura a ogni `Apri` |
+
+### Di partenza — cambiale quando serve
+
+Larghezza dei singoli campi, altezza delle parti, X intermedie delle colonne,
+valore del passo verticale (36 o 40, purche' costante), altezza dei riquadri.
+Sono numeri che funzionano, non numeri sacri.
+
+### Come si scrive una guida, di conseguenza
+
+- Le misure vincolanti si danno **come relazione**: "chiude a 680, dove
+  chiudono il nome dell'operatore e l'ultima colonna", non "larghezza 95".
+- Le misure di partenza si danno come numero, e basta.
+- Quando una tabella di coordinate contiene le une e le altre, **le vincolanti
+  vanno segnate**.
+
+E quando dal DDR risulta che il file ha misure diverse: **si aggiorna la
+tabella delle misure standard, non il file**. Vale la regola gia' scritta piu'
+sotto — il file vince sulla guida.
+
 ## Le misure stanno in un posto solo
 
 Coordinate e altezze dei formati: **`09-MASCHERE.md`, sezione *Misure
