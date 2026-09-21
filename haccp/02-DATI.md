@@ -74,9 +74,9 @@ Valgono per **tutte** le tabelle, e non si ripetono negli elenchi sotto.
 Le chiavi esterne si chiamano `Id` piu' il nome della tabella puntata al
 singolare: `IdFornitore`, `IdLotto`, `IdPuntoControllo`.
 
-Perche' UUID e non un numero progressivo: i record nascono anche su un
+Perche' IDUU e non un numero progressivo: i record nascono anche su un
 dispositivo mobile, e un progressivo assegnato dal server obbliga a essere
-connessi nel momento esatto della creazione. L'UUID no.
+connessi nel momento esatto della creazione. L'IDUU no.
 
 ---
 

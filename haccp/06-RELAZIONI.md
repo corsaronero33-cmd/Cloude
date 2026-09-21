@@ -216,7 +216,7 @@ Ancora: **`MOD|TipiAttivita`**
 | `MOD\|TipiAttivita` | `Codice` | = | `MOD\|ModelliPianoSanificazione` | `CodiceTipoAttivita` |
 
 Qui il collegamento e' sul **codice** e non sull'`Id`: i modelli sono dati di
-prodotto, scritti da noi, e il codice `RC` e' piu' leggibile di un UUID quando
+prodotto, scritti da noi, e il codice `RC` e' piu' leggibile di un IDUU quando
 si guarda il grafico o si scrive lo script di impianto.
 
 E' l'unica eccezione, e vale solo per le tabelle modello.
@@ -289,7 +289,7 @@ spunta **"Mostra solo i valori dal secondo campo"**.
 | `vl_Reparti` | `REP\|Reparti` | `Id` | `Descrizione` |
 | `vl_PuntiControllo` | `PCO\|PuntiControllo` | `Id` | `Descrizione` |
 
-Cosi' l'operatore vede "Rossi Carni Srl" e il database memorizza l'UUID. E' il
+Cosi' l'operatore vede "Rossi Carni Srl" e il database memorizza l'IDUU. E' il
 motivo per cui le chiavi possono essere illeggibili senza che a nessuno
 importi.
 

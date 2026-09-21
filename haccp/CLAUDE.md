@@ -95,6 +95,36 @@ database`, oppure `File > Salva con nome > XML`) e archiviato in
 schema che vive dentro un file binario, e per verificare il lavoro fatto
 invece di fidarsi.
 
+## Campi Id: Menu a comparsa, mai Menu a discesa
+
+Un campo `Id...` contiene un **IDUU**, trentasei caratteri senza significato.
+Sulla maschera non deve comparire mai, nemmeno per un attimo.
+
+La differenza sta nel **tipo di controllo**, non nella lista valori:
+
+| Controllo | Cosa mostra il campo a riposo |
+|---|---|
+| **Menu a discesa** | il **valore memorizzato** — cioe' l'IDUU |
+| **Menu a comparsa** | il **secondo campo** della lista valori — cioe' `Cucina` |
+
+Con tutti e due la tendina aperta mostra "Cucina" e il database scrive
+l'IDUU: la differenza si vede **dopo**, quando si esce dal campo.
+
+Quindi:
+
+- campo che contiene un **Id** e lista valori a **due campi**
+  (`vl_Reparti`, `vl_Fornitori`, `vl_Attrezzature`, `vl_Operatori`,
+  `vl_Prodotti`, `vl_PuntiControllo`) -> **Menu a comparsa**;
+- campo che contiene **il valore stesso** e lista a un campo solo
+  (`vl_SiNo`, `vl_TipoAttrezzatura`, `vl_Frequenza`...) -> **Menu a discesa**,
+  che in piu' lascia scrivere e completa da solo.
+
+**L'effetto collaterale, da sapere.** Il Menu a comparsa mostra **niente** se
+il valore memorizzato non e' piu' nella lista — per esempio un reparto
+cancellato. Il campo sembra vuoto invece di mostrare un Id orfano. E' il
+comportamento giusto per chi compila, ma quando si va a caccia di dati sballati
+bisogna ricordarsene.
+
 ## Come si numerano gli script
 
 Il numero dice **che tipo di script e'**, non quanti ne esistono. Non e' un

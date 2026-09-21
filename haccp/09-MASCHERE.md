@@ -319,9 +319,13 @@ Aggiunge due cose:
 **Menu a discesa** con la lista `vl_TipoAttrezzatura`. Idem per `Attivo` con
 `vl_SiNo`.
 
-**Il reparto.** Il campo `IdReparto` contiene un UUID, che non si puo' mostrare
-a nessuno. Si mette il campo con controllo **Menu a discesa** e lista
-**`vl_Reparti`**: l'operatore vede "Cucina", il database memorizza l'UUID.
+**Il reparto.** Il campo `IdReparto` contiene un IDUU, che non si puo' mostrare
+a nessuno. Si mette il campo con controllo **Menu a comparsa** e lista
+**`vl_Reparti`**: l'operatore vede "Cucina" e continua a vederla anche dopo
+aver scelto, il database memorizza l'IDUU.
+
+Con **Menu a discesa** invece, appena si esce dal campo ricompare l'IDUU: la
+regola completa e' in `CLAUDE.md`.
 
 Sull'**elenco** invece il campo giusto da mostrare non e' `IdReparto` ma
 `ATT|Reparti::Descrizione`, che arriva dalla relazione: nell'elenco si legge e
@@ -355,7 +359,7 @@ Nell'elenco tieni poche colonne: `Codice`, `Descrizione`, `Tipo`,
 | Dal menu, pulsante Reparti | si apre `D_Reparti elenco` |
 | Pulsante Nuovo, compili, torni all'elenco | il reparto nuovo c'e' |
 | Pulsante Apri su una riga | la scheda si apre su **quel** reparto |
-| Su `D_Attrezzature scheda`, tendina Reparto | mostra le descrizioni, non gli UUID |
+| Su `D_Attrezzature scheda`, tendina Reparto | mostra le descrizioni, non gli IDUU |
 | Salvi e torni all'elenco | la colonna Reparto mostra la descrizione giusta |
 | Crei un punto di controllo completo | le tendine propongono i valori giusti |
 | Esci e riapri il file | lo script di avvio ti porta dove previsto |

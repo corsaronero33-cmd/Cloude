@@ -111,7 +111,7 @@ sotto: tutto il resto resta Testo, ed e' giusto cosi'.
 
 > Regola generale: nel dubbio, **Testo**. Un codice fiscale, un CAP o una
 > partita IVA sono testo, non numeri: se li fai numerici perdi gli zeri
-> iniziali. Vale anche per `Id`, che contiene un UUID.
+> iniziali. Vale anche per `Id`, che contiene un IDUU.
 
 L'importazione crea **sempre** campi di tipo Testo: non esiste un'opzione per
 tipizzarli in ingresso. Non e' un errore, e' il funzionamento normale.
@@ -221,7 +221,7 @@ e `OrarioAtteso2`.
 
 ## Passo 5 — I campi di sistema
 
-> **`Id` resta di tipo Testo, ed e' giusto cosi'.** Contiene un UUID, cioe' una
+> **`Id` resta di tipo Testo, ed e' giusto cosi'.** Contiene un IDUU, cioe' una
 > stringa: `Get ( UUID )` restituisce testo, non un numero. Di `Id` si cambia
 > il comportamento, non il tipo. Vale lo stesso per `CreatoDa` e
 > `ModificatoDa`, che contengono nomi di account.

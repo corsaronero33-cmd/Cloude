@@ -9,7 +9,7 @@ La prima anagrafica duplicata dallo stampo dei reparti. **Una maschera per
 volta**: Fornitori, Prodotti e Operatori dopo, con la stessa procedura.
 
 Porta due cose nuove: i **riquadri** per le schede con tanti campi, e il
-**campo collegato** — un UUID che l'operatore non deve vedere mai.
+**campo collegato** — un IDUU che l'operatore non deve vedere mai.
 
 Dieci fasi. Le stesse dieci varranno per le prossime quattro anagrafiche:
 cambiano i campi, non i passi.
@@ -166,7 +166,7 @@ e **460** per i campi (larghi 200). La colonna destra chiude a **660**.
 | 72 | Codice | `Codice` | — | Matricola | `Matricola` | — |
 | 108 | Descrizione | `Descrizione` | — | Marca | `Marca` | — |
 | 144 | Tipo | `Tipo` | **tendina** `vl_TipoAttrezzatura` | Modello | `Modello` | — |
-| 180 | Reparto | `IdReparto` | **tendina** `vl_Reparti` | Anno | `AnnoInstallazione` | a destra |
+| 180 | Reparto | `IdReparto` | **Menu a comparsa** `vl_Reparti` | Anno | `AnnoInstallazione` | a destra |
 
 ### Riquadro 2
 
@@ -178,32 +178,66 @@ e **460** per i campi (larghi 200). La colonna destra chiude a **660**.
 | 404 | Note | `Note` | **x 143, largh. 517, alt. 60** — arriva a 660 | | | |
 
 **Le tendine si mettono dopo.** Disegna prima tutti e quattordici i campi, poi
-torna sui tre che le vogliono: `Formato` › `Controllo` › Menu a discesa.
+torna sui tre che le vogliono: `Formato` › `Controllo`. **`Tipo` e `Attivo`
+vogliono Menu a discesa, `IdReparto` vuole Menu a comparsa** — il perche' e'
+nella fase 6.
 
 **Le etichette sono corte per forza.** Larghe 88 non ci sta "Ultima
 manutenzione": si scrive **"Ultima manut."**. E' il prezzo delle due colonne.
 
 ---
 
-## Fase 6 — Il campo collegato
+## Fase 6 — Il campo collegato, e il controllo giusto
 
-`IdReparto` contiene un **UUID**: trentasei caratteri senza significato.
-La soluzione e' **diversa sulla scheda e sull'elenco**.
+`IdReparto` contiene un **IDUU**: trentasei caratteri senza significato. Sulla
+maschera non deve comparire mai, **nemmeno dopo aver scelto**.
 
-| Dove | Quale campo | Come | Perche' |
+**Qui si sbaglia facilmente.** Con il **Menu a discesa** la tendina aperta
+mostra "Cucina", scegli, e appena esci dal campo **ricompare l'IDUU**: il Menu
+a discesa fa vedere *il valore memorizzato*. Serve il **Menu a comparsa**, che
+fa vedere *il secondo campo della lista valori*.
+
+| Controllo | Tendina aperta | Cosa scrive | Campo a riposo |
 |---|---|---|---|
-| **Scheda** | `ATT\|Attrezzature::IdReparto` | `Formato` › `Controllo` › Menu a discesa, lista `vl_Reparti` | qui si **sceglie**: vedi "Cucina", il database scrive l'UUID |
-| **Elenco** | `ATT\|Reparti::Descrizione` | campo normale | qui si **legge**: trenta tendine su trenta righe non servono |
+| **Menu a discesa** | Cucina | l'IDUU | **l'IDUU** — sbagliato |
+| **Menu a comparsa** | Cucina | l'IDUU | **Cucina** — giusto |
+
+**Come si cambia:** selezioni il campo, `Formato` › `Controllo` ›
+**Menu a comparsa**, lista valori `vl_Reparti`. Un clic, e la lista resta la
+stessa.
+
+### La regola, per tutti i campi del progetto
+
+| Che campo e' | Lista valori | Controllo | Esempi qui |
+|---|---|---|---|
+| contiene un **Id** | a **due** campi (mostra una cosa, scrive l'Id) | **Menu a comparsa** | `IdReparto` |
+| contiene **il valore stesso** | a **un** campo | **Menu a discesa** | `Tipo`, `Attivo` |
+
+Sul campo che contiene gia' il suo valore il Menu a discesa e' **meglio**:
+lascia scrivere e completa da solo. Quindi `Tipo` e `Attivo` restano a
+discesa, cambia solo `IdReparto`.
+
+**L'effetto collaterale da sapere.** Il Menu a comparsa mostra **niente** se
+il valore memorizzato non e' piu' nella lista — per esempio un reparto
+cancellato. Il campo sembra vuoto invece di far vedere un Id orfano. E' il
+comportamento giusto per chi compila, ma quando si va a caccia di dati
+sballati bisogna ricordarsene.
+
+### E sull'elenco, un campo diverso
+
+| Dove | Quale campo | Controllo | Perche' |
+|---|---|---|---|
+| **Scheda** | `ATT\|Attrezzature::IdReparto` | **Menu a comparsa**, `vl_Reparti` | qui si **sceglie** |
+| **Elenco** | `ATT\|Reparti::Descrizione` | campo normale | qui si **legge** |
 
 **Sono due campi diversi, non lo stesso formattato in due modi.** Il secondo
 appartiene a un'altra tabella e si vede grazie alla relazione dell'ancora
 `ATT`. Disegnandolo sull'elenco devi **cambiare la tendina dell'occorrenza in
 alto**, da `ATT|Attrezzature` a `ATT|Reparti`.
 
-La lista `vl_Reparti` **mostra** `Descrizione` e **scrive** `Id`: e' gia'
-fatta cosi' in `06-RELAZIONI.md`.
-
----
+`vl_Reparti` **scrive** `Id` e **mostra** `Descrizione`: e' gia' fatta cosi'
+in `06-RELAZIONI.md`. E' il **controllo** che decide cosa resta a video, non
+la lista.
 
 ## Fase 7 — L'elenco: le cinque colonne
 
@@ -278,6 +312,7 @@ il giorno in cui esiste.
 | 3 | `+ Nuovo` | Due riquadri, titolo **Attrezzatura**, etichette non tagliate |
 | 4 | Clicchi su **Tipo** | Tendina con i tipi di attrezzatura |
 | 5 | Clicchi su **Reparto** | Tendina con **Cucina** e **Magazzino secco**, non stringhe di 36 caratteri |
+| 5b | Scegli **Cucina** e **clicchi fuori dal campo** | Il campo continua a dire **Cucina**. Se ricompare l'IDUU, il controllo e' Menu a discesa: fase 6 |
 | 6 | Compili `FRI-01` / `Frigo verdure` / Frigorifero / Cucina, poi `← Elenco` | La colonna **Reparto** dice **Cucina**: la relazione funziona |
 | 7 | Crei `FOR-01` / `Forno` nell'altro reparto | Due righe, **in ordine di codice**: FOR prima di FRI |
 | 8 | `Apri` sulla **seconda** riga | Si apre **quella** attrezzatura. Se si apre un reparto, hai saltato la fase 3c |
@@ -286,8 +321,11 @@ il giorno in cui esiste.
 | 11 | Apri un'attrezzatura e guarda i campi | `gCerca` e' **vuoto** nel record |
 | 12 | `← Menù`, poi **Attrezzature**, poi **Reparti** | Funzionano e **non si disturbano**: hanno `gCerca` e script `91` separati |
 
-La prova 5 e' quella che conta: se vedi gli UUID, o la lista non e'
-`vl_Reparti` o il campo e' sbagliato.
+**La 5 e la 5b sono due prove diverse, ed e' il punto.** La 5 verifica la
+**lista valori**: se dentro la tendina vedi gli IDUU, la lista non e'
+`vl_Reparti`. La 5b verifica il **controllo**: se l'IDUU ricompare *dopo* aver
+scelto, la lista e' giusta ma il controllo e' Menu a discesa invece che a
+comparsa. Due cause diverse, due rimedi diversi.
 
 La prova 12 dimostra che la duplicazione e' pulita. Se le due anagrafiche si
 disturbano, due formati puntano allo stesso `gCerca`.
