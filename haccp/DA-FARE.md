@@ -10,14 +10,19 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**`D_Attrezzature`** — scheda di lavoro: `guide/05-attrezzature.md`.
+**Tre correzioni e una decisione**, da `archivio/collaudo-009.md`. Vanno fatte
+**prima** di duplicare Fornitori: ogni anagrafica nata da Attrezzature si
+porta dietro quello che c'e' adesso.
 
-Dieci fasi, dallo stampo dei reparti. Le stesse dieci varranno per Fornitori,
-Prodotti e Operatori: cambiano i campi, non i passi. Per ultima
-**PuntiControllo**, che avra' una scheda sua.
+| | Cosa | Dove |
+|---|---|---|
+| 1 | **Manca `+ Nuovo`**: con l'elenco vuoto non si crea il primo record | tutti e due gli elenchi |
+| 2 | Il pulsante **`Esci`** va all'elenco dei reparti invece di uscire: azione `Esegui passo script` -> `Esci dall'applicazione` | `D_Menu` |
+| 3 | Due spazi in fondo al nome dello script `91 - Attrezzature - Entra nell'elenco` | Area di lavoro Script |
+| 4 | **Da decidere:** larghezza di progetto **960**, contenuto che chiude a **936**. Oggi i formati chiudono a 452, 685, 725, 959 e 984 | tutti |
 
-Una anagrafica per volta: la scheda della successiva si prepara quando la
-precedente e' collaudata.
+Poi **Fornitori**, con le dieci fasi di `guide/05-attrezzature.md`: i dati
+sono gia' in appendice li' dentro.
 
 ---
 

@@ -15,7 +15,7 @@ File ospitato, accesso da desktop e da **FileMaker Go** su iPhone/iPad
 |---|---|
 | **Cosa e' aperto** | **`DA-FARE.md`** — prossimo passo, ritocchi, debiti. Tutto in una pagina |
 | **Come si scrive qui dentro** | `CLAUDE.md` — convenzioni, valide per chiunque, persona o assistente |
-| **Ultima verifica del file reale** | `archivio/collaudo-008.md` |
+| **Ultima verifica del file reale** | `archivio/collaudo-009.md` |
 
 Il file `Haccp.fmp12` **non sta nel repository**: e' binario e non si confronta
 fra due versioni. Qui stanno la specifica e i pezzi da incollare. Ad ogni

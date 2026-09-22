@@ -161,6 +161,15 @@ Altezza **38**, fondo bianco, bordo solo sopra. Il contatore e' fatto di
 Il fondo grigio sui due simboli distingue a colpo d'occhio il testo fisso dal
 numero che cambia.
 
+### Controlli dei campi
+
+| Che campo e' | Controllo |
+|---|---|
+| contiene un **Id**, lista a due campi | **Menu a comparsa** |
+| contiene il valore stesso, lista a un campo | **Menu a discesa** |
+| di tipo **Data** | **Calendario a discesa** |
+| tutto il resto | Casella di modifica |
+
 ### Stili del tema `HACCP`
 
 | Stile | Su cosa |

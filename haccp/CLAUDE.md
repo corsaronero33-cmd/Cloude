@@ -148,6 +148,9 @@ La differenza sta nel **tipo di controllo**, non nella lista valori:
 | **Menu a discesa** | il **valore memorizzato** — cioe' l'IDUU |
 | **Menu a comparsa** | il **secondo campo** della lista valori — cioe' `Cucina` |
 
+E i campi di tipo **Data** prendono il **Calendario a discesa**: su una data il
+calendario evita meta' degli errori di battitura.
+
 Con tutti e due la tendina aperta mostra "Cucina" e il database scrive
 l'IDUU: la differenza si vede **dopo**, quando si esce dal campo.
 

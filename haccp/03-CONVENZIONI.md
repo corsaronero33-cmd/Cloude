@@ -71,7 +71,7 @@ una storia leggibile:
 - si tiene un campo `Versione` nella tabella `Impresa` o in `Impostazioni`,
   aggiornato ad ogni rilascio;
 - ogni verifica del DDR contro la specifica si annota in `archivio/`,
-  un file per giro (`archivio/collaudo-008.md` e' l'ultimo).
+  un file per giro (`archivio/collaudo-009.md` e' l'ultimo).
 
 Cosi' fra un anno si puo' rispondere a "quando e' comparso questo campo e
 perche'" guardando un diff, invece che la memoria.
