@@ -55,6 +55,7 @@ ognuna parte da dove finisce la precedente.
 | 04 | `guide/04-menu.md` | <https://claude.ai/artifact/FKXgh6FMjL2NGxS2th9vdb> |
 | 05 | `guide/05-attrezzature.md` | <https://claude.ai/artifact/7hD4LvSbe72WNeMLaV3dDM> |
 | 06 | `guide/06-correzioni-v009.md` | <https://claude.ai/artifact/NCa4r1SKiiqyJoSpXLMXBj> |
+| 07 | `guide/07-fornitori.md` | <https://claude.ai/artifact/BmGJpyrqZwEPcRgGGKPdRa> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione

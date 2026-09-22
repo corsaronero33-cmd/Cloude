@@ -10,14 +10,15 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**Tre correzioni e la larghezza** — scheda di lavoro con le spunte:
-`guide/06-correzioni-v009.md`.
+**`D_Fornitori`** — scheda di lavoro con le spunte: `guide/07-fornitori.md`.
 
-Vanno fatte **prima** di duplicare Fornitori: ogni anagrafica nata da
-Attrezzature si porta dietro quello che c'e' adesso.
+Dieci fasi, le stesse delle attrezzature. Prima maschera costruita
+direttamente alla larghezza **960**.
 
-| | Cosa | Dove |
-|---|---|---|
+Poi **Prodotti** (torna il Menu a comparsa, per `IdFornitoreAbituale`), poi
+**Operatori**, e per ultima **PuntiControllo**, che avra' una scheda sua.
+
+---|---|---|
 | 1 | **Manca `+ Nuovo`**: con l'elenco vuoto non si crea il primo record | tutti e due gli elenchi |
 | 2 | Il pulsante **`Esci`** va all'elenco dei reparti invece di uscire: azione `Esegui passo script` -> `Esci dall'applicazione` | `D_Menu` |
 | 3 | Due spazi in fondo al nome dello script `91 - Attrezzature - Entra nell'elenco` | Area di lavoro Script |
