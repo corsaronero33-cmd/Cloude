@@ -10,9 +10,11 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**Tre correzioni e una decisione**, da `archivio/collaudo-009.md`. Vanno fatte
-**prima** di duplicare Fornitori: ogni anagrafica nata da Attrezzature si
-porta dietro quello che c'e' adesso.
+**Tre correzioni e la larghezza** — scheda di lavoro con le spunte:
+`guide/06-correzioni-v009.md`.
+
+Vanno fatte **prima** di duplicare Fornitori: ogni anagrafica nata da
+Attrezzature si porta dietro quello che c'e' adesso.
 
 | | Cosa | Dove |
 |---|---|---|

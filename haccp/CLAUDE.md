@@ -216,6 +216,10 @@ Le schede di lavoro in `guide/` hanno tutte la stessa forma, e non si cambia:
 5. Ogni scelta non ovvia ha **una riga di perche'**, subito sotto.
 6. **Un collaudo numerato** in fondo, con scritto per ogni prova cosa deve
    succedere e quale fase rifare se non succede.
+7. **Le spunte.** Ogni passo da eseguire ha la sua casella, che resta spuntata
+   anche chiudendo la pagina, piu' una barra di avanzamento in cima e il
+   conteggio per fase. Chi costruisce lavora a sessioni e deve poter
+   riprendere da dove ha lasciato senza rileggere tutto.
 
 Un elenco di dati senza i passi non e' una scheda di lavoro: e' una tabella,
 e va dentro una fase o in appendice.
