@@ -10,13 +10,14 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**`D_Fornitori`** — scheda di lavoro con le spunte: `guide/07-fornitori.md`.
+**`D_Prodotti`** — scheda di lavoro con le spunte: `guide/08-prodotti.md`.
 
-Dieci fasi, le stesse delle attrezzature. Prima maschera costruita
-direttamente alla larghezza **960**.
+Torna il **Menu a comparsa** (`IdFornitoreAbituale`) e il **GTIN va
+sull'elenco**, perche' la Ricerca rapida cerca solo nei campi che stanno sul
+formato.
 
-Poi **Prodotti** (torna il Menu a comparsa, per `IdFornitoreAbituale`), poi
-**Operatori**, e per ultima **PuntiControllo**, che avra' una scheda sua.
+Poi **Operatori**, la piu' corta. Per ultima **PuntiControllo**, che avra' una
+scheda sua.
 
 ---|---|---|
 | 1 | **Manca `+ Nuovo`**: con l'elenco vuoto non si crea il primo record | tutti e due gli elenchi |
