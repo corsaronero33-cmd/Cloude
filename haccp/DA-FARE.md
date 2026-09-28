@@ -10,13 +10,13 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**`D_Prodotti`** — scheda di lavoro con le spunte: `guide/08-prodotti.md`.
+**`D_Operatori`** — scheda di lavoro con le spunte: `guide/09-operatori.md`.
 
-Torna il **Menu a comparsa** (`IdFornitoreAbituale`) e il **GTIN va
-sull'elenco**, perche' la Ricerca rapida cerca solo nei campi che stanno sul
-formato.
+La piu' corta: otto campi, un riquadro, nessun campo collegato. Ma e' la
+tabella che fa comparire il nome della persona in testata, tramite
+`AccountFileMaker` e lo script `02`.
 
-Poi **Operatori**, la piu' corta. Per ultima **PuntiControllo**, che avra' una
+Poi **PuntiControllo**, ultima anagrafica e la piu' importante: avra' una
 scheda sua.
 
 ---|---|---|
