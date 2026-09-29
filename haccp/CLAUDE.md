@@ -185,12 +185,16 @@ Il nome e' fatto di tre pezzi: `NN - Ambito - Cosa fa`.
 | `90` | navigazione fra i formati | **uno per tutto il file** |
 | `91` | entrare in un elenco: svuota la ricerca, mostra tutti, ordina | **uno per tabella** |
 | `92` | ricerca rapida | **uno per tutto il file** |
+| `93` | creare una scheda nuova da un elenco | **uno per tutto il file** |
+| `94` | creare l'account FileMaker di un operatore | uno |
+| `95` | reimpostare la password di un account | uno |
 
 Quindi `91 - Reparti - Entra nell'elenco` e
 `91 - Attrezzature - Entra nell'elenco` **hanno lo stesso 91**, e cosi' avranno
 quelli di fornitori, prodotti, operatori e punti di controllo.
 
-**Perche' non 93, 94, 95.** Perche' il numero smetterebbe di dire qualcosa.
+**Perche' non un numero diverso per ognuno.** Perche' il numero smetterebbe
+di dire qualcosa.
 Con `91` ovunque, nell'elenco degli script i sei "entra nell'elenco" stanno
 tutti insieme e si vede a colpo d'occhio che sono la stessa cosa applicata a
 sei tabelle. Con numeri diversi diventano sei script scollegati, e il

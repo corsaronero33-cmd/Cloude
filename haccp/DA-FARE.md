@@ -10,29 +10,43 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**`D_Operatori`** — scheda di lavoro con le spunte: `guide/09-operatori.md`.
+**Account e permessi** — scheda di lavoro con le spunte:
+`guide/10-sicurezza.md`.
 
-La piu' corta: otto campi, un riquadro, nessun campo collegato. Ma e' la
-tabella che fa comparire il nome della persona in testata, tramite
-`AccountFileMaker` e lo script `02`.
+I due set di privilegi, gli account creati dalla scheda dell'operatore con lo
+script `94`, e i pulsanti che devono esistere perche' **alla consegna i menu
+saranno nascosti**. La fase 3 contiene l'unica cosa irreversibile del
+progetto: leggila prima di farla.
 
 Poi **PuntiControllo**, ultima anagrafica e la piu' importante: avra' una
-scheda sua.
-
----|---|---|
-| 1 | **Manca `+ Nuovo`**: con l'elenco vuoto non si crea il primo record | tutti e due gli elenchi |
-| 2 | Il pulsante **`Esci`** va all'elenco dei reparti invece di uscire: azione `Esegui passo script` -> `Esci dall'applicazione` | `D_Menu` |
-| 3 | Due spazi in fondo al nome dello script `91 - Attrezzature - Entra nell'elenco` | Area di lavoro Script |
-| 4 | **Da decidere:** larghezza di progetto **960**, contenuto che chiude a **936**. Oggi i formati chiudono a 452, 685, 725, 959 e 984 | tutti |
-
-Poi **Fornitori**, con le dieci fasi di `guide/05-attrezzature.md`: i dati
-sono gia' in appendice li' dentro.
+scheda sua, e si costruira' gia' sapendo cosa l'operatore potra' premere.
 
 ---
 
 ## Ritocchi
 
-Piccoli, nessuno blocca. Dalla verifica in `archivio/collaudo-007.md`.
+Piccoli, nessuno blocca.
+
+### Su `D_Operatori`, dalla verifica di ieri
+
+| | Cosa | Dove |
+|---|---|---|
+| 1 | Il campo `Account FM` ha ancora il controllo **Menu a comparsa** con `vl_Fornitori`, ereditato dalla duplicazione dei prodotti: va messo **Casella di modifica, nessuna lista** | `D_Operatori scheda` |
+| 2 | Controlla gli altri campi di testo per lo stesso motivo: una duplicazione si porta dietro **il controllo**, non solo il campo | `D_Operatori scheda` |
+| 3 | E' rimasto un oggetto `$$PARAMETRI` fuori posto in fondo al formato: cancellalo | `D_Operatori scheda` |
+| 4 | Il titolo del riquadro dice `DATI DEL FPRODOTTO`: va `DATI DELL'OPERATORE` | `D_Operatori scheda` |
+| 5 | `ColorePrimario` vale ancora `#1F4E5F`, il colore del tema vecchio: va `#1B3A5C` | tabella `Parametri` |
+
+### Aperti da piu' giri
+
+| | Cosa | Dove |
+|---|---|---|
+| 6 | **Manca `+ Nuovo`**: con l'elenco vuoto non si crea il primo record. Script `93` | tutti e due gli elenchi |
+| 7 | Il pulsante **`Esci`** va all'elenco dei reparti invece di uscire: azione `Esegui passo script` -> `Esci dall'applicazione` | `D_Menu` |
+| 8 | Due spazi in fondo al nome dello script `91 - Attrezzature - Entra nell'elenco` | Area di lavoro Script |
+| 9 | **Da decidere:** larghezza di progetto **960**, contenuto che chiude a **936**. Oggi i formati chiudono a 452, 685, 725, 959 e 984 | tutti |
+
+### Dalla verifica in `archivio/collaudo-007.md`
 
 | | Cosa | Dove |
 |---|---|---|
@@ -41,6 +55,7 @@ Piccoli, nessuno blocca. Dalla verifica in `archivio/collaudo-007.md`.
 | C | La scheda finisce a **452**, l'elenco a **685**: passando da una all'altra la finestra salta. Porta la scheda a 685 e `<<$$UTENTE.Nome>>` a x 425 | `D_Reparti scheda` |
 | D | Lo stile si chiama `Titolo Riquadro` ma e' applicato al titolo dell'intestazione, e i riquadri non esistono piu': rinominalo **`Titolo maschera`** e risalva il tema | tema `HACCP` |
 | E | `OnObjectExit` sulla casella di ricerca: funziona, ma `OnObjectSave` evita che la ricerca riparta uscendo dal campo per cliccare `Apri` | `D_Reparti elenco` |
+
 
 Le misure a cui riportarsi stanno in `09-MASCHERE.md`, sezione *Misure
 standard*.
