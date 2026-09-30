@@ -252,12 +252,17 @@ sono `Get ( LastMessageChoice )` e `Add Account`, categoria `Account`.
 
 ## Fase 6 — I pulsanti sulla scheda operatore
 
-Il corpo passa da **230** a **290** per fargli posto.
+> Le misure di questa fase sono **superate** da `11-operatori-accesso.md`,
+> che rifa' il corpo della scheda con un secondo riquadro. Qui restano i
+> calcoli di nascondimento, che non cambiano.
+
+Il corpo passa da **230** a **400**, e i pulsanti stanno dentro il riquadro
+`ACCESSO AL PROGRAMMA`.
 
 | Pulsante | X | Y | L | A | Azione |
 |---|---|---|---|---|---|
-| `Crea account` | 24 | 226 | 150 | 35 | `94 - Operatori - Crea account` |
-| `Reimposta password` | 184 | 226 | 180 | 35 | `95 - Operatori - Reimposta password` |
+| `Crea account` | 143 | 326 | 150 | 35 | `94 - Operatori - Crea account` |
+| `Reimposta password` | 303 | 326 | 180 | 35 | `95 - Operatori - Reimposta password` |
 
 Tutti e due, `Ispettore › Dati › Nascondi oggetto quando`:
 
@@ -272,8 +277,9 @@ Get ( NomeSetPrivilegi ) = "Operatore"
 or not IsEmpty ( OPE|Operatori::AccountFileMaker )
 ```
 
-Il campo `Ruolo` va aggiunto alla scheda (controllo **Menu a discesa**, lista
-`vl_Ruoli`), e la colonna `Ruolo` all'elenco al posto di `Account FM`.
+Il campo `Ruolo` va nel riquadro nuovo (controllo **Menu a discesa**, lista
+`vl_Ruoli`), e la colonna `Ruolo` all'elenco **accanto** a `Account FM`, non
+al suo posto.
 
 **Il pulsante nascosto non e' sicurezza, e' pulizia.** Quello che impedisce
 davvero a un operatore di creare account e' il **set di privilegi**: la vera

@@ -11,7 +11,8 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 ## Prossimo passo
 
 **Account e permessi** — scheda di lavoro con le spunte:
-`guide/10-sicurezza.md`.
+`guide/10-sicurezza.md`, e subito dopo `guide/11-operatori-accesso.md`, che
+rifa' la scheda dell'operatore con il riquadro dell'accesso.
 
 I due set di privilegi, gli account creati dalla scheda dell'operatore con lo
 script `94`, e i pulsanti che devono esistere perche' **alla consegna i menu
@@ -27,7 +28,7 @@ scheda sua, e si costruira' gia' sapendo cosa l'operatore potra' premere.
 
 Piccoli, nessuno blocca.
 
-### Su `D_Operatori`, dalla verifica di ieri
+### Su `D_Operatori` — **stanno nella fase 1 di `guide/11-operatori-accesso.md`**
 
 | | Cosa | Dove |
 |---|---|---|

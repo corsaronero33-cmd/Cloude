@@ -5,6 +5,11 @@ Scheda di lavoro con le spunte:
 
 Prerequisito: `08-prodotti.md` completata.
 
+> **Le fasi 4, 5 e 6 sono superate da `11-operatori-accesso.md`**, che
+> aggiunge il riquadro dell'accesso al programma: corpo 400 invece di 230,
+> nove campi invece di otto, sette colonne invece di sei. Questa scheda
+> resta per il metodo e per il perche' di `AccountFileMaker`.
+
 La piu' corta di tutte: **otto campi, un riquadro solo, nessun campo
 collegato**. Corpo alto **230**, la scheda piu' bassa del progetto.
 
