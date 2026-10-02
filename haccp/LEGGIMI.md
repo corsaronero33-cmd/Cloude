@@ -60,6 +60,7 @@ ognuna parte da dove finisce la precedente.
 | 09 | `guide/09-operatori.md` | <https://claude.ai/artifact/7W533dpYsxZnUc79dBQZzC> |
 | 10 | `guide/10-sicurezza.md` | <https://claude.ai/artifact/U66NL1vifx8HbmCJEVKz73> |
 | 11 | `guide/11-operatori-accesso.md` | <https://claude.ai/artifact/6ys1XfGuPRoPM5XZFLN4aD> |
+| 12 | `guide/12-rimettiamo-in-ordine.md` | <https://claude.ai/artifact/4AWsfB9RG5n5zx8tJ3r35z> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione

@@ -10,6 +10,23 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
+**Compilare il set di privilegi**, sei passi: `guide/12-rimettiamo-in-ordine.md`.
+Poi un DDR e un giro di verifica completo, prima di qualsiasi altra cosa.
+
+Dopo, nell'ordine: `guide/11-operatori-accesso.md` (la scheda operatore
+rifatta), lo script `93`, lo script `95`, e **PuntiControllo**.
+
+### Aperto da stasera
+
+Lo script `90` dice *"la maschera non c'e' ancora"* anche quando il formato
+c'e' ma i record non sono leggibili: `Vai al formato` torna un errore di
+accesso negato e il controllo lo scambia per un formato mancante. Va distinto
+il caso del formato mancante da quello del permesso negato.
+
+---
+
+## Il resto della sicurezza
+
 **Account e permessi** — scheda di lavoro con le spunte:
 `guide/10-sicurezza.md`, e subito dopo `guide/11-operatori-accesso.md`, che
 rifa' la scheda dell'operatore con il riquadro dell'accesso.
