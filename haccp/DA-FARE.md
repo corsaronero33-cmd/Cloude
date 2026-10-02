@@ -10,73 +10,56 @@ del file reale), i **debiti** (rimandati di proposito, con il motivo).
 
 ## Prossimo passo
 
-**Compilare il set di privilegi**, sei passi: `guide/12-rimettiamo-in-ordine.md`.
-Poi un DDR e un giro di verifica completo, prima di qualsiasi altra cosa.
+Dal collaudo `archivio/collaudo-010.md`, scheda di lavoro:
+<https://claude.ai/artifact/Aef6CEKgMCueGZ2TAz863g>
 
-Dopo, nell'ordine: `guide/11-operatori-accesso.md` (la scheda operatore
-rifatta), lo script `93`, lo script `95`, e **PuntiControllo**.
+**1. Il set `Responsabile`** — quattro caselle, e sblocca l'account `MRossi`
+che oggi non riesce a entrare.
 
-### Aperto da stasera
+**2. Lo script `94`** — manca `Esci dallo script` nel ramo dell'errore: senza,
+la scheda registra account che non esistono. Piu' tre sviste (`Lower`, il
+calcolo `""`, un titolo).
 
-Lo script `90` dice *"la maschera non c'e' ancora"* anche quando il formato
-c'e' ma i record non sono leggibili: `Vai al formato` torna un errore di
-accesso negato e il controllo lo scambia per un formato mancante. Va distinto
-il caso del formato mancante da quello del permesso negato.
+**3. I pulsanti** — la condizione di nascondimento su `Reimposta Account`,
+`Salva` e `Annulla Modifiche` sulle altre quattro schede, `Cambia password` su
+`D_Menu`.
 
----
-
-## Il resto della sicurezza
-
-**Account e permessi** — scheda di lavoro con le spunte:
-`guide/10-sicurezza.md`, e subito dopo `guide/11-operatori-accesso.md`, che
-rifa' la scheda dell'operatore con il riquadro dell'accesso.
-
-I due set di privilegi, gli account creati dalla scheda dell'operatore con lo
-script `94`, e i pulsanti che devono esistere perche' **alla consegna i menu
-saranno nascosti**. La fase 3 contiene l'unica cosa irreversibile del
-progetto: leggila prima di farla.
-
-Poi **PuntiControllo**, ultima anagrafica e la piu' importante: avra' una
-scheda sua, e si costruira' gia' sapendo cosa l'operatore potra' premere.
+Poi **PuntiControllo**, l'ultima anagrafica.
 
 ---
 
 ## Ritocchi
 
-Piccoli, nessuno blocca.
-
-### Su `D_Operatori` — **stanno nella fase 1 di `guide/11-operatori-accesso.md`**
-
 | | Cosa | Dove |
 |---|---|---|
-| 1 | Il campo `Account FM` ha ancora il controllo **Menu a comparsa** con `vl_Fornitori`, ereditato dalla duplicazione dei prodotti: va messo **Casella di modifica, nessuna lista** | `D_Operatori scheda` |
-| 2 | Controlla gli altri campi di testo per lo stesso motivo: una duplicazione si porta dietro **il controllo**, non solo il campo | `D_Operatori scheda` |
-| 3 | E' rimasto un oggetto `$$PARAMETRI` fuori posto in fondo al formato: cancellalo | `D_Operatori scheda` |
-| 4 | Il titolo del riquadro dice `DATI DEL FPRODOTTO`: va `DATI DELL'OPERATORE` | `D_Operatori scheda` |
-| 5 | `ColorePrimario` vale ancora `#1F4E5F`, il colore del tema vecchio: va `#1B3A5C` | tabella `Parametri` |
+| 1 | `91 - Attrezzature - Entra nell'elenco` ha due spazi in fondo al nome | Area di lavoro Script |
+| 2 | `Apri` a x **1**: tocca il bordo, va a **24** | tutti gli elenchi |
+| 3 | Etichette di colonna a y 113 / 114 / 115 | `D_Operatori elenco` |
+| 4 | Lo stile si chiama `Titolo Riquadro` ma veste il titolo dell'intestazione: rinominalo **`Titolo maschera`** e risalva il tema | tema `HACCP` |
+| 5 | Set `Operatore`, riga delle **tabelle future**: da scrivibile a sola visualizzazione | Sicurezza |
+| 6 | `OnObjectSave` invece di `OnObjectExit` sulla casella di ricerca: evita che la ricerca riparta uscendo dal campo per cliccare `Apri` | gli elenchi |
+| 7 | `ColorePrimario` vale `#1F4E5F`, il colore del tema vecchio: va `#1B3A5C` | tabella `Parametri` |
 
-### Aperti da piu' giri
+---
 
-| | Cosa | Dove |
-|---|---|---|
-| 6 | **Manca `+ Nuovo`**: con l'elenco vuoto non si crea il primo record. Script `93` | tutti e due gli elenchi |
-| 7 | Il pulsante **`Esci`** va all'elenco dei reparti invece di uscire: azione `Esegui passo script` -> `Esci dall'applicazione` | `D_Menu` |
-| 8 | Due spazi in fondo al nome dello script `91 - Attrezzature - Entra nell'elenco` | Area di lavoro Script |
-| 9 | **Da decidere:** larghezza di progetto **960**, contenuto che chiude a **936**. Oggi i formati chiudono a 452, 685, 725, 959 e 984 | tutti |
+## Una sessione a se'
 
-### Dalla verifica in `archivio/collaudo-007.md`
+**Le larghezze.** Nessuna coppia scheda/elenco coincide — 492/684, 1018/968,
+1018/968, 1004/1097, 1010/1248, e `D_Menu` a 731. La finestra salta a ogni
+`Apri`. Si decide **una** larghezza di progetto, si riportano tutti e undici i
+formati a quella e si rifanno le colonne: farlo in mezzo ad altro vuol dire
+rifarlo.
 
-| | Cosa | Dove |
-|---|---|---|
-| A | `Apri` sta a x **1**, tocca il bordo: portalo a **24**, e con lui `Codice` a 85 e `Descrizione` a 264 (larghezza 276) | `D_Reparti elenco` |
-| B | L'etichetta di colonna `Ordine` sta a y **113**, le altre tre a **115** | `D_Reparti elenco` |
-| C | La scheda finisce a **452**, l'elenco a **685**: passando da una all'altra la finestra salta. Porta la scheda a 685 e `<<$$UTENTE.Nome>>` a x 425 | `D_Reparti scheda` |
-| D | Lo stile si chiama `Titolo Riquadro` ma e' applicato al titolo dell'intestazione, e i riquadri non esistono piu': rinominalo **`Titolo maschera`** e risalva il tema | tema `HACCP` |
-| E | `OnObjectExit` sulla casella di ricerca: funziona, ma `OnObjectSave` evita che la ricerca riparta uscendo dal campo per cliccare `Apri` | `D_Reparti elenco` |
+---
 
+## Aperto negli script
 
-Le misure a cui riportarsi stanno in `09-MASCHERE.md`, sezione *Misure
-standard*.
+- **`90`** scambia *accesso negato* per *formato mancante*: e' quello che ha
+  depistato la sera del 2 ottobre.
+- **`93`** non controlla l'esito del `90`: se la scheda non esiste, `+ Nuovo`
+  crea comunque un record sull'elenco.
+- **`95 - Operatori - Reimposta password`** non esiste ancora: si duplica il
+  `94` e si cambia un passo.
 
 ---
 
