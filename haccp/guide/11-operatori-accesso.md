@@ -129,6 +129,15 @@ Get ( NomeSetPrivilegi ) = "Operatore"
 or not IsEmpty ( OPE|Operatori::AccountFileMaker )
 ```
 
+**Il pulsante resta visibile finche' il record non e' confermato**, e non e'
+un guasto. *Nascondi oggetto quando* si ricalcola al **commit** del record e ai
+refresh del formato, non a ogni lettera che scrivi: se compili `Account FM` e
+premi subito `Crea account` senza uscire dal campo, il pulsante c'e' ancora. Lo
+script invece legge il campo **come e' adesso**, anche non confermato, e si
+ferma al terzo controllo. Per questo il controllo dentro lo script non e' un
+doppione del nascondimento: il nascondimento e' in ritardo di un commit, il
+controllo no.
+
 **Il pulsante nascosto non e' sicurezza, e' pulizia.** Quello che impedisce
 davvero a un cuoco di creare account e' il **set di privilegi**.
 

@@ -176,8 +176,12 @@ Se [ IsEmpty ( OPE|Operatori::Ruolo ) ]
 Fine se
 Se [ not IsEmpty ( OPE|Operatori::AccountFileMaker ) ]
     Mostra finestra di dialogo personalizzata
-        [ "Account gia' collegato" ;
-          "Questa persona usa gia' l'account " & OPE|Operatori::AccountFileMaker & "." ]
+        [ "Account gia' scritto in scheda" ;
+          "Nella scheda c'e' gia' scritto l'account " &
+          OPE|Operatori::AccountFileMaker &
+          ". Se quell'account esiste in Gestisci > Sicurezza, non c'e' niente da fare. " &
+          "Se l'hai scritto tu e l'account non esiste ancora, svuota il campo " &
+          "e ripremi Crea account." ]
     Esci dallo script [ ]
 Fine se
 
@@ -217,9 +221,10 @@ Altrimenti
 Fine se
 Se [ Get ( UltimoErrore ) <> 0 ]
     Mostra finestra di dialogo personalizzata
-        [ "Account non creato" ;
-          "FileMaker ha risposto con l'errore " & Get ( UltimoErrore ) &
-          ". Quasi sempre vuol dire che un account con quel nome esiste gia'." ]
+        [ "FileMaker ha rifiutato l'account" ;
+          "Errore " & Get ( UltimoErrore ) &
+          ". Quasi sempre il nome account e' gia' in uso in Gestisci > Sicurezza: " &
+          "provane un altro." ]
     Imposta campo [ OPE|Operatori::gPassword ; "" ]
     Esci dallo script [ ]
 Fine se
@@ -245,6 +250,19 @@ Scrivendo i due rami a mano, lo script **non e' fisicamente in grado** di
 creare un account con `[Accesso completo]`: il paletto non e' una convenzione
 che qualcuno puo' dimenticare, e' una cosa che non c'e' nel codice. Per questo
 lo script si puo' far girare con i privilegi pieni senza che sia un buco.
+
+**Se la finestra della password non si apre, non e' la password: e' il terzo
+controllo.** Lo script esce **prima** del passo 2 quando `AccountFileMaker` e'
+pieno, e la finestra — con dentro i due campi del nome e della password — non
+arriva nemmeno a comparire. E' per questo che svuotando il campo funziona: il
+controllo smette di scattare, non perche' ci sia qualcosa di diverso nella
+password.
+
+**Il campo `Account FM` non si compila a mano per una persona nuova.** Serve a
+**collegare un account che esiste gia'** — il tuo, l'`ADMIN`, uno fatto a mano
+in `Gestisci › Sicurezza`. Per chi non ha ancora l'accesso lo riempie lo
+script, da solo, al passo 4. Scriverlo prima significa dire allo script *questa
+persona e' gia' a posto*, e lui ti crede.
 
 **Due nomi da verificare nella tua versione.** `Get ( UltimaSceltaMessaggio )`
 e `Aggiungi account` sono tradotti, e la traduzione puo' variare. In inglese
