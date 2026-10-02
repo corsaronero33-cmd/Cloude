@@ -63,6 +63,7 @@ tre schede `Account`, `Set di privilegi`, `Privilegi estesi`.
 | Script | Tutti eseguibili (non modificabili) |
 | Comandi di menu disponibili | **Solo modifica** |
 | Stampa / esportazione | spuntate — servono per i registri dell'ispezione |
+| **Consenti all'utente di modificare la propria password** | **spuntata**, minimo **8** caratteri |
 | Gestione account estesa | Nessuno |
 
 ### Set `Operatore` — chi compila
@@ -76,6 +77,7 @@ tre schede `Account`, `Set di privilegi`, `Privilegi estesi`.
 | Comandi di menu disponibili | **Solo modifica** |
 | Consenti stampa | spuntata |
 | Consenti esportazione | **NON** spuntata |
+| **Consenti all'utente di modificare la propria password** | **spuntata**, minimo **8** caratteri |
 | Gestione account estesa | Nessuno |
 
 ### L'accesso ai record dell'operatore, tabella per tabella
@@ -84,6 +86,29 @@ tre schede `Account`, `Set di privilegi`, `Privilegi estesi`.
 |---|---|---|---|---|
 | **I registri** — `Rilevazioni`, `Ricevimenti`, `RigheRicevimento`, `Sanificazioni`, `NonConformita`, `Lotti`, `Utilizzi` | si | si | si | **NO** |
 | **Anagrafiche e configurazione** — `Reparti`, `Attrezzature`, `PuntiControllo`, `Fornitori`, `Prodotti`, `Operatori`, `Impresa`, `Parametri`, `PianoSanificazione`, i `Modelli*`, `TipiAttivita`, `Allergeni` | si | no | no | no |
+
+**La spunta della password e' quella che chiude fuori, e all'inizio l'avevo
+dimenticata.** Lo script crea l'account con `Scadenza password: Attivata`,
+quindi al primo accesso FileMaker **pretende** che l'utente la cambi. Se il set
+di privilegi non gli da' il permesso di cambiarla, FileMaker chiede una cosa e
+poi vieta di farla: compare *"l'utente non ha i permessi per effettuare questa
+operazione"* e l'account **non entra**. Non e' l'account sbagliato e non e' la
+password sbagliata: e' un vicolo chiuso fra due impostazioni.
+
+**Se e' gia' capitato, si sbroglia cosi'.** Rientra con l'account di accesso
+completo, spunta *Consenti all'utente di modificare la propria password* su
+**tutti e due** i set, OK, chiudi la sicurezza. Poi esci e rientra con
+l'account dell'operatore: la richiesta ricompare e **va a buon fine**.
+L'account non va cancellato ne' ricreato.
+
+**Lo stesso permesso regge il pulsante `Cambia password`** della fase 7. Senza
+la spunta quel pulsante da' lo stesso messaggio — ed e' lo stesso guasto che si
+ripresenta un mese dopo, quando nessuno si ricorda piu' di questa finestra.
+
+**Il minimo di 8 caratteri va messo qui, non solo nello script.** Il controllo
+`Length ( gPassword ) < 8` dentro il `94` vale per la password **iniziale**,
+quella che scrive chi crea l'account. Quando l'utente se la cambia, lo script
+non c'e': a imporre la lunghezza resta solo questa casella.
 
 **La colonna che conta e' l'ultima.** Un registro HACCP da cui chi compila
 puo' cancellare non vale niente davanti a un ispettore: la domanda non e'
@@ -339,7 +364,8 @@ l'unico modo di vedere quello che vedra' il cliente.
 4. Ripremi `Crea account` sullo stesso record: il pulsante non c'e' piu'.
 5. In `Gestisci › Sicurezza` l'account c'e', con il set `Operatore`.
 6. **Chiudi e riapri il file**, entrando con l'account nuovo: FileMaker deve
-   chiedere subito di cambiare la password.
+   chiedere subito di cambiare la password, **e accettare quella nuova**. Se
+   risponde che non hai i permessi, manca la spunta della fase 1.
 7. La barra dei menu e' **ridotta**: niente Record, Formati, Strumenti.
 8. Su `Reparti`, `Elimina` deve essere **rifiutato**.
 9. Modificare la descrizione di un reparto: **non deve essere possibile**.
