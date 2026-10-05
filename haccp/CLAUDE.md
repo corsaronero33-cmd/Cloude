@@ -61,7 +61,7 @@ maschera dimenticata, produce due grigi diversi nello stesso file.
 
 | | |
 |---|---|
-| Quello che e' aperto | **`DA-FARE.md`**, e solo li'. Chiusa una voce, si toglie da li' |
+| Il piano e quello che e' aperto | **`TABELLA-DI-MARCIA.md`**, e solo li'. Chiusa una voce, si toglie da li' |
 | Le misure dei formati | **`09-MASCHERE.md`**, sezione *Misure standard* |
 | Le schede di lavoro | `guide/`, numerate nell'ordine in cui si costruiscono |
 | I collaudi | `archivio/`, uno per giro di verifica |

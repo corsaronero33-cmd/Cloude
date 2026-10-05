@@ -69,7 +69,7 @@ contengono **il valore stesso**: restano a discesa.
 `RichiedeScadenza` diranno allo script del ricevimento se pretendere lotto e
 scadenza **per quel prodotto**; `GiorniValiditaDopoApertura` serve
 all'etichetta dell'"aperto il". Sono i dati su cui poggia il **debito n. 4**
-di `../DA-FARE.md`.
+di `../TABELLA-DI-MARCIA.md`.
 
 **Temperature qui e temperature sui punti di controllo.** Sembrano doppie e
 non lo sono: qui e' *come va tenuto questo prodotto*, li' e' *a che

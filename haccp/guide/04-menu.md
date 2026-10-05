@@ -156,7 +156,7 @@ Lo script `00 - Avvio` porta su `Rilevazioni`, un formato nudo.
 3. Cambialo in `Vai al formato [ "D_Menu" ]`, scegliendolo **dall'elenco dei
    formati**, non come calcolo.
 
-E' la prima rata del **debito n. 1** di `../DA-FARE.md`.
+E' la prima rata del **debito n. 1** di `../TABELLA-DI-MARCIA.md`.
 
 ---
 

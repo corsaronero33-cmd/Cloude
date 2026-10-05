@@ -13,7 +13,8 @@ File ospitato, accesso da desktop e da **FileMaker Go** su iPhone/iPad
 
 | | |
 |---|---|
-| **Cosa e' aperto** | **`DA-FARE.md`** — prossimo passo, ritocchi, debiti. Tutto in una pagina |
+| **Il piano** | **`TABELLA-DI-MARCIA.md`** — dodici tappe, dove siamo, cosa aspetta. Tutto in una pagina |
+| | <https://claude.ai/artifact/7XnevvYVZU5pPmpdkpMcDZ> |
 | **Come si scrive qui dentro** | `CLAUDE.md` — convenzioni, valide per chiunque, persona o assistente |
 | **Ultima verifica del file reale** | `archivio/collaudo-010.md` — primo export con sicurezza e script |
 

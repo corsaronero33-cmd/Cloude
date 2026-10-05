@@ -119,4 +119,4 @@ cosi' da prima della ricerca e la coerenza interna vale piu' della simmetria.
 | E — `D_Menu` sul tema `HACCP` | **non fatto**: e' ancora `Minimalista` |
 
 Nessuno di questi impedisce di andare avanti. Sono raccolti, insieme a tutto
-il resto di aperto, in `../DA-FARE.md`.
+il resto di aperto, in `../TABELLA-DI-MARCIA.md`.

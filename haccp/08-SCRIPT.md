@@ -344,7 +344,7 @@ Da eseguire con il cursore su una riga di ricevimento.
 > Mettere `RIC|RigheRicevimento::` stando sul formato nudo darebbe il vuoto:
 > e' l'errore opposto a quello dello script 20. Quando ci sara' la maschera del
 > ricevimento questi riferimenti andranno riscritti col prefisso `RIC|`
-> (debito n. 3 in `DA-FARE.md`).
+> (debito n. 3 in `TABELLA-DI-MARCIA.md`).
 
 ```
 Consenti annullamento utente [ Disattivato ]
@@ -406,7 +406,7 @@ leggerlo. **Un avviso che scatta sempre e' un avviso spento.**
 Il controllo di completezza va fatto dove ha senso, cioe' al **salvataggio
 della riga di ricevimento**: li' il programma sa, da `Prodotti::RichiedeLotto`
 e `Prodotti::RichiedeScadenza`, se *quel* prodotto li esige davvero, e puo'
-bloccare solo chi deve essere bloccato. Vedi `DA-FARE.md`.
+bloccare solo chi deve essere bloccato. Vedi `TABELLA-DI-MARCIA.md`.
 
 **Limite dichiarato:** per adesso lo script compila lotto e scadenza, non il
 prodotto. Agganciare il prodotto dal codice GTIN richiede una relazione in
