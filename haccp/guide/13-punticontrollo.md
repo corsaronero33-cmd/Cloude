@@ -129,8 +129,10 @@ della tappa 11.
 ### Le tre cose che l'importazione non puo' fare
 
 - `Attivo` resta vuoto: si riempie con `Sostituisci contenuto campo`, valore `Si`.
-- **I reparti a mano**, dalla tendina: 24 su 33 sono `Cucina`, gli altri
-  dispensa (2), magazzino (2), sala (2), rifiuti (1), due senza reparto.
+- **I reparti a mano**, dalla tendina: 24 su 33 sono `Cucina`, poi cella
+  pesce (2), magazzino secco (2), sala (2), locale rifiuti (1) e due che
+  dipendono dall'apparecchio. La tabella completa, e i quindici reparti da
+  caricare prima, stanno in `14-reparti-dei-punti.md`.
 - **Gli otto controlli per attrezzatura si moltiplicano**: abbattitore 3,
   friggitrice 2, frigorifero 1, congelatore 1, vetrina 1 — ma **quante copie
   servono lo dice l'anagrafica delle attrezzature**, non il modello. Due

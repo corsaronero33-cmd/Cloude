@@ -64,6 +64,7 @@ ognuna parte da dove finisce la precedente.
 | 12 | `guide/12-rimettiamo-in-ordine.md` | <https://claude.ai/artifact/4AWsfB9RG5n5zx8tJ3r35z> |
 | 13 | `archivio/collaudo-010.md` | <https://claude.ai/artifact/Aef6CEKgMCueGZ2TAz863g> |
 | 14 | `guide/13-punticontrollo.md` | <https://claude.ai/artifact/TwBbUExwCuU8ZT8yf26qP2> |
+| 15 | `guide/14-reparti-dei-punti.md` | <https://claude.ai/artifact/Aoap5JQVJJFMnMNSMU9Kqq> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione
