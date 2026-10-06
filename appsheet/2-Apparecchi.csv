@@ -1,0 +1,8 @@
+ID,Cliente,Matricola,Marca,Modello,Provvedimento,Sede,Messa in servizio,Ultima verifica,Firmware,Collegato POS,Stato,Data dismissione,Note
+A001,C001,1ABC2100345,Epson,FP-81 II,12345/2019,,2021-02-10,2024-09-17,1.8.3,FALSE,Attivo,,
+A002,C002,2DEF2200781,RCH,Print F,,2022-05-04,2024-10-10,,TRUE,Attivo,,
+A003,C003,3GHI2301122,Custom,K3,,Punto vendita corso Alba,2023-03-15,2024-10-27,2.1.0,FALSE,Attivo,,
+A004,C003,3GHI2301123,Custom,K3,,Punto vendita corso Alba,2023-03-15,2024-12-06,2.1.0,TRUE,Attivo,,
+A005,C004,4JKL2400567,Olivetti,Form 100,,,2024-11-06,,,FALSE,Attivo,,Mai verificato dopo la messa in servizio
+A006,C005,5MNO2200999,Epson,FP-81 II,,,,,,FALSE,Attivo,,Date da recuperare dal libretto in sede
+A007,C001,0XYZ1800111,Epson,FP-90,,,2018-06-01,2023-02-14,,FALSE,Dismesso,2026-02-10,

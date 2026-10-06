@@ -1,0 +1,6 @@
+ID,Cliente,Tipo,Descrizione,Data inizio,Scadenza,Periodicita,Importo,Licenza,Rinnovo automatico,Stato,Note
+K001,C001,Abbonamento software,Gestionale bar 2 postazioni,2025-09-30,2026-09-30,Annuale,380,GB-2024-0071,FALSE,Scaduto,
+K002,C002,Abbonamento software,Gestionale negozio,2025-10-18,2026-10-18,Annuale,290,GN-2025-0132,TRUE,Attivo,
+K003,C003,Contratto di assistenza,Assistenza full 4 casse,2025-10-31,2026-10-31,Annuale,1200,,FALSE,Attivo,
+K004,C004,Canone RT,Canone RT annuale,2025-11-23,2026-11-23,Annuale,90,,FALSE,Attivo,
+K005,C005,Abbonamento software,Comande su tablet,2026-01-09,2027-01-09,Annuale,540,CT-2025-0044,FALSE,Attivo,
