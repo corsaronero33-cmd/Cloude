@@ -1,0 +1,40 @@
+@import 'tailwindcss';
+
+/* Tema: un grigio-blu scuro per le barre e un fondo chiaro per le liste.
+   I colori delle fasce di scadenza sono gli unici accenti forti, perche' sono
+   l'informazione che deve saltare all'occhio aprendo l'app. */
+@theme {
+  --color-marca-50: #f1f5f9;
+  --color-marca-100: #e2e8f0;
+  --color-marca-500: #475569;
+  --color-marca-700: #334155;
+  --color-marca-900: #0f172a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-100 text-slate-900 antialiased;
+  /* Su iPhone l'app installata arriva sotto la barra di sistema. */
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Niente zoom automatico quando si tocca un campo su iOS: succede sotto i
+   16px e fa ballare tutta la pagina mentre si compila un rapportino. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 0.875rem;
+  }
+}

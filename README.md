@@ -1,3 +1,18 @@
+# Cloude
+
+Due progetti distinti nello stesso repository.
+
+| Cartella | Progetto | Linguaggio |
+| --- | --- | --- |
+| [`app/`](app/) | **Gestione Assistenza** -- gestionale del centro di assistenza tecnica: verifiche periodiche RT, scadenze di contratti e abbonamenti, interventi hardware e software. Gira su telefono e su PC | TypeScript, React |
+| `Sources/` | **tbToolkit** -- libreria di utilita' per stringhe, con il suo micro framework di test | twinBASIC |
+
+Le istruzioni per mettere in funzione il gestionale -- creazione del database,
+pubblicazione, installazione sul telefono, importazione dai fogli Excel -- stanno
+in [`app/README.md`](app/README.md).
+
+---
+
 # tbToolkit
 
 Libreria di utilita' per stringhe scritta in **twinBASIC**, con un micro
