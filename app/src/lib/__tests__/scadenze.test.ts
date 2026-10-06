@@ -182,6 +182,19 @@ describe('costruisciScadenzario', () => {
     expect(righe[0]!.dettaglio).toContain('42')
   })
 
+  it('scrive la data dell adempimento come si legge, non in formato interno', () => {
+    const righe = scadenzario({
+      interventi: [
+        intervento({
+          id: 'i1', tipo: 'verifica_periodica', stato: 'chiuso',
+          ade_trasmessa: false, data_intervento: '2026-02-09', numero: 7,
+        }),
+      ],
+    })
+    expect(righe[0]!.dettaglio).toBe('Verifica del 09/02/2026 · rapportino n. 7')
+    expect(righe[0]!.dettaglio).not.toContain('2026-02-09')
+  })
+
   it('ordina per data crescente, le cose in ritardo per prime', () => {
     const righe = scadenzario({
       dispositivi: [

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:demo": "tsc -b && vite build --mode demo"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

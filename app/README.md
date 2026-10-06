@@ -49,17 +49,51 @@ sommando i mesi di cadenza impostati. Cosi' il calcolo e' identico online e
 offline, e il giorno in cui la norma cambiasse la cadenza basta cambiare un
 numero nelle impostazioni perche' tutte le scadenze si ricalcolino.
 
-## Provarla subito, senza server
+## Provarla subito
+
+Senza configurare niente, l'app parte in modalita' **solo locale**: si inseriscono
+clienti, apparecchi, contratti e rapportini, tutto resta nel browser, e
+l'etichetta viola in alto a destra lo dice chiaramente. In `Impostazioni` c'e' un
+pulsante **Carica i dati di esempio** che riempie l'archivio con cinque clienti
+inventati e date calcolate a partire da oggi, cosi' lo scadenzario si vede pieno
+senza passare una serata a digitare.
+
+Tre strade, dalla piu' rapida alla piu' definitiva.
+
+### 1. Metterla online in due minuti, senza registrarsi
+
+Serve la cartella `dist/` compilata (`npm run build`, oppure il pacchetto zip
+gia' pronto).
+
+1. Aprire [app.netlify.com/drop](https://app.netlify.com/drop).
+2. Trascinare la cartella `dist` dentro il riquadro.
+3. In una ventina di secondi compare un indirizzo tipo
+   `https://qualcosa-a1b2c3.netlify.app`: e' gia' raggiungibile dal telefono.
+
+Nessun account, nessuna carta di credito. L'indirizzo resta attivo e si puo'
+rivendicare dopo, registrandosi, se si decide di tenerlo.
+
+### 2. Sul proprio computer
 
 ```bash
 npm install
 npm run dev
 ```
 
-Si apre su `http://localhost:5173` in modalita' **solo locale**: si possono
-inserire clienti, apparecchi e interventi, e tutto resta nel browser. L'etichetta
-viola in alto a destra lo dice chiaramente. Serve a vedere se l'impianto
-convince, prima di mettere in piedi il server.
+Si apre su `http://localhost:5173`. Per aprirla anche dal telefono, sulla stessa
+rete di casa o dell'ufficio:
+
+```bash
+npm run dev -- --host
+```
+
+Vite stampa un secondo indirizzo, del tipo `http://192.168.1.20:5173`: quello si
+digita nel browser del telefono.
+
+### 3. Pubblicazione vera
+
+Vedi [Pubblicarla](#pubblicarla) piu' sotto: e' il passo da fare quando si decide
+di usarla sul serio, insieme al collegamento con Supabase.
 
 ## Collegare il server (Supabase)
 
@@ -118,6 +152,51 @@ Aprire l'indirizzo con Chrome su Android o Safari su iPhone, poi *Aggiungi a
 schermata Home* (su iPhone sta nel menu di condivisione). Il primo accesso
 richiede la connessione: serve a scaricare i dati e a stabilire la sessione.
 
+## Avvisi per email
+
+Ogni mattina parte un messaggio con le scadenze in ritardo, quelle della settimana
+e le verifiche ancora da trasmettere. Se non c'e' niente da segnalare non viene
+mandato niente, cosi' il messaggio che arriva significa sempre qualcosa.
+
+Il calcolo non e' rifatto a parte: la funzione SQL `public.scadenze` applica le
+stesse tre regole dello scadenzario che si vede nell'app. Le due implementazioni
+devono restare allineate, e il commento in testa a
+`supabase/migrations/0002_avvisi.sql` lo ricorda.
+
+### Metterli in funzione
+
+1. **Applicare la seconda migrazione.** Nell'SQL Editor di Supabase, incollare
+   ed eseguire `supabase/migrations/0002_avvisi.sql`.
+
+2. **Prendere una chiave per la posta.** Su [resend.com](https://resend.com) il
+   piano gratuito manda 3.000 messaggi al mese, piu' che abbondanti. In partenza
+   si puo' spedire da `onboarding@resend.dev`; per avere il proprio indirizzo come
+   mittente va verificato il dominio, che e' un record DNS.
+
+3. **Pubblicare la funzione**, con la [CLI di Supabase](https://supabase.com/docs/guides/cli):
+
+   ```bash
+   supabase functions deploy avvisi-scadenze
+   supabase secrets set RESEND_API_KEY=re_xxxxxxxx
+   supabase secrets set AVVISI_MITTENTE='Assistenza <avvisi@tuodominio.it>'
+   ```
+
+4. **Dire a chi mandarli.** In `Impostazioni` → `Avvisi per email`: destinatari
+   separati da virgola, orizzonte in giorni, e l'indirizzo dell'app per il
+   pulsante dentro il messaggio. Poi **Manda una prova adesso**: arriva subito, e
+   se qualcosa non va la risposta dice che cosa.
+
+5. **Programmare l'invio quotidiano.** Aprire `supabase/avvisi/pianificazione.sql`,
+   sostituire i due segnaposto ed eseguirlo nell'SQL Editor.
+
+### Quando non arriva niente
+
+La tabella `avvisi_log` registra ogni tentativo: se e' partito, a chi, e che cosa
+ha risposto il servizio di posta. Gli ultimi cinque invii si vedono direttamente
+in `Impostazioni`, sotto il pulsante di prova. Le tre cause piu' comuni sono il
+segreto `RESEND_API_KEY` non impostato, nessun destinatario, e gli avvisi
+disattivati dall'interruttore.
+
 ## Portare dentro i dati che hai oggi
 
 `Importa dati` legge i CSV che escono da Excel in italiano — punto e virgola come
@@ -140,6 +219,10 @@ motivo.
 | Percorso | Ruolo |
 | --- | --- |
 | `supabase/migrations/0001_init.sql` | Tabelle, trigger, policy RLS. E' la fonte di verita' dello schema |
+| `supabase/migrations/0002_avvisi.sql` | Lo scadenzario in SQL, per l'avviso che parte quando nessuno ha l'app aperta |
+| `supabase/functions/avvisi-scadenze/` | La funzione che compone e manda il messaggio |
+| `supabase/avvisi/pianificazione.sql` | Il modello per programmare l'invio quotidiano |
+| `supabase/tests/scadenze.test.sql` | Prove sulla funzione SQL, da lanciare con psql |
 | `src/lib/types.ts` | I tipi del dominio, uno per tabella |
 | `src/lib/db.ts` | Database locale (Dexie), generazione degli uuid, coda delle scritture |
 | `src/lib/sync.ts` | Salita e discesa, risoluzione dei conflitti |
@@ -148,6 +231,7 @@ motivo.
 | `src/lib/csv.ts` | Lettura e scrittura dei CSV di Excel |
 | `src/lib/pdf.ts` | Rapportino e verbale di verifica, generati sul dispositivo |
 | `src/lib/dati.ts` | Gli agganci reattivi fra IndexedDB e le schermate |
+| `src/lib/esempio.ts` | I dati di prova, con le date calcolate a partire da oggi |
 | `src/pages/` | Una schermata per file |
 | `src/components/` | Mattoncini dell'interfaccia, barra di navigazione, riquadro della firma |
 
@@ -157,10 +241,19 @@ motivo.
 npm test
 ```
 
-Coprono le tre parti che possono sbagliare in silenzio: l'aritmetica delle date
-(il 31 gennaio piu' un mese, l'ora legale, il 29 febbraio), le regole con cui lo
-scadenzario decide cosa mostrare, e la lettura dei CSV veri di Excel (virgolette
-raddoppiate, campi che vanno a capo, BOM).
+Coprono le parti che possono sbagliare in silenzio: l'aritmetica delle date (il
+31 gennaio piu' un mese, l'ora legale, il 29 febbraio), le regole con cui lo
+scadenzario decide cosa mostrare, la lettura dei CSV veri di Excel (virgolette
+raddoppiate, campi che vanno a capo, BOM) e la composizione dell'email di avviso,
+che altrimenti nessuno guarderebbe prima che parta da sola alle sette del mattino.
+
+La funzione SQL ha le sue prove, da lanciare contro il database. Girano dentro una
+transazione annullata in fondo, quindi si possono lanciare anche sul database vero
+senza lasciare traccia:
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/scadenze.test.sql
+```
 
 ```bash
 npm run typecheck   # solo i tipi
@@ -179,16 +272,15 @@ Funziona oggi:
 - verbale di verifica periodica con esito, sigilli, libretto e **spunta della trasmissione ad AdE**
 - importazione ed esportazione CSV
 - funzionamento offline con coda delle scritture visibile
+- **avviso giornaliero via email**, con registro degli invii e pulsante di prova
 
 Non c'e' ancora, in ordine di utilita':
 
-1. **avvisi automatici** — un riepilogo giornaliero via email delle scadenze dei
-   prossimi giorni (si fa con una Edge Function e `pg_cron` su Supabase);
-2. **foto negli interventi** — allegati su Supabase Storage, con coda offline;
-3. **calendario dei giri** dei tecnici, con assegnazione per zona;
-4. **magazzino ricambi** collegato alle righe dei rapportini (la tabella c'e' gia');
-5. **esportazione verso la fatturazione elettronica**;
-6. **permessi per zona**: oggi chi ha un accesso vede tutti i clienti.
+1. **foto negli interventi** — allegati su Supabase Storage, con coda offline;
+2. **calendario dei giri** dei tecnici, con assegnazione per zona;
+3. **magazzino ricambi** collegato alle righe dei rapportini (la tabella c'e' gia');
+4. **esportazione verso la fatturazione elettronica**;
+5. **permessi per zona**: oggi chi ha un accesso vede tutti i clienti.
 
 ## Una nota sulle scadenze normative
 

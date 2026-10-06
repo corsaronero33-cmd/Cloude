@@ -53,7 +53,18 @@ export default function Scadenzario() {
     })
   }, [scadenze, filtro, mostraFuture, cerca])
 
-  const gruppi = useMemo(() => raggruppa(visibili), [visibili])
+  // Gli adempimenti arretrati stanno in una sezione loro, non mescolati alle
+  // scadenze in ritardo: sono una cosa diversa (una pratica da mandare, non un
+  // appuntamento da prendere) e cosi' le intestazioni delle sezioni dicono gli
+  // stessi numeri dei riquadri qui sopra.
+  const adempimenti = useMemo(
+    () => visibili.filter((s) => s.origine === 'trasmissione'),
+    [visibili],
+  )
+  const gruppi = useMemo(
+    () => raggruppa(visibili.filter((s) => s.origine !== 'trasmissione')),
+    [visibili],
+  )
 
   return (
     <div>
@@ -73,9 +84,18 @@ export default function Scadenzario() {
 
       {riepilogo.senzaDate > 0 && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Ci sono <strong>{riepilogo.senzaDate}</strong> apparecchi attivi senza data di messa in
-          servizio né di ultima verifica: non possono comparire nello scadenzario finché il dato non
-          viene inserito.{' '}
+          {riepilogo.senzaDate === 1 ? (
+            <>
+              C&apos;è <strong>un apparecchio attivo</strong> senza data di messa in servizio né di
+              ultima verifica: non può comparire nello scadenzario finché il dato non viene inserito.
+            </>
+          ) : (
+            <>
+              Ci sono <strong>{riepilogo.senzaDate} apparecchi attivi</strong> senza data di messa in
+              servizio né di ultima verifica: non possono comparire nello scadenzario finché il dato
+              non viene inserito.
+            </>
+          )}{' '}
           <Link to="/dispositivi?filtro=senza-date" className="font-semibold underline">
             Vedi quali sono
           </Link>
@@ -119,6 +139,19 @@ export default function Scadenzario() {
         <Vuoto testo="Nessuna scadenza da seguire con questi filtri. Se è il primo avvio, i dati vanno ancora caricati." />
       ) : (
         <div className="space-y-5">
+          {adempimenti.length > 0 && (
+            <section>
+              <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">
+                Da trasmettere all&apos;Agenzia delle Entrate
+                <Pillola tono="rosso">{adempimenti.length}</Pillola>
+              </h2>
+              <Scheda className="divide-y divide-slate-100">
+                {adempimenti.map((s) => (
+                  <RigaScadenza key={s.chiave} s={s} />
+                ))}
+              </Scheda>
+            </section>
+          )}
           {ORDINE_FASCE.filter((f) => gruppi[f]?.length).map((fascia) => (
             <section key={fascia}>
               <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700">

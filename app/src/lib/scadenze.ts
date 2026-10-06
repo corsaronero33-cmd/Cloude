@@ -1,4 +1,4 @@
-import { aggiungiMesi, giorniTra, oggi } from './dates'
+import { aggiungiMesi, formatta, giorniTra, oggi } from './dates'
 import type { Cliente, Contratto, Dispositivo, Intervento } from './types'
 import { ETICHETTE_TIPO_CONTRATTO } from './types'
 
@@ -144,7 +144,7 @@ export function costruisciScadenzario(ing: IngressiScadenzario): Scadenza[] {
       cliente_id: i.cliente_id,
       cliente: nomeDi(i.cliente_id),
       titolo: 'Da trasmettere ad AdE',
-      dettaglio: `Verifica del ${data}${i.numero ? ` · rapportino n. ${i.numero}` : ''}`,
+      dettaglio: `Verifica del ${formatta(data)}${i.numero ? ` · rapportino n. ${i.numero}` : ''}`,
       data,
       giorni: Math.min(giorni, 0),
       fascia: 'scaduta',
