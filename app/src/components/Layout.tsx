@@ -121,19 +121,30 @@ function BarraSuperiore() {
       <div className="text-sm font-bold text-slate-900 md:hidden">Gestione Assistenza</div>
       <div className="flex-1" />
       <IndicatoreSync />
-      <div className="hidden text-right text-xs leading-tight md:block">
-        <div className="font-semibold text-slate-800">{profilo?.nome || 'Utente'}</div>
-        <div className="text-slate-500">{profilo?.ruolo === 'admin' ? 'Amministratore' : 'Tecnico'}</div>
-      </div>
-      <Bottone
-        variante="piatto"
-        onClick={async () => {
-          await esci()
-          navigate('/accesso')
-        }}
-      >
-        Esci
-      </Bottone>
+      {/* Senza server non c'e' nessuna sessione da chiudere, e il pulsante
+          svuoterebbe l'archivio locale: cioe' tutto quello che si e' inserito,
+          dato che in quella modalita' non c'e' nessuna copia altrove. Quindi
+          non lo si mostra proprio. */}
+      {configurato && (
+        <>
+          <div className="hidden text-right text-xs leading-tight md:block">
+            <div className="font-semibold text-slate-800">{profilo?.nome || 'Utente'}</div>
+            <div className="text-slate-500">
+              {profilo?.ruolo === 'admin' ? 'Amministratore' : 'Tecnico'}
+            </div>
+          </div>
+          <Bottone
+            variante="piatto"
+            onClick={async () => {
+              if (!confirm('Uscire? I dati scaricati su questo dispositivo verranno cancellati.')) return
+              await esci()
+              navigate('/accesso')
+            }}
+          >
+            Esci
+          </Bottone>
+        </>
+      )}
     </header>
   )
 }
