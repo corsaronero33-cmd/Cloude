@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import { contaPendenti } from '../lib/db'
+import { configurato } from '../lib/supabase'
 import { osservaSync, sincronizza, type StatoSync } from '../lib/sync'
 import { Bottone, unisci } from './ui'
 
@@ -174,7 +175,11 @@ export function IndicatoreSync() {
 }
 
 function descrivi(stato: StatoSync, pendenti: number): { testo: string; classe: string } {
-  if (stato.fase === 'non_configurato') {
+  // Il controllo sulla configurazione viene prima di tutto: senza server la
+  // sincronizzazione non parte mai, quindi lo stato resterebbe "inattivo" e
+  // l'indicatore direbbe "Aggiornato" a proposito di dati che non sono andati
+  // da nessuna parte.
+  if (!configurato || stato.fase === 'non_configurato') {
     return { testo: 'Solo locale', classe: 'bg-violet-100 text-violet-800' }
   }
   if (stato.fase === 'offline') {
