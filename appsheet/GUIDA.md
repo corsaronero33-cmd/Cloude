@@ -44,10 +44,30 @@ qualche migliaio di righe sei abbondantemente dentro.
 
 ## Passo 1 — I fogli
 
-In questa cartella ci sono cinque file CSV. Caricali su Google Drive e aprili
-con Fogli Google, **uno per foglio di lavoro**, tenendo i nomi:
+**Un solo file di Google Fogli, con cinque schede dentro.** Non cinque file
+separati: AppSheet legge ogni scheda come una tabella, e tenendole nello stesso
+file le colleghi fra loro con un clic, le condividi una volta sola e ne fai una
+copia di sicurezza sola.
+
+In questa cartella ci sono cinque file CSV. Crea un foglio di calcolo nuovo su
+Google Drive, aggiungi cinque schede in fondo e chiamale esattamente:
 
 `Clienti` · `Apparecchi` · `Contratti` · `Interventi` · `Impostazioni`
+
+Poi, per ognuna, incolla il contenuto del CSV corrispondente partendo dalla cella
+`A1`. (Se preferisci, carica un CSV su Drive, aprilo con Fogli Google e copia la
+scheda nel file principale con *Copia in → foglio di lavoro esistente*.)
+
+Tre regole che valgono per tutte le schede, perche' AppSheet le legge cosi':
+
+- le **intestazioni stanno nella riga 1**, senza righe vuote sopra e senza celle
+  unite;
+- **niente formule nelle celle.** Le colonne calcolate si fanno in AppSheet
+  (passo 3): una formula scritta nel foglio verrebbe sovrascritta la prima volta
+  che l'app salva una riga;
+- se piu' avanti aggiungi o rinomini una colonna, in AppSheet fai
+  **Regenerate schema** su quella tabella, altrimenti l'app continua a vedere la
+  struttura vecchia.
 
 Le righe di esempio servono a vedere l'app piena fin da subito: le cancelli
 quando inserisci i tuoi. Le date sono scelte in modo che qualcosa risulti
