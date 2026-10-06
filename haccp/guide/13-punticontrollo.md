@@ -20,9 +20,10 @@ su cui riportare gli altri dieci formati alla tappa 5.
 arrivato a 1248 solo perche' le sette colonne sono larghe il doppio del
 necessario.
 
-**2. I 33 punti si caricano a mano, una volta sola.** Stanno in
-`ModelliPuntoControllo`, non in `PuntiControllo`: alla tappa 11 li copiera' lo
-script di impianto, oggi li importa la persona.
+**2. I 33 punti si caricano a mano, una volta sola.** Sono gia' **dentro il
+file**, nella tabella `ModelliPuntoControllo`, importati al montaggio: si
+importa da `Haccp.fmp12` a `Haccp.fmp12`, non da un file esterno. Alla tappa
+11 li copiera' lo script di impianto.
 
 ## Il formato
 
@@ -99,17 +100,42 @@ colonne si chiude esatti a 936.
 
 ## Caricare i 33 punti
 
-Dai modelli, importando `import/dati/ModelliPuntoControllo.tab` **stando sul
-formato `D_PuntiControllo elenco`**.
+**I modelli sono gia' nel file.** Si verifica scegliendo il formato tecnico
+`ModelliPuntoControllo` nella casella `Formato`: il contatore deve dire 33.
 
-Non si importano quattro colonne: `CodiceTipoAttivita` (dice a quale tipo di
-locale serve il modello), `Reparto` (e' un codice, non l'IDUU),
-`PerOgniAttrezzaturaTipo`, `ParametroRichiesto` (non esiste in
-`PuntiControllo`).
+Stando sul formato **`D_PuntiControllo elenco`**: `File › Importa record ›
+File...` e si sceglie **`Haccp.fmp12` stesso**. FileMaker chiede da quale
+tabella leggere: `ModelliPuntoControllo`. Poi **corrispondenza per nome**, e
+quindici campi si accoppiano da soli.
 
-Dopo: `Attivo` a `Si` con `Sostituisci contenuto campo`; i reparti a mano
-dalla tendina; gli **otto controlli per attrezzatura** duplicati con `Ctrl+D`,
-uno per ogni apparecchio di quel tipo.
+### Perche' due tabelle e non una
+
+`ModelliPuntoControllo` e' l'analisi HACCP di *un ristorante con cucina
+qualsiasi*: resta uguale in ogni file venduto. `PuntiControllo` e'
+l'autocontrollo di *questo* locale: i suoi reparti, le sue attrezzature, i
+suoi limiti. Copiare dai modelli al vivo **e' l'impianto di un cliente
+nuovo** — farlo a mano adesso serve anche a capire cosa dovra' fare lo script
+della tappa 11.
+
+### Le quattro colonne da non associare
+
+| Colonna | Perche' |
+|---|---|
+| `CodiceTipoAttivita` | dice a quale **tipo di locale** serve il modello |
+| `Reparto` | e' un **codice** (`CUC`), mentre `IdReparto` vuole l'IDUU di questo locale |
+| `PerOgniAttrezzaturaTipo` | non e' un dato: e' l'istruzione *moltiplica per ogni apparecchio* |
+| `ParametroRichiesto` | in `PuntiControllo` non esiste |
+
+### Le tre cose che l'importazione non puo' fare
+
+- `Attivo` resta vuoto: si riempie con `Sostituisci contenuto campo`, valore `Si`.
+- **I reparti a mano**, dalla tendina: 24 su 33 sono `Cucina`, gli altri
+  dispensa (2), magazzino (2), sala (2), rifiuti (1), due senza reparto.
+- **Gli otto controlli per attrezzatura si moltiplicano**: abbattitore 3,
+  friggitrice 2, frigorifero 1, congelatore 1, vetrina 1 — ma **quante copie
+  servono lo dice l'anagrafica delle attrezzature**, non il modello. Due
+  abbattitori fanno sei punti. `Ctrl+D` duplica, e il `Codice` va cambiato: e'
+  quello che comparira' sul registro accanto a ogni temperatura.
 
 **Prima di importare, una copia del file.** Un'importazione con le colonne
 associate male non si annulla.
