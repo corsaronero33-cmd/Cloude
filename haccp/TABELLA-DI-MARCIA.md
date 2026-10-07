@@ -20,7 +20,7 @@ funziona** e con un DDR da verificare.
 | 2 | Account e permessi | due set di privilegi, login all'apertura, script `94` che crea gli account | **fatto** |
 | **3** | **Punti di controllo** | **l'ultima anagrafica: cosa il programma controlla e con quali limiti** | **← sei qui**, `guide/13-punticontrollo.md` |
 | 4 | Impresa e Parametri | due schede piccole; chiudono i due pulsanti del menu che oggi non portano da nessuna parte | |
-| 5 | Le larghezze | tutti i formati a **960**, la misura fissata alla tappa 3 | |
+| 5 | Le larghezze | tutti i formati a una misura sola (**1020**), ridistribuendo le colonne dei tre elenchi piu' larghi | |
 | 6 | Le rilevazioni | si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita' | |
 | 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
 | 8 | Ricevimenti e lotti | il **passo indietro** della rintracciabilita': da un lotto al DDT e al fornitore | |
@@ -43,8 +43,9 @@ rivendibile; la 9 lo rende **consegnabile**.
 Scheda di lavoro: `guide/13-punticontrollo.md` —
 <https://claude.ai/artifact/TwBbUExwCuU8ZT8yf26qP2>
 
-**Larghezza di progetto decisa qui: `960`**, contenuto che chiude a `936`.
-`D_PuntiControllo` nasce gia' cosi' ed e' il metro della tappa 5.
+**La larghezza di progetto e' da rivedere.** Avevo proposto 960; costruendo,
+le schede si sono assestate fra 1004 e 1018, che e' dove servono. Alla tappa 5
+la misura da proporre e' **1020**. Vedi `archivio/collaudo-011.md`.
 
 L'unica anagrafica che **il programma legge da solo** mentre lavora. Le altre
 servono a scegliere una voce in una tendina; questa dice al motore cosa
