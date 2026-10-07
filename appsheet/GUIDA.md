@@ -1,5 +1,11 @@
 # Gestione assistenza in AppSheet
 
+> Questo file e' la sorgente. La versione da usare mentre si lavora e'
+> `guida.html`: stessa roba, piu' i pulsanti per copiare le formule e le
+> caselle per spuntare i passaggi fatti. Pubblicata come artefatto, salva
+> l'avanzamento nello spazio privato di chi la apre, quindi le spunte si
+> ritrovano anche da un altro dispositivo.
+
 Tutto il necessario per costruirla da solo: i fogli di partenza, le formule
 verificate e l'ordine in cui montarla. L'app la fai tu nell'editor, cosi' resta
 tua davvero.

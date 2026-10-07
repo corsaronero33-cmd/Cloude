@@ -1,0 +1,1076 @@
+<title>Gestione assistenza in AppSheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Manuale di montaggio: una procedura numerata, con il numero del passo
+     nel margine sinistro sul largo e in linea sul telefono. I colori sono
+     quelli di un'etichetta da strumento di misura: grigio freddo, petrolio,
+     e il rosso riservato all'unico vero avvertimento della pagina. */
+  :root {
+    --fondo: #eceef0;
+    --carta: #ffffff;
+    --inchiostro: #15191d;
+    --tenue: #596069;
+    --bordo: #d3d7db;
+    --accento: #0f5c63;
+    --accento-tenue: #e2eef0;
+    --allarme: #9b2226;
+    --allarme-tenue: #fbeaea;
+    --attenzione: #8a5a00;
+    --attenzione-tenue: #fdf2dc;
+    --codice-fondo: #11161b;
+    --codice-testo: #dfe5ea;
+    --codice-chiave: #7fd1d9;
+    --ombra: 0 1px 2px rgba(10, 20, 30, .08), 0 6px 18px -10px rgba(10, 20, 30, .25);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fondo: #0e1216;
+      --carta: #161c22;
+      --inchiostro: #e6eaee;
+      --tenue: #96a0aa;
+      --bordo: #2a333b;
+      --accento: #4fb3bb;
+      --accento-tenue: #10272b;
+      --allarme: #f08a8d;
+      --allarme-tenue: #2b1416;
+      --attenzione: #e0a93a;
+      --attenzione-tenue: #2a2010;
+      --codice-fondo: #0a0e12;
+      --codice-testo: #dfe5ea;
+      --codice-chiave: #7fd1d9;
+      --ombra: 0 1px 2px rgba(0, 0, 0, .5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fondo: #0e1216;
+    --carta: #161c22;
+    --inchiostro: #e6eaee;
+    --tenue: #96a0aa;
+    --bordo: #2a333b;
+    --accento: #4fb3bb;
+    --accento-tenue: #10272b;
+    --allarme: #f08a8d;
+    --allarme-tenue: #2b1416;
+    --attenzione: #e0a93a;
+    --attenzione-tenue: #2a2010;
+    --codice-fondo: #0a0e12;
+    --codice-testo: #dfe5ea;
+    --codice-chiave: #7fd1d9;
+    --ombra: 0 1px 2px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--fondo);
+    color: var(--inchiostro);
+    font: 400 16px/1.6 "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  .guscio { max-width: 860px; margin: 0 auto; padding-inline: 16px; padding-block: 0 72px; }
+
+  /* intestazione */
+  .testata { padding-block: 40px 28px; border-bottom: 2px solid var(--inchiostro); }
+  .occhiello {
+    font: 600 12px/1.3 "IBM Plex Mono", ui-monospace, monospace;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accento);
+    margin: 0 0 10px;
+  }
+  h1 { font-size: clamp(1.75rem, 1.2rem + 2.4vw, 2.6rem); line-height: 1.12; margin: 0 0 12px; text-wrap: balance; letter-spacing: -.02em; }
+  .sommario { font-size: 1.05rem; color: var(--tenue); margin: 0; max-width: 60ch; }
+
+  /* indice */
+  nav.indice { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 20px 4px; }
+  nav.indice a {
+    display: inline-flex; align-items: baseline; gap: 7px;
+    padding: 6px 12px; border: 1px solid var(--bordo); border-radius: 999px;
+    background: var(--carta); color: var(--inchiostro); text-decoration: none;
+    font-size: .85rem; font-weight: 500;
+  }
+  nav.indice a:hover { border-color: var(--accento); color: var(--accento); }
+  nav.indice a b { font: 600 .75rem "IBM Plex Mono", monospace; color: var(--accento); }
+
+  /* passi */
+  section.passo { margin-top: 44px; }
+  .passo-testa { display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start; }
+  .numero {
+    font: 600 1rem/44px "IBM Plex Mono", monospace;
+    text-align: center; color: var(--carta); background: var(--inchiostro);
+    border-radius: 10px; height: 44px;
+  }
+  .passo-testa h2 { margin: 6px 0 0; font-size: 1.35rem; line-height: 1.25; letter-spacing: -.01em; }
+  .passo-corpo { padding-left: 60px; }
+  @media (max-width: 620px) {
+    .passo-corpo { padding-left: 0; }
+    .numero { height: 36px; line-height: 36px; font-size: .9rem; }
+    .passo-testa { grid-template-columns: 36px 1fr; gap: 12px; }
+  }
+  h3 { font-size: 1rem; margin: 26px 0 8px; }
+  p { margin: 0 0 14px; max-width: 68ch; }
+  ul, ol { max-width: 68ch; padding-left: 22px; }
+  li { margin-bottom: 7px; }
+  .tenue { color: var(--tenue); font-size: .9rem; }
+  strong { font-weight: 600; }
+  code:not(pre code) {
+    font: 400 .88em "IBM Plex Mono", ui-monospace, monospace;
+    background: var(--accento-tenue); color: var(--accento);
+    padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* blocchi di codice con copia */
+  .blocco { margin: 0 0 20px; border-radius: 10px; overflow: hidden; box-shadow: var(--ombra); }
+  .blocco-testa {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--carta); border: 1px solid var(--bordo); border-bottom: 0;
+    border-radius: 10px 10px 0 0; padding: 9px 12px;
+  }
+  .blocco-nome { font: 600 .82rem "IBM Plex Mono", monospace; color: var(--tenue); }
+  pre {
+    margin: 0; padding: 14px; overflow-x: auto;
+    background: var(--codice-fondo); color: var(--codice-testo);
+    font: 400 13px/1.55 "IBM Plex Mono", ui-monospace, monospace;
+    border-radius: 0 0 10px 10px; tab-size: 18;
+  }
+  .blocco.solo pre { border-radius: 10px; }
+  button.copia {
+    border: 1px solid var(--bordo); background: var(--fondo); color: var(--inchiostro);
+    border-radius: 7px; padding: 5px 11px; cursor: pointer;
+    font: 500 .8rem "IBM Plex Sans", sans-serif; white-space: nowrap;
+  }
+  button.copia:hover { border-color: var(--accento); color: var(--accento); }
+  button.copia:focus-visible { outline: 2px solid var(--accento); outline-offset: 2px; }
+  button.copia.fatto { border-color: var(--accento); color: var(--accento); background: var(--accento-tenue); }
+
+  /* riquadri */
+  .nota, .avviso, .trappola {
+    border-left: 4px solid; border-radius: 0 8px 8px 0;
+    padding: 14px 16px; margin: 0 0 20px;
+  }
+  .nota { border-color: var(--accento); background: var(--accento-tenue); }
+  .avviso { border-color: var(--attenzione); background: var(--attenzione-tenue); }
+  .trappola { border-color: var(--allarme); background: var(--allarme-tenue); }
+  .nota p:last-child, .avviso p:last-child, .trappola p:last-child { margin-bottom: 0; }
+  .trappola h3 { margin-top: 0; color: var(--allarme); }
+
+  /* fogli di dati */
+  .foglio { margin-bottom: 22px; }
+  .foglio-testa {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: 10px; margin-bottom: 8px;
+  }
+  .foglio-testa h3 { margin: 0; font-size: 1.05rem; }
+  .foglio-testa p { margin: 2px 0 0; }
+  pre.dati { max-height: 190px; font-size: 12px; }
+
+  /* tabelle */
+  .tabellona { overflow-x: auto; margin: 0 0 20px; border: 1px solid var(--bordo); border-radius: 10px; background: var(--carta); }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--bordo); vertical-align: top; }
+  th { font-weight: 600; background: var(--fondo); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td code { white-space: normal; }
+
+  .costo { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-bottom: 20px; }
+  .costo > div { background: var(--carta); border: 1px solid var(--bordo); border-radius: 10px; padding: 14px 16px; }
+  .costo h3 { margin: 0 0 6px; font-size: .95rem; }
+  .costo p { margin: 0; font-size: .9rem; color: var(--tenue); }
+
+
+  /* spunte di avanzamento */
+  .avanzamento {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: var(--carta); border: 1px solid var(--bordo); border-radius: 12px;
+    padding: 12px 14px; margin-block: 18px 4px; box-shadow: var(--ombra);
+  }
+  .avanzamento-testa { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+  .avanzamento-testa .conta { font: 600 1.05rem "IBM Plex Mono", monospace; }
+  .avanzamento-testa .resto { color: var(--tenue); font-size: .85rem; flex: 1; min-width: 0; }
+  .barra { height: 7px; border-radius: 99px; background: var(--fondo); margin-top: 9px; overflow: hidden; }
+  .barra > i { display: block; height: 100%; width: 0; background: var(--accento); transition: width .25s ease; }
+  .salvataggio { margin: 7px 0 0; font-size: .78rem; color: var(--tenue); }
+  button.minuto {
+    border: 1px solid var(--bordo); background: var(--fondo); color: var(--tenue);
+    border-radius: 7px; padding: 4px 10px; cursor: pointer;
+    font: 500 .78rem "IBM Plex Sans", sans-serif;
+  }
+  button.minuto:hover { border-color: var(--allarme); color: var(--allarme); }
+  button.minuto:focus-visible { outline: 2px solid var(--accento); outline-offset: 2px; }
+
+  .elenco-spunte {
+    border: 1px solid var(--bordo); border-radius: 10px; background: var(--carta);
+    padding: 2px 14px; margin: 0 0 20px;
+  }
+  label.spunta {
+    display: flex; gap: 11px; align-items: flex-start;
+    padding: 10px 0; cursor: pointer; max-width: none;
+  }
+  .elenco-spunte label.spunta + label.spunta { border-top: 1px solid var(--bordo); }
+  label.spunta input[type="checkbox"] {
+    flex: none; width: 19px; height: 19px; margin: 1px 0 0;
+    accent-color: var(--accento); cursor: pointer;
+  }
+  label.spunta > span { font-size: .95rem; }
+  label.spunta.fatta > span { color: var(--tenue); text-decoration: line-through; text-decoration-thickness: 1px; }
+  td.cella-spunta { width: 34px; padding-right: 0; }
+  td.cella-spunta input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accento); cursor: pointer; margin: 0; }
+  tr.fatta td:not(.cella-spunta) { color: var(--tenue); }
+
+  nav.indice a i { font: 600 .72rem "IBM Plex Mono", monospace; font-style: normal; color: var(--tenue); }
+  nav.indice a.completo { border-color: var(--accento); background: var(--accento-tenue); }
+  nav.indice a.completo i { color: var(--accento); }
+
+  footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--bordo); color: var(--tenue); font-size: .85rem; }
+  a { color: var(--accento); }
+</style>
+
+<div class="guscio">
+
+<header class="testata">
+  <p class="occhiello">Manuale di montaggio</p>
+  <h1>Gestione assistenza in AppSheet</h1>
+  <p class="sommario">
+    Verifiche periodiche RT, scadenze dei contratti e rapportini firmati, in un&rsquo;app
+    che gira sul telefono e sul PC. I fogli di partenza, le formule già verificate e
+    l&rsquo;ordine in cui montarla. L&rsquo;app la costruisci tu: così resta tua.
+  </p>
+</header>
+
+<nav class="indice">
+  <a href="#costi"><b>·</b> Cosa costa</a>
+  <a href="#p1"><b>1</b> I fogli <i data-sez="p1"></i></a>
+  <a href="#p2"><b>2</b> L&rsquo;app <i data-sez="p2"></i></a>
+  <a href="#p3"><b>3</b> Le formule <i data-sez="p3"></i></a>
+  <a href="#p4"><b>4</b> Lo scadenzario <i data-sez="p4"></i></a>
+  <a href="#p5"><b>5</b> Il PDF <i data-sez="p5"></i></a>
+  <a href="#p6"><b>6</b> L&rsquo;avviso <i data-sez="p6"></i></a>
+  <a href="#p7"><b>7</b> Senza rete <i data-sez="p7"></i></a>
+  <a href="#guai"><b>?</b> Se non torna</a>
+</nav>
+
+<div class="avanzamento">
+  <div class="avanzamento-testa">
+    <span class="conta" id="conta">0 di 0</span>
+    <span class="resto">passaggi completati</span>
+    <button class="minuto" id="azzera" type="button">Azzera le spunte</button>
+  </div>
+  <div class="barra"><i id="barra"></i></div>
+  <p class="salvataggio" id="salvataggio">Carico le spunte&hellip;</p>
+</div>
+
+<section class="passo" id="costi">
+  <div class="passo-testa">
+    <div class="numero">·</div>
+    <h2>Cosa ci guadagni e cosa ti costa</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      Le cose che nell&rsquo;app scritta a mano erano costate più fatica, qui ci sono già:
+      <strong>funziona senza rete</strong>, <strong>firma del cliente</strong>,
+      <strong>foto del guasto</strong>, <strong>rapportino in PDF</strong>,
+      <strong>email giornaliera delle scadenze</strong>, accessi per i tecnici con
+      l&rsquo;account Google che hanno già. Quello che scrivi tu sono formule da foglio di
+      calcolo: <code>IF</code>, <code>AND</code>, <code>TODAY()</code>.
+    </p>
+    <div class="costo">
+      <div>
+        <h3>Un canone, per sempre</h3>
+        <p>Si paga a utente al mese. Il piano Starter — che include email automatiche e
+        generazione PDF, cioè quello che serve a te — sta intorno ai 5 dollari per utente,
+        il Core intorno ai 10. Con tre persone sono circa 180-360 dollari l&rsquo;anno, ogni
+        anno. I prezzi sono stati ritoccati di recente: controllali prima di decidere.</p>
+      </div>
+      <div>
+        <h3>L&rsquo;app resta dentro la piattaforma</h3>
+        <p>I dati no: quelli stanno nei tuoi fogli Google ed escono quando vuoi. Ma la
+        definizione dell&rsquo;app non si porta via. Se un domani il servizio chiude o cambia
+        prezzi, i dati li hai e l&rsquo;app la rifai.</p>
+      </div>
+      <div>
+        <h3>L&rsquo;offline ha dei limiti</h3>
+        <p>Funziona, ma l&rsquo;app va aperta almeno una volta con la rete, le foto arrivano
+        sul telefono solo accendendo la copia locale dei contenuti, e con molti dati si
+        appesantisce. Per qualche migliaio di righe sei abbondantemente dentro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="passo" id="p1">
+  <div class="passo-testa">
+    <div class="numero">1</div>
+    <h2>I fogli</h2>
+  </div>
+  <div class="passo-corpo">
+    <div class="nota">
+      <p><strong>Un solo file, con cinque schede dentro.</strong> Non cinque file separati:
+      AppSheet legge ogni scheda come una tabella, e tenendole nello stesso file le colleghi
+      fra loro con un clic, le condividi una volta sola e ne fai una copia di sicurezza sola.</p>
+    </div>
+    <p>
+      Crea un foglio di calcolo nuovo su Google Drive e aggiungi cinque schede in fondo,
+      chiamate esattamente come qui sotto. Per ognuna, premi <em>Copia per Fogli Google</em>,
+      clicca sulla cella <strong>A1</strong> di quella scheda e incolla: i dati si dividono
+      da soli in colonne.
+    </p>
+    <p>Tre regole che valgono per tutte le schede, perché AppSheet le legge così:</p>
+    <ul>
+      <li>le <strong>intestazioni stanno nella riga 1</strong>, senza righe vuote sopra e
+        senza celle unite;</li>
+      <li><strong>niente formule nelle celle.</strong> Le colonne calcolate si fanno in
+        AppSheet (passo 3): una formula scritta nel foglio verrebbe sovrascritta la prima
+        volta che l&rsquo;app salva quella riga;</li>
+      <li>se più avanti aggiungi o rinomini una colonna, in AppSheet fai
+        <strong>Regenerate schema</strong> su quella tabella, altrimenti l&rsquo;app continua
+        a vedere la struttura vecchia.</li>
+    </ul>
+    <div class="nota">
+      <p>Le righe di esempio ci sono perché l&rsquo;app si veda subito piena: una verifica in
+      ritardo, una fra pochi giorni, un apparecchio con la scheda incompleta, un contratto
+      scaduto, una verifica da trasmettere. <strong>Cancellale quando inserisci le tue</strong>,
+      ma tieni la riga delle intestazioni.</p>
+    </div>
+    
+      <div class="foglio">
+        <div class="foglio-testa">
+          <div>
+            <h3>Clienti</h3>
+            <p class="tenue">Anagrafica. Una riga per cliente.</p>
+          </div>
+          <button class="copia" data-bersaglio="dati-clienti">Copia per Fogli Google</button>
+        </div>
+        <pre id="dati-clienti" class="dati">ID	Ragione sociale	Partita IVA	Codice fiscale	Indirizzo	CAP	Citta	Provincia	Telefono	Email	Note
+C001	Bar Centrale di Rossi snc	01234567890		Corso Asti 14	14049	Nizza Monferrato	AT	0141 721456	barcentrale@esempio.it	
+C002	Panificio Bianchi	02345678901		Via Roma 3	14053	Canelli	AT	0141 823190		
+C003	Alimentari Verdi srl	03456789012		Viale Partigiani 88	14100	Asti	AT	0141 594100		Tre casse nel punto vendita di corso Alba
+C004	Tabaccheria Neri	04567890123		Via Garibaldi 7	14055	Costigliole d&#x27;Asti	AT			
+C005	Trattoria del Borgo	05678901234		Piazza Garibaldi 2	14049	Nizza Monferrato	AT			Chiuso il lunedi. Chiamare prima di passare.</pre>
+      </div>
+      <div class="foglio">
+        <div class="foglio-testa">
+          <div>
+            <h3>Apparecchi</h3>
+            <p class="tenue">I registratori telematici. È qui che vive la scadenza della verifica.</p>
+          </div>
+          <button class="copia" data-bersaglio="dati-apparecchi">Copia per Fogli Google</button>
+        </div>
+        <pre id="dati-apparecchi" class="dati">ID	Cliente	Matricola	Marca	Modello	Provvedimento	Sede	Messa in servizio	Ultima verifica	Firmware	Collegato POS	Stato	Data dismissione	Note
+A001	C001	1ABC2100345	Epson	FP-81 II	12345/2019		2021-02-10	2024-09-17	1.8.3	FALSE	Attivo		
+A002	C002	2DEF2200781	RCH	Print F		2022-05-04	2024-10-10		TRUE	Attivo		
+A003	C003	3GHI2301122	Custom	K3		Punto vendita corso Alba	2023-03-15	2024-10-27	2.1.0	FALSE	Attivo		
+A004	C003	3GHI2301123	Custom	K3		Punto vendita corso Alba	2023-03-15	2024-12-06	2.1.0	TRUE	Attivo		
+A005	C004	4JKL2400567	Olivetti	Form 100			2024-11-06			FALSE	Attivo		Mai verificato dopo la messa in servizio
+A006	C005	5MNO2200999	Epson	FP-81 II						FALSE	Attivo		Date da recuperare dal libretto in sede
+A007	C001	0XYZ1800111	Epson	FP-90			2018-06-01	2023-02-14		FALSE	Dismesso	2026-02-10	</pre>
+      </div>
+      <div class="foglio">
+        <div class="foglio-testa">
+          <div>
+            <h3>Contratti</h3>
+            <p class="tenue">Abbonamenti al tuo software, canoni, assistenza.</p>
+          </div>
+          <button class="copia" data-bersaglio="dati-contratti">Copia per Fogli Google</button>
+        </div>
+        <pre id="dati-contratti" class="dati">ID	Cliente	Tipo	Descrizione	Data inizio	Scadenza	Periodicita	Importo	Licenza	Rinnovo automatico	Stato	Note
+K001	C001	Abbonamento software	Gestionale bar 2 postazioni	2025-09-30	2026-09-30	Annuale	380	GB-2024-0071	FALSE	Scaduto	
+K002	C002	Abbonamento software	Gestionale negozio	2025-10-18	2026-10-18	Annuale	290	GN-2025-0132	TRUE	Attivo	
+K003	C003	Contratto di assistenza	Assistenza full 4 casse	2025-10-31	2026-10-31	Annuale	1200		FALSE	Attivo	
+K004	C004	Canone RT	Canone RT annuale	2025-11-23	2026-11-23	Annuale	90		FALSE	Attivo	
+K005	C005	Abbonamento software	Comande su tablet	2026-01-09	2027-01-09	Annuale	540	CT-2025-0044	FALSE	Attivo	</pre>
+      </div>
+      <div class="foglio">
+        <div class="foglio-testa">
+          <div>
+            <h3>Interventi</h3>
+            <p class="tenue">Guasti, verifiche, installazioni. Il rapportino.</p>
+          </div>
+          <button class="copia" data-bersaglio="dati-interventi">Copia per Fogli Google</button>
+        </div>
+        <pre id="dati-interventi" class="dati">ID	Data	Cliente	Apparecchio	Tipo	Stato	Tecnico	Problema	Lavoro eseguito	Ore	Esito verifica	Sigilli	Libretto	Trasmessa AdE	Data trasmissione	Da fatturare	Fatturato	Firma	Foto	Note
+I001	2026-09-27	C002	A002	Verifica periodica	Chiuso		Verifica periodica biennale	Controllo memoria permanente e sigilli. Esito regolare.	1	Regolare	integri, n. 4	pag. 12	FALSE		TRUE	FALSE			
+I002	2026-10-06	C001	A001	Hardware	Aperto		La stampante non taglia lo scontrino. Carta inceppata a ogni chiusura.						FALSE		TRUE	FALSE			
+I003	2026-10-05	C003		Software	In corso		Listino non si aggiorna sulla cassa 3	Riallineato il database. In attesa di conferma dal cliente.	1.5				FALSE		TRUE	FALSE			
+I004	2026-09-02	C005	A006	Installazione	Chiuso		Nuovo registratore telematico	Installato e messo in servizio. Personale formato.	3				FALSE		TRUE	TRUE			</pre>
+      </div>
+      <div class="foglio">
+        <div class="foglio-testa">
+          <div>
+            <h3>Impostazioni</h3>
+            <p class="tenue">Cadenza della verifica, destinatari degli avvisi, intestazione del PDF.</p>
+          </div>
+          <button class="copia" data-bersaglio="dati-impostazioni">Copia per Fogli Google</button>
+        </div>
+        <pre id="dati-impostazioni" class="dati">Chiave	Valore	Descrizione
+mesi_verifica	24	Ogni quanti mesi va rifatta la verifica periodica
+giorni_avviso	30	Quanti giorni prima far comparire una scadenza fra quelle in arrivo
+azienda_nome		Intestazione del rapportino
+azienda_indirizzo		
+azienda_piva		
+azienda_telefono		
+azienda_email		
+azienda_laboratorio		Codice del laboratorio abilitato alle verifiche
+avvisi_destinatari		Indirizzi a cui mandare il riepilogo giornaliero separati da virgola</pre>
+      </div>
+    <p>In <code>Impostazioni</code> compila almeno <code>azienda_nome</code> e
+    <code>avvisi_destinatari</code>.</p>
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="f-file"><span>Creato il file su Google Drive, dentro una cartella dedicata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="f-clienti"><span>Scheda <b>Clienti</b> creata e incollata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="f-apparecchi"><span>Scheda <b>Apparecchi</b> creata e incollata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="f-contratti"><span>Scheda <b>Contratti</b> creata e incollata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="f-interventi"><span>Scheda <b>Interventi</b> creata e incollata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="f-impostazioni"><span>Scheda <b>Impostazioni</b> creata e incollata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="f-azienda"><span>Compilati <code>azienda_nome</code> e <code>avvisi_destinatari</code></span></label>
+    </div>
+
+  </div>
+</section>
+
+<section class="passo" id="p2">
+  <div class="passo-testa">
+    <div class="numero">2</div>
+    <h2>Creare l&rsquo;app</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      Su <a href="https://www.appsheet.com" target="_blank" rel="noopener">appsheet.com</a>:
+      <strong>Create → App → Start with existing data</strong>, e scegli la scheda
+      <code>Clienti</code>. Poi da <strong>Data → Add new data</strong> aggiungi le altre
+      quattro schede.
+    </p>
+    <div class="avviso">
+      <p><strong>Aggiungile tutte e cinque prima di toccare qualunque altra cosa.</strong>
+      I collegamenti del punto 2.3 non si possono creare verso una tabella che l&rsquo;app non
+      conosce ancora.</p>
+    </div>
+
+    <h3>2.1 &nbsp;La chiave <span class="tenue">— su tutte e cinque</span></h3>
+    <p>
+      In <strong>Data → Columns</strong>, scheda per scheda: la colonna <code>ID</code>
+      dev&rsquo;essere la <strong>Key</strong>, con <em>Initial value</em> impostato a
+      <code>UNIQUEID()</code>. Su <code>Impostazioni</code> la chiave è <code>Chiave</code>
+      invece di <code>ID</code>, e non serve <code>UNIQUEID()</code>: quelle righe le scrivi tu.
+    </p>
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="a-crea"><span>App creata partendo dalla scheda <b>Clienti</b></span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="a-tabelle"><span>Aggiunte all&rsquo;app le altre quattro schede</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="a-key"><span>Chiave impostata su tutte e cinque le tabelle</span></label>
+    </div>
+
+    <h3>2.2 &nbsp;L&rsquo;etichetta <span class="tenue">— solo su Clienti e Apparecchi</span></h3>
+    <p>Spunta la casella <strong>LABEL</strong> su:</p>
+    <div class="tabellona">
+      <table>
+        <tr><th></th><th>Tabella</th><th>Colonna da marcare come LABEL</th></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-label-clienti"></td><td><code>Clienti</code></td><td><code>Ragione sociale</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-label-apparecchi"></td><td><code>Apparecchi</code></td><td><code>Matricola</code></td></tr>
+      </table>
+    </div>
+    <div class="trappola">
+      <h3>Non saltare questo passaggio</h3>
+      <p>L&rsquo;etichetta è il nome con cui una riga si presenta quando viene richiamata da
+      un&rsquo;altra parte. Senza, nei menu a tendina del punto successivo ti ritroveresti a
+      scegliere fra <code>C001</code>, <code>C002</code>, <code>C003</code> invece che fra i
+      nomi dei clienti. Sul campo, davanti al cliente, è un&rsquo;app inusabile.</p>
+    </div>
+
+    <h3>2.3 &nbsp;I collegamenti <span class="tenue">— quattro colonne, tre tabelle</span></h3>
+    <p>
+      In <strong>Data → Columns</strong>, apri la colonna con l&rsquo;icona della matita, metti
+      <code>Type</code> = <strong>Ref</strong> e, sotto <em>Type Details</em>, imposta
+      <code>Source table</code>:
+    </p>
+    <div class="tabellona">
+      <table>
+        <tr><th></th><th>Tabella dove lavori</th><th>Colonna</th><th>Type</th><th>Source table</th></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-ref-app"></td><td><code>Apparecchi</code></td><td><code>Cliente</code></td><td>Ref</td><td><code>Clienti</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-ref-con"></td><td><code>Contratti</code></td><td><code>Cliente</code></td><td>Ref</td><td><code>Clienti</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-ref-int-cli"></td><td><code>Interventi</code></td><td><code>Cliente</code></td><td>Ref</td><td><code>Clienti</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-ref-int-app"></td><td><code>Interventi</code></td><td><code>Apparecchio</code></td><td>Ref</td><td><code>Apparecchi</code></td></tr>
+      </table>
+    </div>
+    <p>
+      Su <code>Clienti</code> e su <code>Impostazioni</code> non c&rsquo;è niente da collegare.
+      E attenzione a due colonne che <strong>restano testo semplice</strong>:
+      <code>Sede</code> in <code>Apparecchi</code> e <code>Tecnico</code> in
+      <code>Interventi</code>. Non esistono tabelle <em>Sedi</em> e <em>Tecnici</em>, quindi
+      non c&rsquo;è niente a cui puntare.
+    </p>
+    <div class="nota">
+      <p>Fatti i quattro collegamenti, in <code>Clienti</code> compaiono da sole delle colonne
+      tipo <code>Related Apparecchis</code>. Non le hai create tu: le aggiunge AppSheet, e sono
+      quelle che fanno vedere gli apparecchi di un cliente aprendo la sua scheda.</p>
+      <p>I collegamenti non sono un vezzo. Le formule del passo 5 e del passo 6 scrivono
+      <code>[Cliente].[Ragione sociale]</code>, cioè <em>vai al cliente collegato e prendi la
+      sua ragione sociale</em>. Se <code>Cliente</code> resta di tipo <code>Text</code>, quelle
+      espressioni non funzionano.</p>
+    </div>
+
+    <h3>2.4 &nbsp;I tipi che AppSheet indovina male</h3>
+    <div class="tabellona">
+      <table>
+        <tr><th></th><th>Colonne</th><th>Tipo da impostare</th></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-tipo-date"></td><td><code>Messa in servizio</code>, <code>Ultima verifica</code>, <code>Scadenza</code>, <code>Data</code>, <code>Data inizio</code>, <code>Data trasmissione</code>, <code>Data dismissione</code></td><td><strong>Date</strong></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-tipo-sino"></td><td><code>Collegato POS</code>, <code>Trasmessa AdE</code>, <code>Da fatturare</code>, <code>Fatturato</code>, <code>Rinnovo automatico</code></td><td><strong>Yes/No</strong></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-tipo-firma"></td><td><code>Firma</code></td><td><strong>Signature</strong></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-tipo-foto"></td><td><code>Foto</code></td><td><strong>Image</strong></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="a-tipo-dec"></td><td><code>Importo</code>, <code>Ore</code></td><td><strong>Decimal</strong></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="passo" id="p3">
+  <div class="passo-testa">
+    <div class="numero">3</div>
+    <h2>Le formule</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      È il cuore. Si aggiungono in <strong>Data → Columns → Add virtual column</strong>, e
+      l&rsquo;espressione va nel campo <strong>App formula</strong>. Tutte queste stanno sulla
+      tabella <code>Apparecchi</code>, tranne le ultime due.
+    </p>
+
+    <h3>Base verifica <span class="tenue">— tipo Date</span></h3>
+    <p>Da dove parte il conto: l&rsquo;ultima verifica, o in mancanza la messa in servizio.</p>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Base verifica</span>
+        <button class="copia" data-bersaglio="f1">Copia</button></div>
+      <pre id="f1">IFS(
+  ISNOTBLANK([Ultima verifica]), [Ultima verifica],
+  ISNOTBLANK([Messa in servizio]), [Messa in servizio]
+)</pre>
+    </div>
+
+    <h3>Mesi verifica <span class="tenue">— tipo Number</span></h3>
+    <p>Legge la cadenza dalle impostazioni, così il giorno che la norma cambia correggi una
+    cella sola invece di rifare le formule.</p>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Mesi verifica</span>
+        <button class="copia" data-bersaglio="f2">Copia</button></div>
+      <pre id="f2">NUMBER(ANY(SELECT(Impostazioni[Valore], [Chiave] = "mesi_verifica")))</pre>
+    </div>
+
+    <h3>Prossima verifica <span class="tenue">— tipo Date</span></h3>
+    <p>Questa copiala <strong>esattamente</strong>. Il perché è subito sotto.</p>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Prossima verifica</span>
+        <button class="copia" data-bersaglio="f3">Copia</button></div>
+      <pre id="f3">IF(
+  ISBLANK([Base verifica]),
+  "",
+  MIN(LIST(
+    EOMONTH([Base verifica], [Mesi verifica] - 1) + DAY([Base verifica]),
+    EOMONTH([Base verifica], [Mesi verifica])
+  ))
+)</pre>
+    </div>
+
+    <div class="trappola">
+      <h3>La formula che trovi nei forum è sbagliata</h3>
+      <p>
+        AppSheet non sa sommare i mesi, e ci si gira intorno con <code>EOMONTH</code>. La
+        versione che circola è quella corta, senza <code>MIN(LIST(...))</code>:
+        <code>EOMONTH([Base verifica], [Mesi verifica] - 1) + DAY([Base verifica])</code>.
+      </p>
+      <p>
+        <strong>Non usarla.</strong> L&rsquo;ho confrontata con il risultato corretto su tutte
+        le date di vent&rsquo;anni: sbaglia sulle verifiche fatte il 29 febbraio, e sbaglia
+        <strong>in avanti</strong>. Un apparecchio verificato il 29 febbraio 2024 ti
+        risulterebbe in scadenza il <strong>1° marzo 2026</strong> invece che il
+        <strong>28 febbraio</strong>: l&rsquo;avviso ti arriva a termine già scaduto. Su 7.305
+        date, la versione corta sbaglia 5 volte per ogni cadenza provata, quella con
+        <code>MIN(LIST(...))</code> nessuna.
+      </p>
+    </div>
+
+    <h3>Giorni alla verifica <span class="tenue">— tipo Number</span></h3>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Giorni alla verifica</span>
+        <button class="copia" data-bersaglio="f4">Copia</button></div>
+      <pre id="f4">IF(ISBLANK([Prossima verifica]), "", HOUR([Prossima verifica] - TODAY()) / 24)</pre>
+    </div>
+    <div class="avviso">
+      <p>La divisione per 24 non è un errore. In AppSheet la differenza fra due date è una
+      <em>durata</em>, non un numero, e <code>HOUR()</code> la trasforma in ore. Se una
+      formula con le date dà un risultato assurdo, è la prima cosa da guardare.</p>
+    </div>
+
+    <h3>Situazione <span class="tenue">— tipo Text</span></h3>
+    <p>Serve a colorare gli elenchi a colpo d&rsquo;occhio.</p>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Situazione (Apparecchi)</span>
+        <button class="copia" data-bersaglio="f5">Copia</button></div>
+      <pre id="f5">IFS(
+  ISBLANK([Prossima verifica]),   "Date mancanti",
+  [Giorni alla verifica] &lt; 0,     "Scaduta",
+  [Giorni alla verifica] &lt;= 7,    "Entro 7 giorni",
+  [Giorni alla verifica] &lt;= 30,   "Entro il mese",
+  TRUE,                           "In regola"
+)</pre>
+    </div>
+
+    <h3>Sulla tabella Contratti</h3>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Giorni alla scadenza — Number</span>
+        <button class="copia" data-bersaglio="f6">Copia</button></div>
+      <pre id="f6">HOUR([Scadenza] - TODAY()) / 24</pre>
+    </div>
+    <div class="blocco">
+      <div class="blocco-testa"><span class="blocco-nome">Situazione (Contratti) — Text</span>
+        <button class="copia" data-bersaglio="f7">Copia</button></div>
+      <pre id="f7">IFS(
+  [Giorni alla scadenza] &lt; 0,   "Scaduto",
+  [Giorni alla scadenza] &lt;= 7,  "Entro 7 giorni",
+  [Giorni alla scadenza] &lt;= 30, "Entro il mese",
+  TRUE,                         "In regola"
+)</pre>
+    </div>
+
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="fo-base"><span>Colonna virtuale <b>Base verifica</b> creata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-mesi"><span>Colonna virtuale <b>Mesi verifica</b> creata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-prossima"><span>Colonna virtuale <b>Prossima verifica</b> creata, con <code>MIN(LIST(&hellip;))</code></span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-giorni"><span>Colonna virtuale <b>Giorni alla verifica</b> creata</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-situazione"><span>Colonna virtuale <b>Situazione</b> creata su Apparecchi</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-con-giorni"><span>Colonna virtuale <b>Giorni alla scadenza</b> creata su Contratti</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-con-situazione"><span>Colonna virtuale <b>Situazione</b> creata su Contratti</span></label>
+    </div>
+    <div class="nota">
+      <p>Le colonne virtuali si ricalcolano <strong>a ogni sincronizzazione</strong>, non di
+      minuto in minuto. Siccome dipendono da <code>TODAY()</code>, i giorni si aggiornano
+      quando apri l&rsquo;app. Per uno scadenzario va benissimo.</p>
+    </div>
+  </div>
+</section>
+
+<section class="passo" id="p4">
+  <div class="passo-testa">
+    <div class="numero">4</div>
+    <h2>Lo scadenzario</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      In <strong>Data → Slices</strong> crea questi filtri, poi per ognuno una vista in
+      <strong>UX → Views</strong> (tipo <em>deck</em> o <em>table</em>).
+    </p>
+    <div class="tabellona">
+      <table>
+        <tr><th></th><th>Nome</th><th>Tabella</th><th>Row filter condition</th></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-verifiche"></td><td>Verifiche in scadenza</td><td>Apparecchi</td><td><code>AND(NOT(IN([Stato], LIST("Dismesso","Magazzino"))), ISNOTBLANK([Prossima verifica]), [Giorni alla verifica] &lt;= 30)</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-datemancanti"></td><td>Date mancanti</td><td>Apparecchi</td><td><code>AND([Stato] &lt;&gt; "Dismesso", ISBLANK([Base verifica]))</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-pos"></td><td>Da adeguare al POS</td><td>Apparecchi</td><td><code>AND([Stato] = "Attivo", NOT([Collegato POS]))</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-contratti"></td><td>Contratti in scadenza</td><td>Contratti</td><td><code>AND(IN([Stato], LIST("Attivo","Scaduto")), [Giorni alla scadenza] &lt;= 30)</code></td></tr>
+        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-trasmettere"></td><td>Da trasmettere ad AdE</td><td>Interventi</td><td><code>AND([Tipo] = "Verifica periodica", [Stato] = "Chiuso", NOT([Trasmessa AdE]))</code></td></tr>
+      </table>
+    </div>
+    <p>
+      Ordina le prime per <code>Prossima verifica</code> crescente, e colora per
+      <code>Situazione</code>: rosso su <em>Scaduta</em>, ambra su <em>Entro 7 giorni</em>.
+      Metti <strong>Verifiche in scadenza</strong> come schermata di apertura, in
+      <strong>UX → Options → Starting view</strong>: è la domanda a cui l&rsquo;app deve
+      rispondere appena si apre.
+    </p>
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="s-apertura"><span>Impostata <b>Verifiche in scadenza</b> come schermata di apertura</span></label>
+    </div>
+
+  </div>
+</section>
+
+<section class="passo" id="p5">
+  <div class="passo-testa">
+    <div class="numero">5</div>
+    <h2>Il rapportino in PDF</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      Crea un Google Documento con l&rsquo;intestazione della tua ditta e i segnaposto fra
+      doppie parentesi angolari.
+    </p>
+    <div class="blocco solo">
+      <div class="blocco-testa"><span class="blocco-nome">Modello del rapportino</span>
+        <button class="copia" data-bersaglio="f8">Copia</button></div>
+      <pre id="f8">Cliente:      &lt;&lt;[Cliente].[Ragione sociale]&gt;&gt;
+Apparecchio:  &lt;&lt;[Apparecchio].[Matricola]&gt;&gt;  &lt;&lt;[Apparecchio].[Marca]&gt;&gt; &lt;&lt;[Apparecchio].[Modello]&gt;&gt;
+Data:         &lt;&lt;[Data]&gt;&gt;          Ore: &lt;&lt;[Ore]&gt;&gt;
+
+PROBLEMA RILEVATO
+&lt;&lt;[Problema]&gt;&gt;
+
+LAVORO ESEGUITO
+&lt;&lt;[Lavoro eseguito]&gt;&gt;
+
+Esito verifica: &lt;&lt;[Esito verifica]&gt;&gt;    Sigilli: &lt;&lt;[Sigilli]&gt;&gt;    Libretto: &lt;&lt;[Libretto]&gt;&gt;
+
+Firma del cliente
+&lt;&lt;[Firma]&gt;&gt;</pre>
+    </div>
+    <p>
+      Poi <strong>Automation → Bot</strong>, evento <em>Data change</em> su
+      <code>Interventi</code>, azione <em>Create a new file</em> con quel modello. Per
+      cominciare è anche più semplice farne un&rsquo;<strong>azione manuale</strong> sulla riga:
+      il PDF lo generi quando vuoi tu, premendo un pulsante.
+    </p>
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="p-modello"><span>Google Documento del rapportino creato con i segnaposto</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="p-azione"><span>Collegato all&rsquo;app come automazione o come azione sulla riga</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="p-prova"><span>Generato un rapportino di prova e controllato che i campi si riempiano</span></label>
+    </div>
+
+  </div>
+</section>
+
+<section class="passo" id="p6">
+  <div class="passo-testa">
+    <div class="numero">6</div>
+    <h2>L&rsquo;avviso giornaliero</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      <strong>Automation → Create new bot</strong>, evento <strong>Schedule</strong> (ogni
+      giorno, all&rsquo;ora che preferisci), azione <strong>Send an email</strong>. Nel corpo,
+      una sezione per tipo.
+    </p>
+    <div class="blocco solo">
+      <div class="blocco-testa"><span class="blocco-nome">Corpo dell&rsquo;email</span>
+        <button class="copia" data-bersaglio="f9">Copia</button></div>
+      <pre id="f9">IN RITARDO
+&lt;&lt;Start: FILTER("Apparecchi", AND(ISNOTBLANK([Prossima verifica]), [Giorni alla verifica] &lt; 0))&gt;&gt;
+&lt;&lt;[Cliente].[Ragione sociale]&gt;&gt; - matricola &lt;&lt;[Matricola]&gt;&gt; - scaduta il &lt;&lt;[Prossima verifica]&gt;&gt;
+&lt;&lt;End&gt;&gt;
+
+ENTRO SETTE GIORNI
+&lt;&lt;Start: FILTER("Apparecchi", AND([Giorni alla verifica] &gt;= 0, [Giorni alla verifica] &lt;= 7))&gt;&gt;
+&lt;&lt;[Cliente].[Ragione sociale]&gt;&gt; - matricola &lt;&lt;[Matricola]&gt;&gt; - il &lt;&lt;[Prossima verifica]&gt;&gt;
+&lt;&lt;End&gt;&gt;
+
+CONTRATTI IN SCADENZA
+&lt;&lt;Start: FILTER("Contratti", AND(IN([Stato], LIST("Attivo","Scaduto")), [Giorni alla scadenza] &lt;= 30))&gt;&gt;
+&lt;&lt;[Cliente].[Ragione sociale]&gt;&gt; - &lt;&lt;[Descrizione]&gt;&gt; - il &lt;&lt;[Scadenza]&gt;&gt;
+&lt;&lt;End&gt;&gt;
+
+DA TRASMETTERE ALL'AGENZIA
+&lt;&lt;Start: FILTER("Interventi", AND([Tipo] = "Verifica periodica", [Stato] = "Chiuso", NOT([Trasmessa AdE])))&gt;&gt;
+&lt;&lt;[Cliente].[Ragione sociale]&gt;&gt; - verifica del &lt;&lt;[Data]&gt;&gt;
+&lt;&lt;End&gt;&gt;</pre>
+    </div>
+    <p>Nel destinatario metti l&rsquo;espressione che legge le impostazioni, così cambi
+    indirizzo senza entrare nell&rsquo;automazione:</p>
+    <div class="blocco solo">
+      <div class="blocco-testa"><span class="blocco-nome">Destinatari</span>
+        <button class="copia" data-bersaglio="f10">Copia</button></div>
+      <pre id="f10">ANY(SELECT(Impostazioni[Valore], [Chiave] = "avvisi_destinatari"))</pre>
+    </div>
+    <div class="nota">
+      <p>Aggiungi al bot una condizione che gli impedisca di partire quando non c&rsquo;è
+      niente da dire. Un messaggio che arriva solo quando serve lo si continua a leggere;
+      uno che arriva tutti i giorni si smette di aprirlo dopo due settimane, e quel giorno
+      dentro c&rsquo;era una scadenza.</p>
+    </div>
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="v-bot"><span>Automazione creata con evento <b>Schedule</b> giornaliero</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="v-corpo"><span>Corpo dell&rsquo;email incollato, con le quattro sezioni</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="v-destinatari"><span>Destinatari presi dalle impostazioni</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="v-condizione"><span>Aggiunta la condizione che blocca l&rsquo;invio quando non c&rsquo;è nulla</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="v-prova"><span>Fatto partire un invio di prova e ricevuto il messaggio</span></label>
+    </div>
+
+  </div>
+</section>
+
+<section class="passo" id="p7">
+  <div class="passo-testa">
+    <div class="numero">7</div>
+    <h2>Senza rete</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      In <strong>UX → Options</strong> accendi <strong>Offline use</strong>, e
+      <strong>Offline content caching</strong> se vuoi anche le foto sul telefono.
+    </p>
+    <div class="avviso">
+      <p><strong>Falla davvero, questa prova, prima di dare l&rsquo;app ai tecnici:</strong>
+      apri l&rsquo;app, metti il telefono in modalità aereo, compila un rapportino completo con
+      la firma, poi riaccendi la rete e controlla che sia arrivato nel foglio. È l&rsquo;unico
+      modo di sapere com&rsquo;è configurata davvero.</p>
+    </div>
+    <div class="elenco-spunte">
+      <label class="spunta"><input type="checkbox" data-spunta="o-accendi"><span>Acceso <b>Offline use</b> (e <b>Offline content caching</b> per le foto)</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="o-prova"><span>Provato in modalità aereo: rapportino compilato, firmato e risalito</span></label>
+    </div>
+
+  </div>
+</section>
+
+<section class="passo" id="guai">
+  <div class="passo-testa">
+    <div class="numero">?</div>
+    <h2>Se qualcosa non torna</h2>
+  </div>
+  <div class="passo-corpo">
+    <div class="tabellona">
+      <table>
+        <tr><th>Sintomo</th><th>Quasi sempre è questo</th></tr>
+        <tr><td>Una formula con le date dà numeri assurdi</td><td>Manca <code>HOUR(...) / 24</code>: la differenza fra due date è una durata, non un numero.</td></tr>
+        <tr><td><code>Mesi verifica</code> risulta vuoto</td><td>Nella scheda <code>Impostazioni</code> la chiave dev&rsquo;essere scritta esattamente <code>mesi_verifica</code>, senza spazi né maiuscole.</td></tr>
+        <tr><td>Un elenco è vuoto quando non dovrebbe</td><td>Nello slice, i valori di <code>Stato</code> vanno scritti come nel foglio: <code>Attivo</code> con la A maiuscola.</td></tr>
+        <tr><td>Le righe nuove non si collegano al cliente</td><td>La colonna <code>Cliente</code> non è di tipo <strong>Ref</strong>.</td></tr>
+        <tr><td>Il PDF esce con i segnaposto al posto dei dati</td><td>Il nome dentro le parentesi non corrisponde a quello della colonna, lettera per lettera.</td></tr>
+      </table>
+    </div>
+    <p>
+      Se non è nessuno di questi, scrivimi che cosa vedi — la formula e il messaggio
+      dell&rsquo;editor — e lo risolviamo.
+    </p>
+  </div>
+</section>
+
+<section class="passo">
+  <div class="passo-testa">
+    <div class="numero">·</div>
+    <h2>Cosa non ho messo, e perché</h2>
+  </div>
+  <div class="passo-corpo">
+    <p>
+      Sedi multiple, magazzino ricambi e righe di materiale sul rapportino non ci sono. Su
+      cinque tabelle l&rsquo;app si monta in una sera, su otto no. La sede per ora è un campo
+      di testo sull&rsquo;apparecchio. Quando l&rsquo;app sarà in uso e sapremo che cosa manca
+      davvero, si aggiungono: in AppSheet aggiungere una tabella è aggiungere una scheda al
+      foglio.
+    </p>
+  </div>
+</section>
+
+<footer>
+  I dati di esempio hanno nomi inventati e date calcolate perché lo scadenzario si veda
+  subito pieno. La formula della prossima verifica è stata confrontata con il risultato
+  corretto su tutte le date dal 2015 al 2035.
+</footer>
+
+</div>
+
+<script>
+  // Copia negli appunti. Si legge textContent, così quello che finisce negli
+  // appunti è esattamente il testo che si vede, tabulazioni comprese: incollato
+  // in Fogli Google si divide da solo in colonne.
+  document.querySelectorAll('button.copia').forEach(function (pulsante) {
+    pulsante.addEventListener('click', function () {
+      var sorgente = document.getElementById(pulsante.dataset.bersaglio);
+      if (!sorgente) return;
+      var testo = sorgente.textContent;
+      var riuscito = function () {
+        var prima = pulsante.textContent;
+        pulsante.textContent = 'Copiato';
+        pulsante.classList.add('fatto');
+        setTimeout(function () {
+          pulsante.textContent = prima;
+          pulsante.classList.remove('fatto');
+        }, 1600);
+      };
+      // Alcune applicazioni rifiutano l'accesso agli appunti: in quel caso si
+      // seleziona il testo, così resta comunque un Ctrl+C di distanza.
+      var ripiego = function () {
+        var selezione = window.getSelection();
+        var intervallo = document.createRange();
+        intervallo.selectNodeContents(sorgente);
+        selezione.removeAllRanges();
+        selezione.addRange(intervallo);
+        pulsante.textContent = 'Premi Ctrl+C';
+        setTimeout(function () { pulsante.textContent = 'Copia'; }, 2600);
+      };
+      try {
+        navigator.clipboard.writeText(testo).then(riuscito, ripiego);
+      } catch (e) {
+        ripiego();
+      }
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // Spunte di avanzamento.
+  //
+  // Un manuale di montaggio si segue in piu' sedute, quindi lo stato deve
+  // sopravvivere alla chiusura della pagina. Due memorie, nell'ordine:
+  //
+  //   l'archivio dell'artefatto  ritrova le spunte anche aprendo la guida da
+  //                              un altro dispositivo, perche' sta sul server
+  //                              nello spazio privato di chi guarda;
+  //   il browser                 ripiego immediato, e unica memoria quando
+  //                              l'archivio non e' disponibile.
+  //
+  // Si scrive sempre in tutte e due: il browser risponde subito, il server
+  // con calma, e se il server non c'e' le spunte restano comunque.
+  // ---------------------------------------------------------------------
+  (function () {
+    var CHIAVE = 'progresso-appsheet-v1';
+    var caselle = Array.prototype.slice.call(document.querySelectorAll('[data-spunta]'));
+    if (caselle.length === 0) return;
+
+    var stato = {};
+    var scriviRemoto = null;
+    var inVolo = false, daRiscrivere = false, attesa = null;
+    var riga = document.getElementById('salvataggio');
+
+    function dillo(testo) { if (riga) riga.textContent = testo; }
+
+    function leggiBrowser() {
+      try { return JSON.parse(localStorage.getItem(CHIAVE) || '{}') || {}; }
+      catch (e) { return {}; }
+    }
+    function salvaBrowser() {
+      try { localStorage.setItem(CHIAVE, JSON.stringify(stato)); } catch (e) { /* finestra privata */ }
+    }
+
+    function disegna() {
+      var fatte = 0;
+      caselle.forEach(function (casella) {
+        var acceso = stato[casella.dataset.spunta] === true;
+        casella.checked = acceso;
+        if (acceso) fatte += 1;
+        var etichetta = casella.closest('label.spunta');
+        if (etichetta) etichetta.classList.toggle('fatta', acceso);
+        var tr = casella.closest('tr');
+        if (tr) tr.classList.toggle('fatta', acceso);
+      });
+
+      var conta = document.getElementById('conta');
+      var barra = document.getElementById('barra');
+      if (conta) conta.textContent = fatte + ' di ' + caselle.length;
+      if (barra) barra.style.width = Math.round((fatte / caselle.length) * 100) + '%';
+
+      document.querySelectorAll('nav.indice i[data-sez]').forEach(function (segno) {
+        var sezione = document.getElementById(segno.dataset.sez);
+        if (!sezione) return;
+        var sue = sezione.querySelectorAll('[data-spunta]');
+        if (sue.length === 0) return;
+        var suefatte = 0;
+        sue.forEach(function (x) { if (stato[x.dataset.spunta] === true) suefatte += 1; });
+        segno.textContent = suefatte + '/' + sue.length;
+        var pastiglia = segno.closest('a');
+        if (pastiglia) pastiglia.classList.toggle('completo', suefatte === sue.length);
+      });
+    }
+
+    // Il server si scrive dopo una pausa, e mai due volte insieme sullo
+    // stesso documento: spuntare cinque caselle di fila fa una scrittura sola.
+    function programma() {
+      if (!scriviRemoto) return;
+      clearTimeout(attesa);
+      attesa = setTimeout(esegui, 700);
+    }
+    function esegui() {
+      if (!scriviRemoto) return;
+      if (inVolo) { daRiscrivere = true; return; }
+      inVolo = true;
+      scriviRemoto().then(function () {
+        dillo('Spunte salvate. Le ritrovi anche aprendo la guida da un altro dispositivo.');
+      }, function () {
+        dillo('Non sono riuscito a salvare sul server: le spunte restano su questo dispositivo.');
+      }).then(function () {
+        inVolo = false;
+        if (daRiscrivere) { daRiscrivere = false; esegui(); }
+      });
+    }
+
+    caselle.forEach(function (casella) {
+      casella.addEventListener('change', function () {
+        if (casella.checked) stato[casella.dataset.spunta] = true;
+        else delete stato[casella.dataset.spunta];
+        salvaBrowser();
+        disegna();
+        programma();
+      });
+    });
+
+    // Azzeramento in due tempi: nell'artefatto le finestrelle di conferma del
+    // browser non compaiono, quindi la conferma sta nel pulsante stesso.
+    var azzera = document.getElementById('azzera');
+    if (azzera) {
+      var armato = false, disarmo = null;
+      azzera.addEventListener('click', function () {
+        if (!armato) {
+          armato = true;
+          azzera.textContent = 'Sicuro? Premi di nuovo';
+          disarmo = setTimeout(function () { armato = false; azzera.textContent = 'Azzera le spunte'; }, 4000);
+          return;
+        }
+        clearTimeout(disarmo);
+        armato = false;
+        azzera.textContent = 'Azzera le spunte';
+        stato = {};
+        salvaBrowser();
+        disegna();
+        programma();
+        dillo('Spunte azzerate.');
+      });
+    }
+
+    // Partenza: prima il browser, cosi' la pagina e' subito corretta.
+    stato = leggiBrowser();
+    disegna();
+    dillo('Spunte salvate su questo dispositivo.');
+
+    // Poi, se c'e', l'archivio dell'artefatto.
+    var usa = function (nome) {
+      try {
+        if (window.claude && typeof window.claude.use === 'function') return window.claude.use(nome);
+      } catch (e) { /* fuori da un visualizzatore */ }
+      return Promise.resolve(null);
+    };
+
+    Promise.all([usa('db'), usa('user')]).then(function (due) {
+      var db = due[0], utente = due[1];
+      if (!db || !utente) return;
+      return Promise.resolve(utente.id()).then(function (chi) {
+        if (!chi) return;
+        var documento = db.doc('data/users/' + chi + '/progresso-appsheet');
+        var primaVolta = true;
+
+        scriviRemoto = function () {
+          return documento.set({ fatti: stato, aggiornato: new Date().toISOString() });
+        };
+
+        documento.onSnapshot(function (istantanea) {
+          var corpo = istantanea.exists ? (istantanea.data() || {}) : {};
+          var remoti = (corpo.fatti && typeof corpo.fatti === 'object') ? corpo.fatti : {};
+
+          if (primaVolta) {
+            // Al primo giro le due memorie si uniscono, per non perdere ne'
+            // quello che c'era sul server ne' le caselle toccate nel secondo
+            // che l'archivio ci ha messo a rispondere.
+            primaVolta = false;
+            var unite = {}, cambiato = false;
+            Object.keys(remoti).forEach(function (k) { if (remoti[k] === true) unite[k] = true; });
+            Object.keys(stato).forEach(function (k) {
+              if (stato[k] === true && unite[k] !== true) { unite[k] = true; cambiato = true; }
+            });
+            if (Object.keys(unite).length !== Object.keys(stato).length) cambiato = true;
+            stato = unite;
+            salvaBrowser();
+            disegna();
+            dillo('Spunte sincronizzate.');
+            if (cambiato) programma();
+            return;
+          }
+
+          // Dopo il primo giro comanda il server: e' cosi' che una spunta
+          // messa sul telefono compare sul PC senza ricaricare.
+          if (istantanea.metadata && istantanea.metadata.hasPendingWrites) return;
+          var nuovo = {};
+          Object.keys(remoti).forEach(function (k) { if (remoti[k] === true) nuovo[k] = true; });
+          stato = nuovo;
+          salvaBrowser();
+          disegna();
+        }, function () {
+          scriviRemoto = null;
+          dillo('Sincronizzazione interrotta: le spunte restano su questo dispositivo.');
+        });
+      });
+    }).catch(function () { /* si resta col browser */ });
+  })();
+</script>
