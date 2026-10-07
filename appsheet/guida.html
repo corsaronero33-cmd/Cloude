@@ -223,6 +223,27 @@
   nav.indice a.completo { border-color: var(--accento); background: var(--accento-tenue); }
   nav.indice a.completo i { color: var(--accento); }
 
+
+  /* schede delle formule */
+  .formula { border: 1px solid var(--bordo); border-radius: 12px; background: var(--carta); padding: 16px; margin-bottom: 18px; }
+  .formula.fatta { border-color: var(--accento); }
+  .formula-testa { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 10px; }
+  .ordine {
+    flex: none; width: 30px; height: 30px; border-radius: 8px;
+    background: var(--accento); color: #fff;
+    font: 600 .85rem/30px "IBM Plex Mono", monospace; text-align: center;
+  }
+  .formula h3 { margin: 6px 0 2px; font-size: 1.1rem; font-family: "IBM Plex Mono", monospace; }
+  .badge-tab {
+    display: inline-block; font: 600 .68rem "IBM Plex Mono", monospace;
+    letter-spacing: .06em; text-transform: uppercase;
+    background: var(--inchiostro); color: var(--carta);
+    border-radius: 5px; padding: 3px 8px;
+  }
+  .riga-tipo { margin: 0; font-size: .85rem; color: var(--tenue); }
+  .formula .blocco { margin-bottom: 12px; }
+  .formula > label.spunta { border-top: 1px solid var(--bordo); padding-top: 12px; margin-top: 2px; }
+
   footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--bordo); color: var(--tenue); font-size: .85rem; }
   a { color: var(--accento); }
 </style>
@@ -529,38 +550,118 @@ avvisi_destinatari		Indirizzi a cui mandare il riepilogo giornaliero separati da
     <h2>Le formule</h2>
   </div>
   <div class="passo-corpo">
+
+    <h3>Che cos&rsquo;è una colonna virtuale</h3>
     <p>
-      È il cuore. Si aggiungono in <strong>Data → Columns → Add virtual column</strong>, e
-      l&rsquo;espressione va nel campo <strong>App formula</strong>. Tutte queste stanno sulla
-      tabella <code>Apparecchi</code>, tranne le ultime due.
+      È una colonna che <strong>non esiste nel foglio di calcolo</strong>: AppSheet la
+      ricalcola ogni volta che l&rsquo;app si sincronizza, partendo dalle altre colonne. La
+      prossima verifica di un apparecchio è questo: non va scritta da nessuna parte, si
+      ottiene dall&rsquo;ultima verifica più i mesi di cadenza.
+    </p>
+    <div class="avviso">
+      <p><strong>Non aggiungere queste colonne al foglio Google.</strong> Vanno create solo
+      dentro AppSheet. Se le scrivi anche nel foglio ti ritrovi due colonne con lo stesso
+      nome e l&rsquo;app non sa più quale usare.</p>
+    </div>
+
+    <h3>Dove si clicca, una volta per colonna</h3>
+    <ol>
+      <li>Nel menu a sinistra scegli <strong>Data</strong>, poi la linguetta
+        <strong>Columns</strong>.</li>
+      <li>In alto compaiono le linguette delle cinque tabelle: <strong>clicca quella giusta</strong>
+        — è il punto che cambia da formula a formula, ed è scritto su ogni scheda qui sotto.</li>
+      <li>Scorri in fondo all&rsquo;elenco delle colonne e premi
+        <strong>+ Add virtual column</strong>.</li>
+      <li>Si apre un pannello. In <strong>Column name</strong> scrivi il nome
+        <em>esattamente</em> come indicato.</li>
+      <li>In <strong>App formula</strong> clicca la casella: si apre l&rsquo;editor delle
+        espressioni. Incolla la formula e premi <strong>Save</strong>.</li>
+      <li>Controlla che <strong>Type</strong> sia quello indicato. AppSheet lo indovina da
+        solo e a volte sbaglia: correggilo a mano.</li>
+      <li>Premi <strong>Done</strong>, e poi <strong>SAVE</strong> in alto a destra
+        nell&rsquo;editor dell&rsquo;app.</li>
+    </ol>
+
+    <div class="trappola">
+      <h3>Due regole che non si possono saltare</h3>
+      <p>
+        <strong>I nomi devono essere identici a quelli scritti qui</strong>, maiuscole e
+        spazi compresi. Le formule più sotto si richiamano fra loro scrivendo
+        <code>[Base verifica]</code>: se la chiami <em>Base Verifica</em> o
+        <em>base verifica</em>, le altre non la trovano.
+      </p>
+      <p>
+        <strong>Vanno create nell&rsquo;ordine numerato</strong> (1, 2, 3&hellip;). Ognuna usa
+        quelle prima di lei: se parti dalla 3, l&rsquo;editor ti dirà che non trova
+        <code>Base verifica</code>, perché non l&rsquo;hai ancora creata.
+      </p>
+    </div>
+
+    <p>
+      Sono <strong>sette colonne in due tabelle</strong>: le prime cinque su
+      <code>Apparecchi</code>, le ultime due su <code>Contratti</code>. Su
+      <code>Clienti</code>, <code>Interventi</code> e <code>Impostazioni</code> non si crea
+      nessuna colonna virtuale.
     </p>
 
-    <h3>Base verifica <span class="tenue">— tipo Date</span></h3>
-    <p>Da dove parte il conto: l&rsquo;ultima verifica, o in mancanza la messa in servizio.</p>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Base verifica</span>
-        <button class="copia" data-bersaglio="f1">Copia</button></div>
-      <pre id="f1">IFS(
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">1</span>
+        <div>
+          <span class="badge-tab">Tabella Apparecchi</span>
+          <h3>Base verifica</h3>
+          <p class="riga-tipo">Type: <strong>Date</strong></p>
+        </div>
+      </div>
+      <p>Da dove parte il conto: l&rsquo;ultima verifica, oppure, se non c&rsquo;è, la messa in
+      servizio. Se mancano tutte e due resta vuota, ed è giusto così: quell&rsquo;apparecchio
+      finirà nell&rsquo;elenco delle schede incomplete.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f1">Copia</button></div>
+        <pre id="f1">IFS(
   ISNOTBLANK([Ultima verifica]), [Ultima verifica],
   ISNOTBLANK([Messa in servizio]), [Messa in servizio]
 )</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-base"><span>Creata su <b>Apparecchi</b></span></label>
     </div>
 
-    <h3>Mesi verifica <span class="tenue">— tipo Number</span></h3>
-    <p>Legge la cadenza dalle impostazioni, così il giorno che la norma cambia correggi una
-    cella sola invece di rifare le formule.</p>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Mesi verifica</span>
-        <button class="copia" data-bersaglio="f2">Copia</button></div>
-      <pre id="f2">NUMBER(ANY(SELECT(Impostazioni[Valore], [Chiave] = "mesi_verifica")))</pre>
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">2</span>
+        <div>
+          <span class="badge-tab">Tabella Apparecchi</span>
+          <h3>Mesi verifica</h3>
+          <p class="riga-tipo">Type: <strong>Number</strong></p>
+        </div>
+      </div>
+      <p>Va a leggere la cadenza nella scheda <code>Impostazioni</code>, riga
+      <code>mesi_verifica</code>. Così il giorno in cui la norma cambiasse correggi una cella
+      del foglio invece di rifare le formule.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f2">Copia</button></div>
+        <pre id="f2">NUMBER(ANY(SELECT(Impostazioni[Valore], [Chiave] = "mesi_verifica")))</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-mesi"><span>Creata su <b>Apparecchi</b></span></label>
     </div>
 
-    <h3>Prossima verifica <span class="tenue">— tipo Date</span></h3>
-    <p>Questa copiala <strong>esattamente</strong>. Il perché è subito sotto.</p>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Prossima verifica</span>
-        <button class="copia" data-bersaglio="f3">Copia</button></div>
-      <pre id="f3">IF(
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">3</span>
+        <div>
+          <span class="badge-tab">Tabella Apparecchi</span>
+          <h3>Prossima verifica</h3>
+          <p class="riga-tipo">Type: <strong>Date</strong> &nbsp;·&nbsp; usa le colonne 1 e 2</p>
+        </div>
+      </div>
+      <p>La data della prossima verifica periodica. È la formula più importante dell&rsquo;app:
+      copiala <strong>esattamente</strong>, per il motivo scritto subito sotto.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f3">Copia</button></div>
+        <pre id="f3">IF(
   ISBLANK([Base verifica]),
   "",
   MIN(LIST(
@@ -568,6 +669,8 @@ avvisi_destinatari		Indirizzi a cui mandare il riepilogo giornaliero separati da
     EOMONTH([Base verifica], [Mesi verifica])
   ))
 )</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-prossima"><span>Creata su <b>Apparecchi</b></span></label>
     </div>
 
     <div class="trappola">
@@ -588,59 +691,113 @@ avvisi_destinatari		Indirizzi a cui mandare il riepilogo giornaliero separati da
       </p>
     </div>
 
-    <h3>Giorni alla verifica <span class="tenue">— tipo Number</span></h3>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Giorni alla verifica</span>
-        <button class="copia" data-bersaglio="f4">Copia</button></div>
-      <pre id="f4">IF(ISBLANK([Prossima verifica]), "", HOUR([Prossima verifica] - TODAY()) / 24)</pre>
-    </div>
-    <div class="avviso">
-      <p>La divisione per 24 non è un errore. In AppSheet la differenza fra due date è una
-      <em>durata</em>, non un numero, e <code>HOUR()</code> la trasforma in ore. Se una
-      formula con le date dà un risultato assurdo, è la prima cosa da guardare.</p>
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">4</span>
+        <div>
+          <span class="badge-tab">Tabella Apparecchi</span>
+          <h3>Giorni alla verifica</h3>
+          <p class="riga-tipo">Type: <strong>Number</strong> &nbsp;·&nbsp; usa la colonna 3</p>
+        </div>
+      </div>
+      <p>Quanti giorni mancano. Negativo se è già scaduta — ed è proprio il numero su cui si
+      regge tutto lo scadenzario del passo 4.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f4">Copia</button></div>
+        <pre id="f4">IF(ISBLANK([Prossima verifica]), "", HOUR([Prossima verifica] - TODAY()) / 24)</pre>
+      </div>
+      <div class="avviso">
+        <p>La divisione per 24 non è un errore. In AppSheet la differenza fra due date è una
+        <em>durata</em>, non un numero, e <code>HOUR()</code> la trasforma in ore. Se una
+        formula con le date dà un risultato assurdo, è la prima cosa da guardare.</p>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-giorni"><span>Creata su <b>Apparecchi</b></span></label>
     </div>
 
-    <h3>Situazione <span class="tenue">— tipo Text</span></h3>
-    <p>Serve a colorare gli elenchi a colpo d&rsquo;occhio.</p>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Situazione (Apparecchi)</span>
-        <button class="copia" data-bersaglio="f5">Copia</button></div>
-      <pre id="f5">IFS(
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">5</span>
+        <div>
+          <span class="badge-tab">Tabella Apparecchi</span>
+          <h3>Situazione</h3>
+          <p class="riga-tipo">Type: <strong>Text</strong> &nbsp;·&nbsp; usa le colonne 3 e 4</p>
+        </div>
+      </div>
+      <p>Traduce i giorni in una parola. Serve a colorare gli elenchi: rosso su
+      <em>Scaduta</em>, ambra su <em>Entro 7 giorni</em>.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f5">Copia</button></div>
+        <pre id="f5">IFS(
   ISBLANK([Prossima verifica]),   "Date mancanti",
   [Giorni alla verifica] &lt; 0,     "Scaduta",
   [Giorni alla verifica] &lt;= 7,    "Entro 7 giorni",
   [Giorni alla verifica] &lt;= 30,   "Entro il mese",
   TRUE,                           "In regola"
 )</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-situazione"><span>Creata su <b>Apparecchi</b></span></label>
     </div>
 
-    <h3>Sulla tabella Contratti</h3>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Giorni alla scadenza — Number</span>
-        <button class="copia" data-bersaglio="f6">Copia</button></div>
-      <pre id="f6">HOUR([Scadenza] - TODAY()) / 24</pre>
+    <div class="nota">
+      <p><strong>Qui cambi tabella.</strong> Le due che restano vanno su
+      <code>Contratti</code>: torna in <strong>Data → Columns</strong> e clicca la linguetta
+      <code>Contratti</code> prima di continuare.</p>
     </div>
-    <div class="blocco">
-      <div class="blocco-testa"><span class="blocco-nome">Situazione (Contratti) — Text</span>
-        <button class="copia" data-bersaglio="f7">Copia</button></div>
-      <pre id="f7">IFS(
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">6</span>
+        <div>
+          <span class="badge-tab">Tabella Contratti</span>
+          <h3>Giorni alla scadenza</h3>
+          <p class="riga-tipo">Type: <strong>Number</strong></p>
+        </div>
+      </div>
+      <p>Lo stesso conto di prima, ma sulla scadenza del contratto, che lì è una data scritta
+      nel foglio e non va calcolata.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f6">Copia</button></div>
+        <pre id="f6">HOUR([Scadenza] - TODAY()) / 24</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-con-giorni"><span>Creata su <b>Contratti</b></span></label>
+    </div>
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">7</span>
+        <div>
+          <span class="badge-tab">Tabella Contratti</span>
+          <h3>Situazione</h3>
+          <p class="riga-tipo">Type: <strong>Text</strong> &nbsp;·&nbsp; usa la colonna 6</p>
+        </div>
+      </div>
+      <p>Si chiama come la numero 5 ma <strong>la formula è diversa</strong>: qui non esiste
+      il caso delle date mancanti, perché la scadenza di un contratto c&rsquo;è sempre. Due
+      colonne con lo stesso nome su tabelle diverse non danno nessun problema: in AppSheet i
+      nomi valgono dentro la loro tabella.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">App formula</span>
+          <button class="copia" data-bersaglio="f7">Copia</button></div>
+        <pre id="f7">IFS(
   [Giorni alla scadenza] &lt; 0,   "Scaduto",
   [Giorni alla scadenza] &lt;= 7,  "Entro 7 giorni",
   [Giorni alla scadenza] &lt;= 30, "Entro il mese",
   TRUE,                         "In regola"
 )</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="fo-con-situazione"><span>Creata su <b>Contratti</b></span></label>
     </div>
 
-    <div class="elenco-spunte">
-      <label class="spunta"><input type="checkbox" data-spunta="fo-base"><span>Colonna virtuale <b>Base verifica</b> creata</span></label>
-      <label class="spunta"><input type="checkbox" data-spunta="fo-mesi"><span>Colonna virtuale <b>Mesi verifica</b> creata</span></label>
-      <label class="spunta"><input type="checkbox" data-spunta="fo-prossima"><span>Colonna virtuale <b>Prossima verifica</b> creata, con <code>MIN(LIST(&hellip;))</code></span></label>
-      <label class="spunta"><input type="checkbox" data-spunta="fo-giorni"><span>Colonna virtuale <b>Giorni alla verifica</b> creata</span></label>
-      <label class="spunta"><input type="checkbox" data-spunta="fo-situazione"><span>Colonna virtuale <b>Situazione</b> creata su Apparecchi</span></label>
-      <label class="spunta"><input type="checkbox" data-spunta="fo-con-giorni"><span>Colonna virtuale <b>Giorni alla scadenza</b> creata su Contratti</span></label>
-      <label class="spunta"><input type="checkbox" data-spunta="fo-con-situazione"><span>Colonna virtuale <b>Situazione</b> creata su Contratti</span></label>
-    </div>
     <div class="nota">
+      <p><strong>Come controllare che funzionino.</strong> Torna in <strong>Data → Columns</strong>,
+      tabella <code>Apparecchi</code>, e guarda l&rsquo;anteprima dell&rsquo;app sulla destra: su
+      <code>1ABC2100345</code> la <em>Prossima verifica</em> dev&rsquo;essere
+      <strong>17/09/2026</strong> e i giorni un numero negativo. Su
+      <code>5MNO2200999</code>, che non ha date, devono restare vuote. Se è così, le sette
+      formule sono a posto.</p>
       <p>Le colonne virtuali si ricalcolano <strong>a ogni sincronizzazione</strong>, non di
       minuto in minuto. Siccome dipendono da <code>TODAY()</code>, i giorni si aggiornano
       quando apri l&rsquo;app. Per uno scadenzario va benissimo.</p>

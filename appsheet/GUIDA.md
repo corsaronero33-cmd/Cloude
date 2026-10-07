@@ -150,13 +150,58 @@ funzionano.
 
 ## Passo 3 — Le formule
 
-Sono il cuore. Si aggiungono in `Data → Columns → Add virtual column`, e
-l'espressione va nel campo `App formula`.
+### Che cos'e' una colonna virtuale
 
-### Sulla tabella Apparecchi
+E' una colonna che **non esiste nel foglio di calcolo**: AppSheet la ricalcola
+ogni volta che l'app si sincronizza, partendo dalle altre colonne. La prossima
+verifica di un apparecchio e' questo: non va scritta da nessuna parte, si
+ottiene dall'ultima verifica piu' i mesi di cadenza.
 
-**`Base verifica`** — tipo Date. Da dove parte il conto: l'ultima verifica, o
-in mancanza la messa in servizio.
+**Non aggiungere queste colonne al foglio Google.** Vanno create solo dentro
+AppSheet. Se le scrivi anche nel foglio ti ritrovi due colonne con lo stesso
+nome e l'app non sa piu' quale usare.
+
+### Dove si clicca, una volta per colonna
+
+1. Nel menu a sinistra scegli **Data**, poi la linguetta **Columns**.
+2. In alto compaiono le linguette delle cinque tabelle: **clicca quella giusta**
+   — e' il punto che cambia da formula a formula, ed e' indicato per ognuna.
+3. Scorri in fondo all'elenco delle colonne e premi **+ Add virtual column**.
+4. In **Column name** scrivi il nome *esattamente* come indicato.
+5. In **App formula** clicca la casella: si apre l'editor delle espressioni.
+   Incolla la formula e premi **Save**.
+6. Controlla che **Type** sia quello indicato. AppSheet lo indovina da solo e a
+   volte sbaglia: correggilo a mano.
+7. Premi **Done**, poi **SAVE** in alto a destra nell'editor dell'app.
+
+### Due regole che non si possono saltare
+
+**I nomi devono essere identici a quelli scritti qui**, maiuscole e spazi
+compresi. Le formule si richiamano fra loro scrivendo `[Base verifica]`: se la
+chiami *Base Verifica* o *base verifica*, le altre non la trovano.
+
+**Vanno create nell'ordine numerato.** Ognuna usa quelle prima di lei: se parti
+dalla 3, l'editor dira' che non trova `Base verifica`, perche' non esiste ancora.
+
+### Le sette colonne
+
+Sono **sette colonne in due tabelle**: le prime cinque su `Apparecchi`, le
+ultime due su `Contratti`. Su `Clienti`, `Interventi` e `Impostazioni` non si
+crea nessuna colonna virtuale.
+
+| # | Tabella | Nome esatto | Type | Usa |
+| --- | --- | --- | --- | --- |
+| 1 | `Apparecchi` | `Base verifica` | Date | — |
+| 2 | `Apparecchi` | `Mesi verifica` | Number | la scheda Impostazioni |
+| 3 | `Apparecchi` | `Prossima verifica` | Date | 1 e 2 |
+| 4 | `Apparecchi` | `Giorni alla verifica` | Number | 3 |
+| 5 | `Apparecchi` | `Situazione` | Text | 3 e 4 |
+| 6 | `Contratti` | `Giorni alla scadenza` | Number | — |
+| 7 | `Contratti` | `Situazione` | Text | 6 |
+
+**1 — `Base verifica`** · tabella `Apparecchi` · Type **Date**
+Da dove parte il conto: l'ultima verifica, o in mancanza la messa in servizio.
+Se mancano entrambe resta vuota, ed e' giusto cosi'.
 
 ```
 IFS(
@@ -165,15 +210,15 @@ IFS(
 )
 ```
 
-**`Mesi verifica`** — tipo Number. Legge la cadenza dalle impostazioni, cosi'
-il giorno che la norma cambia correggi una cella sola.
+**2 — `Mesi verifica`** · tabella `Apparecchi` · Type **Number**
+Legge la cadenza dalla scheda `Impostazioni`, riga `mesi_verifica`.
 
 ```
 NUMBER(ANY(SELECT(Impostazioni[Valore], [Chiave] = "mesi_verifica")))
 ```
 
-**`Prossima verifica`** — tipo Date. **Questa e' la formula da copiare
-esattamente.**
+**3 — `Prossima verifica`** · tabella `Apparecchi` · Type **Date**
+Copiala **esattamente**: il perche' e' subito sotto.
 
 ```
 IF(
@@ -186,60 +231,69 @@ IF(
 )
 ```
 
-AppSheet non sa sommare mesi, quindi si gira intorno con `EOMONTH`. Nei forum
-trovi la versione corta, senza `MIN(LIST(...))`:
+> **La formula che trovi nei forum e' sbagliata.** AppSheet non sa sommare i
+> mesi e ci si gira intorno con `EOMONTH`. La versione corta, senza
+> `MIN(LIST(...))`, sbaglia sulle verifiche fatte il 29 febbraio, e sbaglia **in
+> avanti**: un apparecchio verificato il 29 febbraio 2024 risulterebbe in
+> scadenza il 1 marzo 2026 invece che il 28 febbraio, cioe' l'avviso arriva a
+> termine gia' scaduto. Su 7.305 date la versione corta sbaglia 5 volte per ogni
+> cadenza provata, quella con `MIN(LIST(...))` nessuna. Vedi
+> `verifica-formule.py`.
 
-```
-EOMONTH([Base verifica], [Mesi verifica] - 1) + DAY([Base verifica])
-```
-
-**Non usarla.** L'ho provata su tutte le date di vent'anni: sbaglia sulle
-verifiche fatte il 29 febbraio, e sbaglia **in avanti**. Un apparecchio
-verificato il 29 febbraio 2024 risulterebbe in scadenza il 1 marzo 2026 invece
-che il 28 febbraio: due giorni di ritardo su una scadenza fiscale, e
-l'avviso ti arriva quando sei gia' fuori termine. Con `MIN(LIST(...))` il conto
-e' esatto su tutte le date provate.
-
-**`Giorni alla verifica`** — tipo Number.
+**4 — `Giorni alla verifica`** · tabella `Apparecchi` · Type **Number**
+Quanti giorni mancano; negativo se e' gia' scaduta.
 
 ```
 IF(ISBLANK([Prossima verifica]), "", HOUR([Prossima verifica] - TODAY()) / 24)
 ```
 
-La divisione per 24 non e' un errore: in AppSheet la differenza fra due date e'
-una durata, non un numero, e `HOUR()` la trasforma in ore. Se una formula con
-le date ti da' un risultato strano, e' la prima cosa da guardare.
+> La divisione per 24 non e' un errore: in AppSheet la differenza fra due date
+> e' una *durata*, non un numero, e `HOUR()` la trasforma in ore.
 
-**`Situazione`** — tipo Text. Serve a colorare gli elenchi.
+**5 — `Situazione`** · tabella `Apparecchi` · Type **Text**
 
 ```
 IFS(
-  ISBLANK([Prossima verifica]), "Date mancanti",
-  [Giorni alla verifica] < 0,   "Scaduta",
-  [Giorni alla verifica] <= 7,  "Entro 7 giorni",
-  [Giorni alla verifica] <= 30, "Entro il mese",
-  TRUE, "In regola"
+  ISBLANK([Prossima verifica]),   "Date mancanti",
+  [Giorni alla verifica] < 0,     "Scaduta",
+  [Giorni alla verifica] <= 7,    "Entro 7 giorni",
+  [Giorni alla verifica] <= 30,   "Entro il mese",
+  TRUE,                           "In regola"
 )
 ```
 
-### Sulla tabella Contratti
+**Qui si cambia tabella**: le due che restano vanno su `Contratti`.
 
-**`Giorni alla scadenza`** — Number: `HOUR([Scadenza] - TODAY()) / 24`
+**6 — `Giorni alla scadenza`** · tabella `Contratti` · Type **Number**
 
-**`Situazione`** — Text:
+```
+HOUR([Scadenza] - TODAY()) / 24
+```
+
+**7 — `Situazione`** · tabella `Contratti` · Type **Text**
+Si chiama come la 5 ma **la formula e' diversa**: qui non esiste il caso delle
+date mancanti. Due colonne con lo stesso nome su tabelle diverse non danno
+problemi: in AppSheet i nomi valgono dentro la loro tabella.
 
 ```
 IFS(
   [Giorni alla scadenza] < 0,   "Scaduto",
   [Giorni alla scadenza] <= 7,  "Entro 7 giorni",
   [Giorni alla scadenza] <= 30, "Entro il mese",
-  TRUE, "In regola"
+  TRUE,                         "In regola"
 )
 ```
 
-> Le colonne virtuali si ricalcolano **a ogni sincronizzazione**, non di minuto
-> in minuto. Siccome dipendono da `TODAY()`, i giorni si aggiornano quando apri
-> l'app. Per uno scadenzario va benissimo.
+### Come controllare che funzionino
+
+In **Data → Columns**, tabella `Apparecchi`, guarda l'anteprima dell'app sulla
+destra: sulla matricola `1ABC2100345` la *Prossima verifica* dev'essere
+**17/09/2026** e i giorni un numero negativo; su `5MNO2200999`, che non ha date,
+devono restare vuote. Se e' cosi', le sette formule sono a posto.
+
+Le colonne virtuali si ricalcolano **a ogni sincronizzazione**, non di minuto in
+minuto. Siccome dipendono da `TODAY()`, i giorni si aggiornano quando apri
+l'app. Per uno scadenzario va benissimo.
 
 ## Passo 4 — Lo scadenzario
 
