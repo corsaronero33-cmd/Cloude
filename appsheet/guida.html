@@ -811,31 +811,206 @@ avvisi_destinatari		Indirizzi a cui mandare il riepilogo giornaliero separati da
     <h2>Lo scadenzario</h2>
   </div>
   <div class="passo-corpo">
+
+    <h3>Che cos&rsquo;è uno slice</h3>
     <p>
-      In <strong>Data → Slices</strong> crea questi filtri, poi per ognuno una vista in
-      <strong>UX → Views</strong> (tipo <em>deck</em> o <em>table</em>).
+      Uno <strong>slice</strong> è un <strong>filtro salvato con un nome</strong>. Non copia
+      niente e non crea una seconda tabella: è una finestra su una tabella che esiste già,
+      che lascia passare solo le righe che rispettano una condizione.
     </p>
-    <div class="tabellona">
-      <table>
-        <tr><th></th><th>Nome</th><th>Tabella</th><th>Row filter condition</th></tr>
-        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-verifiche"></td><td>Verifiche in scadenza</td><td>Apparecchi</td><td><code>AND(NOT(IN([Stato], LIST("Dismesso","Magazzino"))), ISNOTBLANK([Prossima verifica]), [Giorni alla verifica] &lt;= 30)</code></td></tr>
-        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-datemancanti"></td><td>Date mancanti</td><td>Apparecchi</td><td><code>AND([Stato] &lt;&gt; "Dismesso", ISBLANK([Base verifica]))</code></td></tr>
-        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-pos"></td><td>Da adeguare al POS</td><td>Apparecchi</td><td><code>AND([Stato] = "Attivo", NOT([Collegato POS]))</code></td></tr>
-        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-contratti"></td><td>Contratti in scadenza</td><td>Contratti</td><td><code>AND(IN([Stato], LIST("Attivo","Scaduto")), [Giorni alla scadenza] &lt;= 30)</code></td></tr>
-        <tr><td class="cella-spunta"><input type="checkbox" data-spunta="s-trasmettere"></td><td>Da trasmettere ad AdE</td><td>Interventi</td><td><code>AND([Tipo] = "Verifica periodica", [Stato] = "Chiuso", NOT([Trasmessa AdE]))</code></td></tr>
-      </table>
-    </div>
     <p>
-      Ordina le prime per <code>Prossima verifica</code> crescente, e colora per
-      <code>Situazione</code>: rosso su <em>Scaduta</em>, ambra su <em>Entro 7 giorni</em>.
-      Metti <strong>Verifiche in scadenza</strong> come schermata di apertura, in
-      <strong>UX → Options → Starting view</strong>: è la domanda a cui l&rsquo;app deve
-      rispondere appena si apre.
+      La tabella <code>Apparecchi</code> contiene tutti i tuoi registratori. Lo slice
+      <em>Verifiche in scadenza</em> è la stessa tabella guardata attraverso la condizione
+      &laquo;solo quelli da verificare entro trenta giorni&raquo;. Se domani aggiungi un
+      apparecchio che rientra in quella condizione, compare lì dentro da solo: non c&rsquo;è
+      niente da aggiornare.
+    </p>
+
+    <div class="nota">
+      <p><strong>Slice e vista sono due cose diverse, e servono tutte e due.</strong></p>
+      <p>Lo <strong>slice</strong> decide <em>quali righe</em>. La <strong>vista</strong> (in
+      inglese <em>view</em>) è la schermata che le fa vedere, e decide <em>come</em>: elenco,
+      tabella, calendario, mappa. Uno slice senza una vista sopra non si vede da nessuna
+      parte: esiste nella pancia dell&rsquo;app e basta.</p>
+      <p>Per questo ogni scheda qui sotto ha <strong>due spunte</strong>: prima si crea il
+      filtro, poi la schermata che lo mostra.</p>
+    </div>
+
+    <h3>Come si crea uno slice</h3>
+    <ol>
+      <li>Nel menu a sinistra scegli <strong>Data</strong>.</li>
+      <li>Cerca <strong>Slices</strong>: a seconda della versione dell&rsquo;editor è una
+        linguetta in cima al pannello, accanto a <em>Tables</em> e <em>Columns</em>, oppure
+        una sezione sotto l&rsquo;elenco delle tabelle. Premi il <strong>+</strong> (o
+        <em>New Slice</em> / <em>Add Slice</em>).</li>
+      <li><strong>Slice Name</strong>: il nome scritto sulla scheda.</li>
+      <li><strong>Source Table</strong>: la tabella da filtrare — è l&rsquo;etichetta nera in
+        alto su ogni scheda.</li>
+      <li><strong>Row filter condition</strong>: clicca la casella, si apre l&rsquo;editor delle
+        espressioni, incolla la condizione e premi <strong>Save</strong>.</li>
+      <li><strong>Slice Columns</strong>: lasciale tutte selezionate. Servono tutte.</li>
+      <li><strong>Update mode</strong>: lascia spuntate <em>Updates</em>, <em>Adds</em> e
+        <em>Deletes</em>, così da queste schermate puoi anche modificare le righe invece di
+        sola lettura.</li>
+      <li>Premi <strong>SAVE</strong> in alto a destra.</li>
+    </ol>
+
+    <h3>Come si crea la vista che lo mostra</h3>
+    <ol>
+      <li>Nel menu a sinistra scegli <strong>Views</strong> (in certe versioni si chiama
+        <strong>UX</strong>).</li>
+      <li>Premi <strong>+ New View</strong>.</li>
+      <li><strong>View name</strong>: lo stesso nome dello slice, così non ti confondi.</li>
+      <li><strong>For this data</strong>: scegli lo <strong>slice</strong>, non la tabella.
+        Nell&rsquo;elenco gli slice compaiono insieme alle tabelle — attento a non prendere
+        <code>Apparecchi</code> quando ti serve <em>Verifiche in scadenza</em>.</li>
+      <li><strong>View type</strong>: <strong>deck</strong> (elenco con due righe di testo per
+        voce, comodo sul telefono) oppure <strong>table</strong> (griglia, comoda sul PC).</li>
+      <li><strong>Position</strong>: dove finisce il pulsante nella barra in basso.
+        <em>Primary</em> lo mette in evidenza, <em>Menu</em> lo nasconde nel menu laterale.</li>
+      <li><strong>Sort by</strong>: per i primi due, <code>Prossima verifica</code> crescente;
+        per i contratti, <code>Scadenza</code> crescente. Così il più urgente è in cima.</li>
+      <li>Premi <strong>SAVE</strong>.</li>
+    </ol>
+
+    <p>
+      Sono <strong>cinque slice</strong> e <strong>cinque viste</strong>. I primi tre filtrano
+      <code>Apparecchi</code>, il quarto <code>Contratti</code>, il quinto
+      <code>Interventi</code>.
+    </p>
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">1</span>
+        <div>
+          <span class="badge-tab">Source table: Apparecchi</span>
+          <h3>Verifiche in scadenza</h3>
+        </div>
+      </div>
+      <p>Gli apparecchi da verificare entro trenta giorni, compresi quelli gi&agrave; in ritardo (i giorni negativi sono minori di 30, quindi rientrano). Esclude i dismessi e quelli in magazzino, che non vanno verificati, e quelli senza date, che hanno il loro elenco.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">Row filter condition</span>
+          <button class="copia" data-bersaglio="sl1">Copia</button></div>
+        <pre id="sl1">AND(NOT(IN([Stato], LIST("Dismesso","Magazzino"))), ISNOTBLANK([Prossima verifica]), [Giorni alla verifica] &lt;= 30)</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="s-verifiche"><span>Slice creato</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="vi-verifiche"><span>Vista creata su questo slice</span></label>
+    </div>
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">2</span>
+        <div>
+          <span class="badge-tab">Source table: Apparecchi</span>
+          <h3>Date mancanti</h3>
+        </div>
+      </div>
+      <p>Gli apparecchi di cui non si conosce n&eacute; l&rsquo;ultima verifica n&eacute; la messa in servizio. Non possono comparire nello scadenzario perch&eacute; non c&rsquo;&egrave; da dove contare: questa &egrave; la lista di lavoro per recuperare i dati dai libretti.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">Row filter condition</span>
+          <button class="copia" data-bersaglio="sl2">Copia</button></div>
+        <pre id="sl2">AND([Stato] &lt;&gt; "Dismesso", ISBLANK([Base verifica]))</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="s-datemancanti"><span>Slice creato</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="vi-datemancanti"><span>Vista creata su questo slice</span></label>
+    </div>
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">3</span>
+        <div>
+          <span class="badge-tab">Source table: Apparecchi</span>
+          <h3>Da adeguare al POS</h3>
+        </div>
+      </div>
+      <p>Gli apparecchi attivi che non hai ancora segnato come collegati al terminale di pagamento. &Egrave; il giro di lavoro dell&rsquo;adeguamento, cliente per cliente.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">Row filter condition</span>
+          <button class="copia" data-bersaglio="sl3">Copia</button></div>
+        <pre id="sl3">AND([Stato] = "Attivo", NOT([Collegato POS]))</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="s-pos"><span>Slice creato</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="vi-pos"><span>Vista creata su questo slice</span></label>
+    </div>
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">4</span>
+        <div>
+          <span class="badge-tab">Source table: Contratti</span>
+          <h3>Contratti in scadenza</h3>
+        </div>
+      </div>
+      <p>Gli abbonamenti e i canoni che scadono entro trenta giorni o sono gi&agrave; scaduti. Lascia fuori i disdetti e quelli gi&agrave; sostituiti da un rinnovo.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">Row filter condition</span>
+          <button class="copia" data-bersaglio="sl4">Copia</button></div>
+        <pre id="sl4">AND(IN([Stato], LIST("Attivo","Scaduto")), [Giorni alla scadenza] &lt;= 30)</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="s-contratti"><span>Slice creato</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="vi-contratti"><span>Vista creata su questo slice</span></label>
+    </div>
+
+    <div class="formula">
+      <div class="formula-testa">
+        <span class="ordine">5</span>
+        <div>
+          <span class="badge-tab">Source table: Interventi</span>
+          <h3>Da trasmettere ad AdE</h3>
+        </div>
+      </div>
+      <p>Le verifiche periodiche concluse che non hai ancora segnato come trasmesse a Fatture e Corrispettivi. Non &egrave; una scadenza di calendario: &egrave; l&rsquo;adempimento che si dimentica e che costa caro.</p>
+      <div class="blocco">
+        <div class="blocco-testa"><span class="blocco-nome">Row filter condition</span>
+          <button class="copia" data-bersaglio="sl5">Copia</button></div>
+        <pre id="sl5">AND([Tipo] = "Verifica periodica", [Stato] = "Chiuso", NOT([Trasmessa AdE]))</pre>
+      </div>
+      <label class="spunta"><input type="checkbox" data-spunta="s-trasmettere"><span>Slice creato</span></label>
+      <label class="spunta"><input type="checkbox" data-spunta="vi-trasmettere"><span>Vista creata su questo slice</span></label>
+    </div>
+
+    <h3>La schermata di apertura</h3>
+    <p>
+      In <strong>Views</strong>, voce <strong>Options</strong> (in certe versioni
+      <strong>UX → Options</strong>), imposta <strong>Starting view</strong> su
+      <em>Verifiche in scadenza</em>. &Egrave; la domanda a cui l&rsquo;app deve rispondere
+      appena si apre: che cosa devo fare adesso.
     </p>
     <div class="elenco-spunte">
       <label class="spunta"><input type="checkbox" data-spunta="s-apertura"><span>Impostata <b>Verifiche in scadenza</b> come schermata di apertura</span></label>
     </div>
 
+    <div class="nota">
+      <p><strong>Come controllare che funzionino</strong>, nell&rsquo;anteprima dell&rsquo;app
+      sulla destra, con i dati di esempio dentro.</p>
+      <p>Tre non dipendono dal calendario e devono tornare sempre:</p>
+      <ul>
+        <li><em>Date mancanti</em>: <strong>un solo</strong> apparecchio,
+          <code>5MNO2200999</code>.</li>
+        <li><em>Da adeguare al POS</em>: <strong>quattro</strong> apparecchi. Non deve esserci
+          <code>0XYZ1800111</code>, che &egrave; dismesso.</li>
+        <li><em>Da trasmettere ad AdE</em>: <strong>un solo</strong> intervento, la verifica
+          del 27/09/2026 sul Panificio Bianchi.</li>
+      </ul>
+      <p>Gli altri due cambiano con il passare dei giorni, perch&eacute; le date di esempio
+      restano ferme mentre oggi avanza: pi&ugrave; tempo passa, pi&ugrave; righe ci finiscono
+      dentro. L&igrave; non guardare il numero, guarda chi c&rsquo;&egrave;:</p>
+      <ul>
+        <li><em>Verifiche in scadenza</em>: <strong>deve</strong> contenere
+          <code>1ABC2100345</code>, che &egrave; in ritardo; <strong>non deve mai</strong>
+          contenere <code>0XYZ1800111</code> (dismesso) n&eacute; <code>5MNO2200999</code>
+          (senza date).</li>
+        <li><em>Contratti in scadenza</em>: <strong>deve</strong> contenere
+          <em>Gestionale bar 2 postazioni</em>, che &egrave; gi&agrave; scaduto.</li>
+      </ul>
+    </div>
+
+    <div class="avviso">
+      <p><strong>Se uno slice esce vuoto</strong> quando non dovrebbe, nove volte su dieci
+      &egrave; una parola scritta diversamente: nella condizione c&rsquo;&egrave;
+      <code>"Attivo"</code> con la A maiuscola e nel foglio hai scritto <em>attivo</em>.
+      AppSheet distingue le maiuscole dalle minuscole.</p>
+    </div>
   </div>
 </section>
 

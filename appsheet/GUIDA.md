@@ -297,22 +297,96 @@ l'app. Per uno scadenzario va benissimo.
 
 ## Passo 4 — Lo scadenzario
 
-In `Data → Slices` crea questi filtri, e poi una vista per ognuno
-(`UX → Views`, tipo `deck` o `table`):
+### Che cos'e' uno slice
 
-| Nome | Tabella | Row filter condition |
-| --- | --- | --- |
-| Verifiche in scadenza | Apparecchi | `AND(NOT(IN([Stato], LIST("Dismesso","Magazzino"))), ISNOTBLANK([Prossima verifica]), [Giorni alla verifica] <= 30)` |
-| Date mancanti | Apparecchi | `AND([Stato] <> "Dismesso", ISBLANK([Base verifica]))` |
-| Da adeguare al POS | Apparecchi | `AND([Stato] = "Attivo", NOT([Collegato POS]))` |
-| Contratti in scadenza | Contratti | `AND(IN([Stato], LIST("Attivo","Scaduto")), [Giorni alla scadenza] <= 30)` |
-| Da trasmettere ad AdE | Interventi | `AND([Tipo] = "Verifica periodica", [Stato] = "Chiuso", NOT([Trasmessa AdE]))` |
+Uno **slice** e' un **filtro salvato con un nome**. Non copia niente e non crea
+una seconda tabella: e' una finestra su una tabella che esiste gia', che lascia
+passare solo le righe che rispettano una condizione.
 
-Ordina le prime per `Prossima verifica` crescente e colora per `Situazione`:
-rosso su "Scaduta", ambra su "Entro 7 giorni".
+La tabella `Apparecchi` contiene tutti i registratori. Lo slice *Verifiche in
+scadenza* e' la stessa tabella guardata attraverso la condizione "solo quelli da
+verificare entro trenta giorni". Aggiungendo un apparecchio che rientra in
+quella condizione, compare li' dentro da solo.
 
-**La vista che conta** e' "Verifiche in scadenza": mettila come schermata di
-apertura (`UX → Options → Starting view`).
+**Slice e vista sono due cose diverse, e servono tutte e due.** Lo slice decide
+*quali righe*; la **vista** (*view*) e' la schermata che le fa vedere e decide
+*come*: elenco, tabella, calendario. Uno slice senza una vista sopra non si vede
+da nessuna parte.
+
+### Come si crea uno slice
+
+1. Menu a sinistra, **Data**.
+2. Cerca **Slices**: a seconda della versione dell'editor e' una linguetta in
+   cima al pannello, accanto a *Tables* e *Columns*, oppure una sezione sotto
+   l'elenco delle tabelle. Premi **+** (o *New Slice*).
+3. **Slice Name**: il nome indicato in tabella.
+4. **Source Table**: la tabella da filtrare.
+5. **Row filter condition**: clicca la casella, incolla la condizione nell'editor
+   delle espressioni, premi **Save**.
+6. **Slice Columns**: lasciale tutte.
+7. **Update mode**: lascia *Updates*, *Adds* e *Deletes*, cosi' da quelle
+   schermate si possono anche modificare le righe.
+8. **SAVE** in alto a destra.
+
+### Come si crea la vista che lo mostra
+
+1. Menu a sinistra, **Views** (in certe versioni **UX**).
+2. **+ New View**.
+3. **View name**: lo stesso nome dello slice.
+4. **For this data**: scegli lo **slice**, non la tabella. Nell'elenco gli slice
+   compaiono insieme alle tabelle.
+5. **View type**: **deck** (elenco, comodo sul telefono) oppure **table**
+   (griglia, comoda sul PC).
+6. **Position**: dove finisce il pulsante nella barra in basso.
+7. **Sort by**: `Prossima verifica` crescente per i primi due, `Scadenza`
+   crescente per i contratti.
+8. **SAVE**.
+
+### I cinque slice
+
+| # | Source table | Slice Name | Row filter condition |
+| --- | --- | --- | --- |
+| 1 | `Apparecchi` | Verifiche in scadenza | `AND(NOT(IN([Stato], LIST("Dismesso","Magazzino"))), ISNOTBLANK([Prossima verifica]), [Giorni alla verifica] <= 30)` |
+| 2 | `Apparecchi` | Date mancanti | `AND([Stato] <> "Dismesso", ISBLANK([Base verifica]))` |
+| 3 | `Apparecchi` | Da adeguare al POS | `AND([Stato] = "Attivo", NOT([Collegato POS]))` |
+| 4 | `Contratti` | Contratti in scadenza | `AND(IN([Stato], LIST("Attivo","Scaduto")), [Giorni alla scadenza] <= 30)` |
+| 5 | `Interventi` | Da trasmettere ad AdE | `AND([Tipo] = "Verifica periodica", [Stato] = "Chiuso", NOT([Trasmessa AdE]))` |
+
+Che cosa tira fuori ognuno:
+
+1. gli apparecchi da verificare entro trenta giorni, compresi quelli gia' in
+   ritardo (i giorni negativi sono minori di 30); esclusi dismessi, magazzino e
+   quelli senza date;
+2. gli apparecchi di cui non si conosce ne' l'ultima verifica ne' la messa in
+   servizio: la lista di lavoro per recuperare i dati dai libretti;
+3. gli apparecchi attivi non ancora segnati come collegati al POS;
+4. abbonamenti e canoni che scadono entro trenta giorni o gia' scaduti, esclusi
+   i disdetti e quelli sostituiti da un rinnovo;
+5. le verifiche concluse e non ancora segnate come trasmesse all'Agenzia.
+
+### La schermata di apertura
+
+In **Views → Options**, imposta **Starting view** su *Verifiche in scadenza*.
+
+### Come controllare che funzionino
+
+Tre controlli non dipendono dal calendario e devono tornare sempre:
+
+- *Date mancanti*: **un solo** apparecchio, `5MNO2200999`;
+- *Da adeguare al POS*: **quattro** apparecchi, e fra questi non dev'esserci
+  `0XYZ1800111`, che e' dismesso;
+- *Da trasmettere ad AdE*: **un solo** intervento, la verifica del 27/09/2026.
+
+Gli altri due cambiano con il passare dei giorni, perche' le date di esempio
+restano ferme mentre oggi avanza. Li' non guardare il numero, guarda chi c'e':
+
+- *Verifiche in scadenza* deve contenere `1ABC2100345` e non deve mai contenere
+  `0XYZ1800111` ne' `5MNO2200999`;
+- *Contratti in scadenza* deve contenere *Gestionale bar 2 postazioni*.
+
+**Se uno slice esce vuoto** quando non dovrebbe, nove volte su dieci e' una
+parola scritta diversamente: nella condizione c'e' `"Attivo"` con la A maiuscola
+e nel foglio c'e' *attivo*. AppSheet distingue le maiuscole dalle minuscole.
 
 ## Passo 5 — Il rapportino in PDF
 
