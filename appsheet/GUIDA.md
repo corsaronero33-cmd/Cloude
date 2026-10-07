@@ -77,21 +77,70 @@ In `Impostazioni` compila almeno `azienda_nome` e `avvisi_destinatari`.
 
 ## Passo 2 — L'app
 
-Su appsheet.com: **Create → App → Start with existing data**, e scegli il
-foglio `Clienti`. Poi da `Data` aggiungi le altre quattro tabelle.
+Su appsheet.com: **Create → App → Start with existing data**, e scegli la scheda
+`Clienti`. Poi da `Data → Add new data` aggiungi le altre quattro schede.
 
-Per ognuna, in `Data → Columns`, sistema due cose:
+**Aggiungile tutte e cinque prima di toccare qualunque altra cosa**: i
+collegamenti del punto 2.3 non si possono creare verso una tabella che l'app non
+conosce ancora.
 
-- la colonna `ID` dev'essere la **Key**, con `Initial value` impostato a
-  `UNIQUEID()`;
-- le colonne `Cliente` e `Apparecchio` nelle altre tabelle vanno messe di tipo
-  **Ref**, puntate rispettivamente a `Clienti` e `Apparecchi`. E' quello che
-  crea i collegamenti: aprendo un cliente vedrai i suoi apparecchi.
+### 2.1 — La chiave (su tutte e cinque)
 
-Tipi da sistemare a mano, perche' AppSheet li indovina male:
-`Messa in servizio`, `Ultima verifica`, `Scadenza`, `Data` → **Date**;
-`Collegato POS`, `Trasmessa AdE`, `Da fatturare`, `Fatturato` → **Yes/No**;
-`Firma` → **Signature**; `Foto` → **Image**; `Importo`, `Ore` → **Decimal**.
+In `Data → Columns`, scheda per scheda: la colonna `ID` dev'essere la **Key**,
+con `Initial value` impostato a `UNIQUEID()`. Su `Impostazioni` la chiave e'
+`Chiave` invece di `ID`, e non serve `UNIQUEID()`: quelle righe le scrivi tu.
+
+### 2.2 — L'etichetta (solo su Clienti e Apparecchi)
+
+Spunta la casella **LABEL** su:
+
+| Tabella | Colonna da marcare come LABEL |
+| --- | --- |
+| `Clienti` | `Ragione sociale` |
+| `Apparecchi` | `Matricola` |
+
+**Non saltare questo passaggio.** L'etichetta e' il nome con cui una riga si
+presenta quando viene richiamata da un'altra parte. Senza, nei menu a tendina
+del punto successivo ti ritroveresti a scegliere fra `C001`, `C002`, `C003`
+invece che fra i nomi dei clienti, e l'app diventa inusabile sul campo.
+
+### 2.3 — I collegamenti
+
+Sono **quattro colonne in tre tabelle**. In `Data → Columns`, apri la colonna
+con l'icona della matita, metti `Type` = **Ref** e, sotto `Type Details`,
+imposta `Source table`:
+
+| Tabella dove lavori | Colonna | Type | Source table |
+| --- | --- | --- | --- |
+| `Apparecchi` | `Cliente` | Ref | `Clienti` |
+| `Contratti` | `Cliente` | Ref | `Clienti` |
+| `Interventi` | `Cliente` | Ref | `Clienti` |
+| `Interventi` | `Apparecchio` | Ref | `Apparecchi` |
+
+Su `Clienti` e su `Impostazioni` non c'e' niente da collegare.
+
+Attenzione a non confondersi con due colonne che **restano testo semplice**:
+`Sede` in `Apparecchi` e `Tecnico` in `Interventi`. Non esistono tabelle
+`Sedi` e `Tecnici`, quindi non c'e' niente a cui puntare.
+
+Fatti i quattro collegamenti, in `Clienti` compaiono da sole delle colonne
+tipo `Related Apparecchis`: non le hai create tu, le aggiunge AppSheet, e sono
+quelle che fanno vedere gli apparecchi di un cliente aprendo la sua scheda.
+Puoi rinominarle piu' tardi dalla vista.
+
+I collegamenti non sono un vezzo: le formule del passo 5 e del passo 6 scrivono
+`[Cliente].[Ragione sociale]`, cioe' "vai al cliente collegato e prendi la sua
+ragione sociale". Se `Cliente` resta di tipo `Text`, quelle espressioni non
+funzionano.
+
+### 2.4 — I tipi che AppSheet indovina male
+
+`Messa in servizio`, `Ultima verifica`, `Scadenza`, `Data`, `Data inizio`,
+`Data trasmissione`, `Data dismissione` → **Date**;
+`Collegato POS`, `Trasmessa AdE`, `Da fatturare`, `Fatturato`,
+`Rinnovo automatico` → **Yes/No**;
+`Firma` → **Signature**; `Foto` → **Image**;
+`Importo`, `Ore` → **Decimal**.
 
 ## Passo 3 — Le formule
 
