@@ -1,5 +1,0 @@
-ID,Data,Cliente,Apparecchio,Tipo,Stato,Tecnico,Problema,Lavoro eseguito,Ore,Esito verifica,Sigilli,Libretto,Trasmessa AdE,Data trasmissione,Da fatturare,Fatturato,Firma,Foto,Note
-I001,2026-09-27,C002,A002,Verifica periodica,Chiuso,,Verifica periodica biennale,Controllo memoria permanente e sigilli. Esito regolare.,1,Regolare,"integri, n. 4",pag. 12,FALSE,,TRUE,FALSE,,,
-I002,2026-10-06,C001,A001,Hardware,Aperto,,La stampante non taglia lo scontrino. Carta inceppata a ogni chiusura.,,,,,,FALSE,,TRUE,FALSE,,,
-I003,2026-10-05,C003,,Software,In corso,,Listino non si aggiorna sulla cassa 3,Riallineato il database. In attesa di conferma dal cliente.,1.5,,,,FALSE,,TRUE,FALSE,,,
-I004,2026-09-02,C005,A006,Installazione,Chiuso,,Nuovo registratore telematico,Installato e messo in servizio. Personale formato.,3,,,,FALSE,,TRUE,TRUE,,,

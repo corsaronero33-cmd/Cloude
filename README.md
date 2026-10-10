@@ -6,7 +6,6 @@ Due progetti distinti nello stesso repository.
 | --- | --- | --- |
 | [`app/`](app/) | **Gestione Assistenza** -- gestionale del centro di assistenza tecnica: verifiche periodiche RT, scadenze di contratti e abbonamenti, interventi hardware e software. Gira su telefono e su PC | TypeScript, React |
 | `Sources/` | **tbToolkit** -- libreria di utilita' per stringhe, con il suo micro framework di test | twinBASIC |
-| [`appsheet/`](appsheet/) | **Lo stesso gestionale in AppSheet**: fogli di partenza, formule verificate e guida per montarlo da soli, senza scrivere codice | Fogli Google |
 
 Le istruzioni per mettere in funzione il gestionale -- creazione del database,
 pubblicazione, installazione sul telefono, importazione dai fogli Excel -- stanno

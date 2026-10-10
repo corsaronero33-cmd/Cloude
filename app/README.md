@@ -173,13 +173,27 @@ devono restare allineate, e il commento in testa a
    si puo' spedire da `onboarding@resend.dev`; per avere il proprio indirizzo come
    mittente va verificato il dominio, che e' un record DNS.
 
-3. **Pubblicare la funzione**, con la [CLI di Supabase](https://supabase.com/docs/guides/cli):
+3. **Pubblicare la funzione dal browser**, senza installare niente. Nel pannello
+   Supabase, `Edge Functions` -> `Deploy a new function` -> `Via Editor`:
+   chiamala `avvisi-scadenze`, cancella il codice di esempio, incolla tutto il
+   contenuto di `supabase/functions/avvisi-scadenze/index.ts` e premi `Deploy`.
 
-   ```bash
-   supabase functions deploy avvisi-scadenze
-   supabase secrets set RESEND_API_KEY=re_xxxxxxxx
-   supabase secrets set AVVISI_MITTENTE='Assistenza <avvisi@tuodominio.it>'
-   ```
+   La funzione importa `./messaggio.ts`, quindi crea anche quel secondo file
+   nell'editor, con lo stesso nome, e incollaci
+   `supabase/functions/avvisi-scadenze/messaggio.ts`.
+
+   Poi i due segreti, in `Edge Functions` -> `Secrets`:
+
+   | Nome | Valore |
+   | --- | --- |
+   | `RESEND_API_KEY` | la chiave presa al punto 2 |
+   | `AVVISI_MITTENTE` | `Assistenza <avvisi@tuodominio.it>`, oppure `Gestione Assistenza <onboarding@resend.dev>` per cominciare |
+
+   L'editor del pannello non tiene le versioni: va bene per metterla in
+   funzione, ma il codice buono resta quello del repository. Chi preferisce la
+   riga di comando puo' usare la [CLI](https://supabase.com/docs/guides/cli):
+   `supabase functions deploy avvisi-scadenze` e
+   `supabase secrets set RESEND_API_KEY=...`.
 
 4. **Dire a chi mandarli.** In `Impostazioni` → `Avvisi per email`: destinatari
    separati da virgola, orizzonte in giorni, e l'indirizzo dell'app per il
