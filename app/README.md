@@ -165,8 +165,10 @@ devono restare allineate, e il commento in testa a
 
 ### Metterli in funzione
 
-1. **Applicare la seconda migrazione.** Nell'SQL Editor di Supabase, incollare
-   ed eseguire `supabase/migrations/0002_avvisi.sql`.
+1. **Il database e' gia' pronto** se hai eseguito `supabase/installazione.sql`
+   al momento del collegamento: contiene gia' lo scadenzario lato server e il
+   registro degli invii. Se invece avevi eseguito solo `0001_init.sql`, esegui
+   adesso anche `supabase/migrations/0002_avvisi.sql`.
 
 2. **Prendere una chiave per la posta.** Su [resend.com](https://resend.com) il
    piano gratuito manda 3.000 messaggi al mese, piu' che abbondanti. In partenza
