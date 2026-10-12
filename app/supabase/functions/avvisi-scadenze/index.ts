@@ -27,12 +27,39 @@ interface Corpo {
   destinatari?: string[]
 }
 
+/**
+ * La chiave con cui la funzione parla al database.
+ *
+ * Supabase sta sostituendo le vecchie chiavi (`service_role`, un JWT) con le
+ * nuove (`sb_secret_...`), e durante il passaggio un progetto puo' avere le une,
+ * le altre o entrambe. Si prova prima la forma storica, poi quella nuova, che
+ * arriva come oggetto JSON con le chiavi per nome. Cosi' la funzione parte sia
+ * su un progetto vecchio sia su uno creato oggi, senza doverla toccare.
+ */
+function chiaveDiServizio(): string {
+  const storica = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (storica) return storica
+
+  const nuove = Deno.env.get('SUPABASE_SECRET_KEYS')
+  if (nuove) {
+    try {
+      const mappa = JSON.parse(nuove) as Record<string, unknown>
+      const scelta = mappa['default'] ?? Object.values(mappa).find((v) => typeof v === 'string')
+      if (typeof scelta === 'string' && scelta) return scelta
+    } catch {
+      // Se non e' JSON, puo' essere gia' la chiave in chiaro.
+      return nuove
+    }
+  }
+  return ''
+}
+
 Deno.serve(async (richiesta: Request): Promise<Response> => {
   if (richiesta.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
   const db = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    chiaveDiServizio(),
     { auth: { persistSession: false } },
   )
 
