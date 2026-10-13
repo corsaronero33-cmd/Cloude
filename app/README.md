@@ -238,6 +238,13 @@ disattivati dall'interruttore.
 
 ## Foto negli interventi
 
+E' una funzione **facoltativa**, e si spegne da `Impostazioni` → `Interventi` →
+*Foto negli interventi*. Spenta, il riquadro non compare in nessuna scheda e sul
+server non serve niente: chi non vuole le foto non deve eseguire la migrazione
+`0003_foto.sql`, e la sincronizzazione del resto non ne soffre (vedi *Una
+tabella che il server non ha* piu' sotto). L'interruttore e' un'impostazione
+come le altre, quindi viaggia su tutti i dispositivi.
+
 Dentro la scheda di un intervento c'e' un riquadro **Foto**: su telefono apre la
 fotocamera, su computer il solito scegli-file. Si possono aggiungere piu' foto
 alla volta.
@@ -270,6 +277,18 @@ Il secchio e le sue policy li crea `supabase/migrations/0003_foto.sql` (incluso
 in `installazione.sql`). Chi aveva collegato il server prima che le foto
 esistessero esegue **solo** quel file, non di nuovo tutto l'installatore.
 
+### Una tabella che il server non ha
+
+`allegati` e' segnata `opzionale` fra i descrittori. Quando il server risponde
+che quella tabella non esiste, la sincronizzazione la salta per il resto della
+sessione e tira avanti con tutte le altre, invece di fermarsi: un database a cui
+manca una migrazione arrivata dopo non e' un guasto, e perdere lo scadenzario
+perche' manca il secchio delle foto sarebbe un pessimo scambio.
+
+Il riconoscimento sta in `src/lib/erroriServer.ts`, a parte e sotto test, perche'
+e' logica che sbaglia in silenzio: cercare la sola frase *schema cache* avrebbe
+preso anche la **colonna** mancante, che invece e' un guasto vero e va mostrato.
+
 ## Portare dentro i dati che hai oggi
 
 `Importa dati` legge i CSV che escono da Excel in italiano — punto e virgola come
@@ -297,6 +316,8 @@ motivo.
 | `supabase/installazione.sql` | Le tre migrazioni in fila, da incollare una volta sola su un progetto nuovo |
 | `supabase/functions/avvisi-scadenze/` | La funzione che compone e manda il messaggio |
 | `strumenti/unisci-funzione.mjs` | Unisce i due file della funzione in quello da incollare nel pannello |
+| `strumenti/pacchetto.mjs` | Monta il pacchetto da consegnare: app compilata, file da incollare, istruzioni |
+| `pacchetto/LEGGIMI.txt` | Il foglio di istruzioni che viaggia dentro il pacchetto |
 | `supabase/avvisi/pianificazione.sql` | Il modello per programmare l'invio quotidiano |
 | `supabase/tests/scadenze.test.sql` | Prove sulla funzione SQL, da lanciare con psql |
 | `src/lib/types.ts` | I tipi del dominio, uno per tabella |
@@ -307,6 +328,7 @@ motivo.
 | `src/lib/csv.ts` | Lettura e scrittura dei CSV di Excel |
 | `src/lib/pdf.ts` | Rapportino e verbale di verifica, generati sul dispositivo |
 | `src/lib/immagini.ts` | Rimpicciolimento delle foto prima di salvarle |
+| `src/lib/erroriServer.ts` | Riconosce gli errori del server che si possono ignorare |
 | `src/lib/dati.ts` | Gli agganci reattivi fra IndexedDB e le schermate |
 | `src/lib/esempio.ts` | I dati di prova, con le date calcolate a partire da oggi |
 | `src/pages/` | Una schermata per file |
@@ -337,7 +359,16 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/scadenze.test.sql
 npm run typecheck        # solo i tipi
 npm run build            # compila per la pubblicazione
 npm run unisci-funzione  # rigenera il file unico della funzione
+npm run pacchetto        # monta pacchetto-pronto/gestione-assistenza.zip
 ```
+
+`npm run pacchetto` va dopo `npm run build` e mette insieme quello che si
+consegna: `dist/` come cartella da pubblicare, i tre file da incollare nel
+pannello e `pacchetto/LEGGIMI.txt`. Nei file da incollare scrive il riferimento
+del progetto letto da `.env.local`, cosi' chi li usa ha un segnaposto in meno da
+sostituire; la chiave segreta resta un segnaposto, perche' non deve mai uscire
+dal pannello. Esiste perche' la prima volta l'ho montato a mano, e un pacchetto
+montato a mano prima o poi parte con dentro una compilazione vecchia.
 
 ## Cosa c'e' e cosa manca
 
@@ -352,7 +383,7 @@ Funziona oggi:
 - importazione ed esportazione CSV
 - funzionamento offline con coda delle scritture visibile
 - **avviso giornaliero via email**, con registro degli invii e pulsante di prova
-- **foto negli interventi**: rimpicciolite sul dispositivo, in coda se non c'e' campo, su Storage privato
+- **foto negli interventi** (facoltative, con interruttore): rimpicciolite sul dispositivo, in coda se non c'e' campo, su Storage privato
 
 Non c'e' ancora, in ordine di utilita':
 

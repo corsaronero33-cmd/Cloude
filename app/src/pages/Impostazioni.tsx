@@ -71,6 +71,20 @@ export default function Impostazioni() {
         </p>
       </Scheda>
 
+      <Scheda className="space-y-3 p-4">
+        <h2 className="text-sm font-bold text-slate-800">Interventi</h2>
+        <Spunta
+          etichetta="Foto negli interventi"
+          checked={(valori['foto_attive'] ?? '1') === '1'}
+          onChange={(v) => void imposta('foto_attive', v ? '1' : '0')}
+        />
+        <p className="text-xs text-slate-500">
+          Spenta, la casella delle foto non compare nelle schede degli interventi e non serve
+          nessuna configurazione in piu&apos; sul server. Le foto gia&apos; scattate restano dove
+          sono: riaccendendo l&apos;interruttore si rivedono.
+        </p>
+      </Scheda>
+
       <SezioneAvvisi valori={valori} imposta={imposta} />
 
       <Scheda className="space-y-3 p-4">

@@ -88,7 +88,10 @@ function Modulo({ iniziale, nuovo }: { iniziale: Intervento; nuovo: boolean }) {
   const navigate = useNavigate()
   const clienti = useClienti()
   const profili = useProfili()
-  const { valori } = useImpostazioni()
+  const { valori, caricate } = useImpostazioni()
+  // `caricate`: senza questa attesa la casella comparirebbe per un istante
+  // anche a chi l'ha spenta.
+  const fotoAttive = caricate && (valori['foto_attive'] ?? '1') === '1'
   const [bozza, setBozza] = useState<Intervento>(iniziale)
   const sedi = useSedi(bozza.cliente_id || undefined)
   const dispositiviCliente = useDispositivi(bozza.cliente_id || undefined)
@@ -426,18 +429,20 @@ function Modulo({ iniziale, nuovo }: { iniziale: Intervento; nuovo: boolean }) {
         </Scheda>
       )}
 
-      <Foto
-        interventoId={bozza.id}
-        primaDiAggiungere={async () => {
-          // Una foto appesa a un intervento che non esiste ancora non potrebbe
-          // salire: il database rifiuterebbe la riga. Quindi alla prima foto
-          // l'intervento viene salvato, senza chiedere niente.
-          if (!salvatoAlmenoUnaVolta.current) {
-            await salvaTutto()
-            salvatoAlmenoUnaVolta.current = true
-          }
-        }}
-      />
+      {fotoAttive && (
+        <Foto
+          interventoId={bozza.id}
+          primaDiAggiungere={async () => {
+            // Una foto appesa a un intervento che non esiste ancora non potrebbe
+            // salire: il database rifiuterebbe la riga. Quindi alla prima foto
+            // l'intervento viene salvato, senza chiedere niente.
+            if (!salvatoAlmenoUnaVolta.current) {
+              await salvaTutto()
+              salvatoAlmenoUnaVolta.current = true
+            }
+          }}
+        />
+      )}
 
       <RigheIntervento
         righe={righe}

@@ -124,6 +124,13 @@ export interface Impostazioni {
   mesiCadenza: number
   /** Da quanti giorni prima una scadenza compare fra quelle "in arrivo". */
   giorniAvviso: number
+  /**
+   * Falso finche' la lettura dal database locale non e' finita. Serve a
+   * distinguere "non lo so ancora" da "e' vuoto": chi mostra qualcosa solo se
+   * un interruttore e' acceso deve aspettare, altrimenti la cosa spenta
+   * lampeggia per un istante prima di sparire.
+   */
+  caricate: boolean
   imposta: (chiave: string, valore: string) => Promise<void>
 }
 
@@ -141,6 +148,7 @@ export function useImpostazioni(): Impostazioni {
     valori,
     mesiCadenza: numero('mesi_verifica', 24),
     giorniAvviso: numero('giorni_avviso', 60),
+    caricate: righe !== undefined,
     imposta: async (chiave: string, valore: string) => {
       const riga: Impostazione = { chiave, valore, updated_at: '', deleted: false }
       await salva('impostazioni', riga as unknown as Record<string, unknown>)

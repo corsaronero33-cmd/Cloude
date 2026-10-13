@@ -57,7 +57,7 @@ export const ORDINE_TABELLE: NomeTabella[] = [
  */
 export const DESCRITTORI: Record<
   NomeTabella,
-  { chiave: string; campiServer: string[]; campiLocali?: string[] }
+  { chiave: string; campiServer: string[]; campiLocali?: string[]; opzionale?: boolean }
 > = {
   profiles:         { chiave: 'id',     campiServer: ['synced_at'] },
   clienti:          { chiave: 'id',     campiServer: ['synced_at'] },
@@ -69,7 +69,9 @@ export const DESCRITTORI: Record<
   // non lo manda mai per non sovrascriverlo con un nullo.
   interventi:       { chiave: 'id',     campiServer: ['synced_at', 'numero'] },
   intervento_righe: { chiave: 'id',     campiServer: ['synced_at'] },
-  allegati:         { chiave: 'id',     campiServer: ['synced_at'], campiLocali: ['blob', 'caricato'] },
+  // `opzionale`: questa tabella e' arrivata dopo le altre. Un database a cui
+  // manca la migrazione delle foto deve poter sincronizzare tutto il resto.
+  allegati:         { chiave: 'id',     campiServer: ['synced_at'], campiLocali: ['blob', 'caricato'], opzionale: true },
   impostazioni:     { chiave: 'chiave', campiServer: ['synced_at'] },
 }
 

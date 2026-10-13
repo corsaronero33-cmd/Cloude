@@ -2,6 +2,7 @@ import {
   DESCRITTORI, ORDINE_TABELLE, db, leggiMeta, registraSync, scriviMeta,
   type NomeTabella,
 } from './db'
+import { sembraTabellaMancante, type ErroreServer } from './erroriServer'
 import { configurato, sb } from './supabase'
 
 // ============================================================================
@@ -30,6 +31,17 @@ const EPOCA = '1970-01-01T00:00:00.000Z'
 
 /** Il secchio dello Storage dove finiscono le foto degli interventi. */
 const SECCHIO_FOTO = 'foto-interventi'
+
+// Tabelle che questo server non ha. Succede a un database creato prima che una
+// tabella facoltativa esistesse: chi non ha eseguito la migrazione delle foto
+// non deve perdere la sincronizzazione di tutto il resto. Si impara una volta
+// per sessione; eseguita la migrazione, basta riaprire l'app.
+const assenti = new Set<NomeTabella>()
+
+/** Una tabella facoltativa che questo server non ha: si salta, non e' un guasto. */
+function tabellaFacoltativaAssente(tabella: NomeTabella, errore: ErroreServer): boolean {
+  return Boolean(DESCRITTORI[tabella].opzionale) && sembraTabellaMancante(errore)
+}
 
 export type StatoSync =
   | { fase: 'inattivo'; ultima: string | null; errore: string | null }
@@ -107,6 +119,7 @@ export async function sincronizza(): Promise<void> {
 
 async function salita(): Promise<void> {
   for (const tabella of ORDINE_TABELLE) {
+    if (assenti.has(tabella)) continue
     const pendenti = await db.pendenti.where('tabella').equals(tabella).sortBy('seq')
     if (pendenti.length === 0) continue
 
@@ -142,6 +155,13 @@ async function salita(): Promise<void> {
         .from(tabella)
         .upsert(blocco, { onConflict: descrittore.chiave })
       if (error) {
+        if (tabellaFacoltativaAssente(tabella, error)) {
+          // Il server non ha questa tabella: le righe restano in coda e le
+          // altre tabelle proseguono. Non e' un guasto da sbandierare.
+          assenti.add(tabella)
+          console.warn(`La tabella ${tabella} non c'e' sul server: la salto.`)
+          break
+        }
         await segnaErrore(tabella, chiaviBlocco, error.message)
         // Fermarsi qui e non passare alle tabelle successive: se un cliente non
         // e' salito, le sue sedi non possono salire.
@@ -246,6 +266,7 @@ async function segnaErrore(
 
 async function discesa(): Promise<void> {
   for (const tabella of ORDINE_TABELLE) {
+    if (assenti.has(tabella)) continue
     const descrittore = DESCRITTORI[tabella]
     let cursore = (await leggiMeta(`pull:${tabella}`)) ?? EPOCA
 
@@ -257,7 +278,14 @@ async function discesa(): Promise<void> {
         .order('synced_at', { ascending: true })
         .order(descrittore.chiave, { ascending: true })
         .limit(LIMITE_PAGINA)
-      if (error) throw new Error(`Lettura di ${tabella} non riuscita: ${error.message}`)
+      if (error) {
+        if (tabellaFacoltativaAssente(tabella, error)) {
+          assenti.add(tabella)
+          console.warn(`La tabella ${tabella} non c'e' sul server: la salto.`)
+          break
+        }
+        throw new Error(`Lettura di ${tabella} non riuscita: ${error.message}`)
+      }
       if (!data || data.length === 0) break
 
       await applica(tabella, data as Record<string, unknown>[])
@@ -275,7 +303,8 @@ async function discesa(): Promise<void> {
         : nuovoCursore
     }
 
-    await scriviMeta(`pull:${tabella}`, cursore)
+    // Il segnalibro si sposta solo se la tabella e' stata letta davvero.
+    if (!assenti.has(tabella)) await scriviMeta(`pull:${tabella}`, cursore)
   }
 }
 

@@ -1,0 +1,223 @@
+===============================================================
+ GESTIONE ASSISTENZA - cartella pronta da pubblicare
+===============================================================
+
+Dentro questo pacchetto ci sono due cartelle e questo foglio.
+
+  app-da-pubblicare\   l'app compilata e GIA' COLLEGATA al tuo
+                       progetto Supabase (wbuygumedzgilbmihnxh).
+                       Non c'e' niente da configurare: va messa
+                       online cosi' com'e'.
+
+  da-incollare\        tre file da copiare nel pannello Supabase,
+                       numerati nell'ordine in cui servono. Il
+                       primo serve solo se vuoi le foto; gli
+                       altri due sono per gli avvisi via email.
+                       Sono spiegati uno per uno piu' sotto.
+
+
+---------------------------------------------------------------
+ 1. METTERLA ONLINE  (2 minuti, gratis, senza registrarsi)
+---------------------------------------------------------------
+
+ a) Apri  https://app.netlify.com/drop
+ b) Trascina DENTRO la pagina la cartella  app-da-pubblicare
+    (tutta intera, non i file che ci sono dentro).
+    E' quella che contiene index.html.
+ c) Netlify ti da' un indirizzo tipo
+       https://qualcosa-di-casuale.netlify.app
+    Quello e' il tuo indirizzo: funziona da PC e da telefono.
+
+ Per cambiarlo in qualcosa di decente: nel pannello Netlify,
+ Site configuration -> Change site name.
+
+ Per aggiornare l'app in futuro: stessa pagina, trascini la
+ cartella nuova. L'indirizzo resta lo stesso.
+
+ NOTA: pubblica solo  app-da-pubblicare . La cartella
+ da-incollare resta sul tuo computer: quei file servono al
+ pannello Supabase, non al sito.
+
+
+---------------------------------------------------------------
+ 2. INSTALLARLA SUL TELEFONO
+---------------------------------------------------------------
+
+ Android (Chrome):  apri l'indirizzo -> menu ... ->
+                    "Aggiungi a schermata Home"
+ iPhone  (Safari):  apri l'indirizzo -> pulsante Condividi ->
+                    "Aggiungi alla schermata Home"
+
+ Diventa un'icona come le altre app. Il primo accesso ha bisogno
+ della connessione (scarica i dati e apre la sessione); dopo
+ funziona anche senza campo, e risincronizza da sola.
+
+
+---------------------------------------------------------------
+ 3. ENTRARE
+---------------------------------------------------------------
+
+ Email e password sono quelle che hai creato nel pannello
+ Supabase, in Authentication -> Users.
+ Per aggiungere un tecnico: Add user, email e password, e lui
+ entra. Il suo profilo si crea da solo al primo accesso.
+
+
+===============================================================
+ QUELLO CHE RESTA DA FARE NEL PANNELLO SUPABASE
+===============================================================
+
+ Sono tre cose, tutte copia-e-incolla, e i file sono quelli
+ della cartella  da-incollare . La prima e' facoltativa.
+
+ Si aprono con Blocco note (o con qualunque editor di testo):
+ clic destro -> Apri con -> Blocco note. Poi Ctrl+A per
+ selezionare tutto e Ctrl+C per copiare.
+
+
+---------------------------------------------------------------
+ A. LE FOTO NEGLI INTERVENTI  --  SOLO SE LE VUOI
+---------------------------------------------------------------
+
+ Le foto sono una cosa in piu', non un pezzo necessario. Se non
+ ti servono, salta questo punto: non devi eseguire niente e
+ l'app funziona esattamente come prima.
+
+ Per toglierle dalla vista:
+   Impostazioni -> Interventi -> spegni "Foto negli interventi"
+ Il riquadro sparisce dalle schede degli interventi, su tutti i
+ dispositivi. Se un giorno cambi idea, lo riaccendi.
+
+ SE INVECE LE VUOI, servono due minuti:
+
+  1) Pannello Supabase -> SQL Editor -> New query
+  2) Incolla TUTTO il contenuto del file
+        da-incollare\1-foto.sql
+     ATTENZIONE: solo quel file. Non c'e' da rifare
+     l'installazione di prima, quella resta valida.
+  3) Premi Run. Deve dire "Success".
+
+ Come si comportano:
+  - la foto viene rimpicciolita sul dispositivo (lato lungo
+    1600 pixel): da qualche mega a qualche decina di kilobyte;
+  - si vede subito, anche senza campo;
+  - sale su Supabase quando c'e' linea. Fino a quel momento
+    porta la pillola "da inviare";
+  - il secchio e' privato: una foto di un cliente non e'
+    raggiungibile da chi non ha un accesso all'app.
+
+ A che servono, in pratica: lo stato dei sigilli prima e dopo,
+ la targhetta con la matricola quando il libretto non si trova,
+ il danno che il cliente contesta dopo tre mesi, e il pezzo
+ rotto fotografato dal tecnico per sapere che ricambio portare
+ il giorno dopo. Se nel tuo giro queste cose non capitano,
+ lascia l'interruttore spento e non pensarci piu'.
+
+
+---------------------------------------------------------------
+ B. GLI AVVISI PER EMAIL  (10 minuti)
+---------------------------------------------------------------
+
+ Ogni mattina ti arriva un messaggio con le scadenze in ritardo,
+ quelle della settimana e le verifiche ancora da trasmettere.
+ Se non c'e' niente da segnalare non parte niente: cosi' il
+ messaggio che arriva significa sempre qualcosa.
+
+ B1. La chiave della posta
+  1) Vai su  https://resend.com  e registrati (gratis, 3.000
+     messaggi al mese).
+  2) API Keys -> Create API Key. Copia la chiave (la vedi una
+     volta sola).
+
+ B2. Pubblicare la funzione
+  1) Pannello Supabase -> Edge Functions ->
+     "Deploy a new function" -> "Via Editor"
+  2) Nome:  avvisi-scadenze
+  3) Cancella il codice di esempio e incolla TUTTO il contenuto
+     di
+        da-incollare\2-funzione-avvisi.ts
+     E' un file unico: si incolla una volta sola, non ci sono
+     secondi file da creare.
+  4) Deploy.
+
+ B3. I due segreti
+     Edge Functions -> Secrets -> Add new secret, due volte:
+
+       RESEND_API_KEY   = la chiave del punto B1
+       AVVISI_MITTENTE  = Gestione Assistenza <onboarding@resend.dev>
+
+     (col secondo valore puoi partire subito; per mandare dal tuo
+     dominio bisogna verificarlo su Resend, e' un record DNS)
+
+ B4. Dire a chi mandarli
+     Nell'app, Impostazioni -> Avvisi per email:
+      - destinatari (piu' email separate da virgola)
+      - quanti giorni avanti guardare
+      - l'indirizzo dell'app (quello di Netlify), per il pulsante
+        dentro il messaggio
+     Poi premi "Manda una prova adesso": arriva subito, e se
+     qualcosa non va la risposta dice che cosa.
+
+ B5. Programmare l'invio di ogni mattina
+  1) Apri il file  da-incollare\3-pianificazione.sql
+  2) Dentro c'e' UNA cosa da sostituire: la scritta
+        CHIAVE_SERVICE_ROLE
+     va rimpiazzata con la chiave segreta del progetto
+     (Project Settings -> API -> service_role; sui progetti
+     nuovi si chiama "secret" e comincia con sb_secret_).
+     Il resto e' gia' compilato col tuo progetto.
+  3) SQL Editor -> incolla -> Run
+
+     Quella chiave segreta vale come una password di
+     amministratore: sta dentro il tuo database e nel tuo
+     pannello, e non va mandata a nessuno - me compreso.
+
+ Se un avviso non arriva: Impostazioni mostra gli ultimi cinque
+ tentativi e la risposta del servizio di posta. Le cause sono
+ quasi sempre tre: RESEND_API_KEY non impostato, nessun
+ destinatario, avvisi disattivati dall'interruttore.
+
+
+===============================================================
+ UNA COSA DETTA CHIARA
+===============================================================
+
+ Tutto il resto dell'app e' stato provato per davvero: 80 test
+ automatici, lo scadenzario verificato contro un PostgreSQL
+ vero, l'interfaccia guidata da un browser reale.
+
+ Delle foto ho verificato tutto quello che si puo' verificare
+ senza il tuo progetto: scatto, rimpicciolimento (una prova da
+ 2400x1800 e' uscita a 27 kB), salvataggio locale, la foto che
+ resta dopo aver chiuso e riaperto, la pillola "da inviare",
+ l'interruttore che le spegne e le riaccende.
+
+ Il CARICAMENTO sul tuo Supabase Storage non ho potuto provarlo:
+ dalla macchina dove lavoro la rete verso supabase.co e'
+ bloccata. Il codice c'e' ed e' controllato, ma il primo
+ caricamento vero lo fai tu. Se qualcosa non va, il sintomo
+ sara' una foto che resta "da inviare" e non diventa mai
+ definitiva: dimmelo e lo sistemo subito.
+
+ Se non esegui 1-foto.sql, l'app non ne soffre: si accorge che
+ quella tabella non c'e' e continua a sincronizzare tutto il
+ resto. Questo l'ho scritto e messo sotto test.
+
+
+===============================================================
+ SE QUALCOSA NON TORNA
+===============================================================
+
+ Etichetta viola "solo locale" in alto a destra
+   = l'app non vede il server. In questa cartella non dovrebbe
+     succedere: se accade, hai pubblicato la cartella sbagliata.
+
+ "Aggiornato" non compare mai / le modifiche non arrivano
+   agli altri
+   = guarda il contatore della coda in alto: se resta fermo,
+     non c'e' connessione o la sessione e' scaduta (esci e
+     rientra).
+
+ Pagina bianca dopo un aggiornamento
+   = ricarica tenendo premuto Maiusc (PC), o chiudi e riapri
+     l'app (telefono): sta sostituendo la copia in cache.
