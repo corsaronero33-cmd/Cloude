@@ -1,15 +1,25 @@
 # Cloude
 
-Due progetti distinti nello stesso repository.
+Tre cartelle, due progetti.
 
 | Cartella | Progetto | Linguaggio |
 | --- | --- | --- |
-| [`app/`](app/) | **Gestione Assistenza** -- gestionale del centro di assistenza tecnica: verifiche periodiche RT, scadenze di contratti e abbonamenti, interventi hardware e software. Gira su telefono e su PC | TypeScript, React |
+| [`sito/`](sito/) | **Gestione Assistenza, versione PHP** -- lo stesso gestionale come sito normale: si carica su un hosting con FTP, si aggiorna sovrascrivendo i file, i dati si guardano con phpMyAdmin | PHP, MySQL |
+| [`app/`](app/) | **Gestione Assistenza, versione offline** -- gestionale che funziona anche senza rete e si sincronizza da solo quando la ritrova | TypeScript, React |
 | `Sources/` | **tbToolkit** -- libreria di utilita' per stringhe, con il suo micro framework di test | twinBASIC |
 
-Le istruzioni per mettere in funzione il gestionale -- creazione del database,
-pubblicazione, installazione sul telefono, importazione dai fogli Excel -- stanno
-in [`app/README.md`](app/README.md).
+Le due versioni del gestionale fanno lo stesso mestiere -- verifiche periodiche
+RT, scadenze di contratti e abbonamenti, interventi con rapportino firmato -- e
+nascono dalle stesse regole, ma scelgono due strade diverse:
+
+- **`sito/`** e' piu' semplice da possedere: un file per pagina, nessuna
+  compilazione, si corregge con un editor di testo e si aggiorna via FTP.
+  Vuole la linea per funzionare.
+- **`app/`** funziona nel retro di un negozio senza campo e sale da sola quando
+  il telefono ritrova la rete, ma per aggiornarla bisogna ricompilarla.
+
+Le istruzioni stanno in [`sito/LEGGIMI.md`](sito/LEGGIMI.md) e in
+[`app/README.md`](app/README.md).
 
 ---
 

@@ -18,3 +18,5 @@ build/
 Thumbs.db
 desktop.ini
 .DS_Store
+sito/configurazione.php
+sito/dati/
