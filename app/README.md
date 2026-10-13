@@ -73,6 +73,14 @@ gia' pronto).
 Nessun account, nessuna carta di credito. L'indirizzo resta attivo e si puo'
 rivendicare dopo, registrandosi, se si decide di tenerlo.
 
+**Per aggiornare un sito gia' pubblicato** non si ripassa da quella pagina: la
+pagina del *drop* crea ogni volta un sito nuovo, con un indirizzo nuovo. Si apre
+il proprio sito su [app.netlify.com](https://app.netlify.com), linguetta
+`Deploys`, e si trascina la cartella sul riquadro in fondo a quella pagina
+([documentazione Netlify](https://docs.netlify.com/deploy/create-deploys/)).
+Cosi' l'indirizzo resta lo stesso, e il service worker porta la versione nuova
+ai dispositivi alla prima apertura con la rete.
+
 ### 2. Sul proprio computer
 
 ```bash

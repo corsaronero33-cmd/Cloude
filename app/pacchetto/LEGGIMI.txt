@@ -17,22 +17,41 @@ Dentro questo pacchetto ci sono due cartelle e questo foglio.
 
 
 ---------------------------------------------------------------
- 1. METTERLA ONLINE  (2 minuti, gratis, senza registrarsi)
+ 1. METTERLA ONLINE
 ---------------------------------------------------------------
 
- a) Apri  https://app.netlify.com/drop
- b) Trascina DENTRO la pagina la cartella  app-da-pubblicare
-    (tutta intera, non i file che ci sono dentro).
-    E' quella che contiene index.html.
- c) Netlify ti da' un indirizzo tipo
-       https://qualcosa-di-casuale.netlify.app
-    Quello e' il tuo indirizzo: funziona da PC e da telefono.
+ PRIMA DI TUTTO: estrai lo zip. Dalla finestra dello zip non si
+ trascina niente, Windows deve avere le cartelle vere su disco.
+ Clic destro sullo zip -> "Estrai tutto".
 
- Per cambiarlo in qualcosa di decente: nel pannello Netlify,
- Site configuration -> Change site name.
+ SE E' LA PRIMA VOLTA (non hai ancora un sito):
 
- Per aggiornare l'app in futuro: stessa pagina, trascini la
- cartella nuova. L'indirizzo resta lo stesso.
+  a) Apri  https://app.netlify.com/drop
+  b) Trascina DENTRO la pagina la cartella  app-da-pubblicare
+     (tutta intera, non i file che ci sono dentro).
+     E' quella che contiene index.html.
+  c) Netlify ti da' un indirizzo tipo
+        https://qualcosa-di-casuale.netlify.app
+     Quello e' il tuo indirizzo: funziona da PC e da telefono.
+
+  Per cambiarlo in qualcosa di decente: nel pannello Netlify,
+  Site configuration -> Change site name.
+
+ SE IL SITO C'E' GIA' e vuoi solo aggiornarlo:
+
+  NON ripassare da app.netlify.com/drop: quella pagina crea un
+  sito NUOVO, con un indirizzo nuovo, e ti ritrovi con due app
+  diverse. Invece:
+
+  a) Entra su  https://app.netlify.com  e apri il tuo sito
+     (nei pannelli nuovi la lista si chiama "Projects")
+  b) Vai nella linguetta  Deploys
+  c) In fondo a quella pagina c'e' un riquadro dove si trascina
+     la cartella. Trascinaci  app-da-pubblicare
+  d) Aspetta che il nuovo caricamento diventi  Published
+
+  L'indirizzo resta lo stesso, e l'app installata sul telefono
+  si aggiorna da se' la prima volta che la apri con la rete.
 
  NOTA: pubblica solo  app-da-pubblicare . La cartella
  da-incollare resta sul tuo computer: quei file servono al
@@ -221,3 +240,10 @@ Dentro questo pacchetto ci sono due cartelle e questo foglio.
  Pagina bianca dopo un aggiornamento
    = ricarica tenendo premuto Maiusc (PC), o chiudi e riapri
      l'app (telefono): sta sostituendo la copia in cache.
+
+ Non sono sicuro che la versione nuova sia arrivata
+   = apri  Impostazioni  e cerca il riquadro "Interventi" con
+     l'interruttore "Foto negli interventi". Se c'e', e' la
+     versione nuova. Se non c'e', stai ancora vedendo la copia
+     vecchia: ricarica con Ctrl+Maiusc+R sul PC, oppure chiudi
+     e riapri l'app sul telefono.
