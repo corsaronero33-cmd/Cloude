@@ -5,6 +5,13 @@
 
 declare(strict_types=1);
 
+// Questo file ha senso solo dentro prove.php: aperto da solo non deve fare
+// niente (e non deve mostrare un errore a chi ci capita per sbaglio).
+if (!function_exists('prova')) {
+  http_response_code(404);
+  exit;
+}
+
 function prossimo_numero_prova(): string
 {
   $anno = date('Y');

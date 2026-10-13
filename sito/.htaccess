@@ -1,0 +1,55 @@
+# ============================================================================
+# Regole per il server web (Apache). Vale per questa cartella e quelle dentro.
+#
+# Se una di queste righe dovesse dare "Internal Server Error", si mette un
+# cancelletto davanti e si ricarica: sono indipendenti l'una dall'altra.
+# ============================================================================
+
+# --- 1. Sempre in https -----------------------------------------------------
+#
+# Nel gestionale si entra con una password: senza https viaggerebbe in chiaro
+# sulla rete del bar o dell'hotel da cui ti colleghi.
+#
+# ATTENZIONE: queste quattro righe funzionano solo quando il certificato SSL
+# del dominio e' gia' attivo. Se dopo averle caricate il browser dice che non
+# riesce ad aprire la pagina, mettici davanti un cancelletto, aspetta che il
+# certificato sia pronto nel pannello, e toglilo.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# --- 2. Il file della configurazione non si scarica -------------------------
+#
+# Dentro ci sono la password del database e quella della casella di posta.
+# Normalmente PHP lo esegue e nessuno ne vede il contenuto; questa e' la
+# cintura di sicurezza per il giorno in cui PHP dovesse smettere di funzionare
+# e il server servisse il file come testo.
+<Files "configurazione.php">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</Files>
+
+# --- 3. Le prove automatiche non si lanciano dal web ------------------------
+<FilesMatch "^(prove|interventi_numero_prova)\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# --- 4. Niente elenco dei file ---------------------------------------------
+Options -Indexes
+
+# --- 5. La pagina iniziale --------------------------------------------------
+DirectoryIndex index.php index.html

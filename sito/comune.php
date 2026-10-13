@@ -142,13 +142,30 @@ function giorni_avviso(): int { return max(1, (int) impostazione('giorni_avviso'
 
 // --- accesso ----------------------------------------------------------------
 
+/**
+ * Vero quando la pagina e' arrivata in https.
+ *
+ * Su molti hosting il sito sta dietro a un apparato che si occupa lui del
+ * certificato e poi parla con PHP in chiaro: li' `HTTPS` non vale 'on' e
+ * l'unica traccia resta l'intestazione che quell'apparato aggiunge. Senza
+ * questo controllo il cookie della sessione non verrebbe marcato come sicuro
+ * proprio sui siti che il certificato ce l'hanno.
+ */
+function collegamento_sicuro(): bool
+{
+  $https = strtolower((string) ($_SERVER['HTTPS'] ?? ''));
+  if ($https === 'on' || $https === '1') return true;
+  if (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https') return true;
+  return (int) ($_SERVER['SERVER_PORT'] ?? 0) === 443;
+}
+
 function avvia_sessione(): void
 {
   if (session_status() === PHP_SESSION_ACTIVE) return;
   session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Lax',
-    'secure'   => ($_SERVER['HTTPS'] ?? '') === 'on',
+    'secure'   => collegamento_sicuro(),
   ]);
   session_start();
 }
