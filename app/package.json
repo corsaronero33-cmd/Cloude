@@ -11,7 +11,8 @@
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:demo": "tsc -b && vite build --mode demo"
+    "build:demo": "tsc -b && vite build --mode demo",
+    "unisci-funzione": "node strumenti/unisci-funzione.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

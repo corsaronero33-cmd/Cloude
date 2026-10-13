@@ -28,6 +28,9 @@ import { configurato, sb } from './supabase'
 const LIMITE_PAGINA = 500
 const EPOCA = '1970-01-01T00:00:00.000Z'
 
+/** Il secchio dello Storage dove finiscono le foto degli interventi. */
+const SECCHIO_FOTO = 'foto-interventi'
+
 export type StatoSync =
   | { fase: 'inattivo'; ultima: string | null; errore: string | null }
   | { fase: 'in_corso'; ultima: string | null; errore: string | null }
@@ -107,11 +110,18 @@ async function salita(): Promise<void> {
     const pendenti = await db.pendenti.where('tabella').equals(tabella).sortBy('seq')
     if (pendenti.length === 0) continue
 
+    // Le foto hanno due pezzi: il file nello Storage e la riga nel database.
+    // Il file va per primo, altrimenti il database finirebbe per descrivere
+    // un'immagine che non esiste. Quelle che non riescono a salire restano in
+    // coda e si riprovano, senza fermare il resto.
+    const fotoRimaste = tabella === 'allegati' ? await portaSuLeFoto() : new Set<string>()
+
     const descrittore = DESCRITTORI[tabella]
     const righe: Record<string, unknown>[] = []
     const chiaviVive: string[] = []
 
     for (const p of pendenti) {
+      if (fotoRimaste.has(p.chiave)) continue
       const riga = await (db[tabella] as never as { get(k: string): Promise<unknown> }).get(p.chiave)
       if (!riga) {
         // La riga non c'e' piu' in locale: la traccia non ha piu' nulla da
@@ -119,7 +129,7 @@ async function salita(): Promise<void> {
         await db.pendenti.delete([tabella, p.chiave])
         continue
       }
-      righe.push(senzaCampiServer(riga as Record<string, unknown>, descrittore.campiServer))
+      righe.push(soloCampiDaInviare(riga as Record<string, unknown>, descrittore))
       chiaviVive.push(p.chiave)
     }
     if (righe.length === 0) continue
@@ -142,15 +152,76 @@ async function salita(): Promise<void> {
   }
 }
 
-function senzaCampiServer(
+/**
+ * Prepara la riga da inviare togliendo due categorie di campi: quelli che
+ * decide il server (rimandarli indietro li sovrascriverebbe) e quelli che
+ * vivono solo qui, come l'immagine di una foto, che nel database non ci va
+ * perche' il file sta nello Storage.
+ */
+function soloCampiDaInviare(
   riga: Record<string, unknown>,
-  campiServer: string[],
+  descrittore: { campiServer: string[]; campiLocali?: string[] },
 ): Record<string, unknown> {
+  const fuori = new Set([...descrittore.campiServer, ...(descrittore.campiLocali ?? [])])
   const copia: Record<string, unknown> = {}
   for (const [k, v] of Object.entries(riga)) {
-    if (!campiServer.includes(k)) copia[k] = v
+    if (!fuori.has(k)) copia[k] = v
   }
   return copia
+}
+
+/**
+ * Porta nello Storage le immagini non ancora caricate, e toglie da li' quelle
+ * marcate come eliminate.
+ *
+ * Restituisce gli identificativi delle foto che NON ce l'hanno fatta: le loro
+ * righe non vanno inviate, perche' descriverebbero un file che non esiste.
+ * Restano in coda e si riprovano al giro successivo, esattamente come una
+ * qualunque altra scrittura rimasta indietro.
+ */
+async function portaSuLeFoto(): Promise<Set<string>> {
+  const rimaste = new Set<string>()
+  const pendenti = await db.pendenti.where('tabella').equals('allegati').sortBy('seq')
+
+  for (const p of pendenti) {
+    const riga = await db.allegati.get(p.chiave)
+    if (!riga) continue
+
+    if (riga.deleted) {
+      // Il file se ne va con la riga. Se non c'era gia' piu', va bene lo stesso:
+      // qui conta che non resti, non che ci fosse.
+      await sb.storage.from(SECCHIO_FOTO).remove([riga.percorso])
+      continue
+    }
+
+    if (riga.caricato || !riga.blob) continue
+
+    const { error } = await sb.storage
+      .from(SECCHIO_FOTO)
+      .upload(riga.percorso, riga.blob, {
+        contentType: riga.tipo ?? 'image/jpeg',
+        upsert: true,
+      })
+
+    if (error) {
+      rimaste.add(riga.id)
+      continue
+    }
+    await db.allegati.update(riga.id, { caricato: true })
+  }
+
+  return rimaste
+}
+
+/**
+ * L'indirizzo con cui mostrare una foto che non abbiamo in locale. Il secchio
+ * e' privato, quindi serve un collegamento firmato, che vale un'ora.
+ */
+export async function indirizzoFoto(percorso: string): Promise<string | null> {
+  if (!configurato) return null
+  const { data, error } = await sb.storage.from(SECCHIO_FOTO).createSignedUrl(percorso, 3600)
+  if (error || !data) return null
+  return data.signedUrl
 }
 
 async function segnaErrore(

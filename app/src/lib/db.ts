@@ -1,8 +1,8 @@
 import Dexie, { type Table } from 'dexie'
 import { adesso } from './dates'
 import type {
-  Cliente, Contratto, Dispositivo, Impostazione, Intervento, InterventoRiga,
-  Profilo, Ricambio, Sede,
+  Allegato, Cliente, Contratto, Dispositivo, Impostazione, Intervento,
+  InterventoRiga, Profilo, Ricambio, Sede,
 } from './types'
 
 // ============================================================================
@@ -36,7 +36,8 @@ export interface Meta {
 
 export type NomeTabella =
   | 'clienti' | 'sedi' | 'dispositivi' | 'contratti'
-  | 'interventi' | 'intervento_righe' | 'ricambi' | 'impostazioni' | 'profiles'
+  | 'interventi' | 'intervento_righe' | 'allegati'
+  | 'ricambi' | 'impostazioni' | 'profiles'
 
 /**
  * Ordine in cui le tabelle salgono al server. Conta: una sede non puo' essere
@@ -46,11 +47,18 @@ export type NomeTabella =
  */
 export const ORDINE_TABELLE: NomeTabella[] = [
   'profiles', 'clienti', 'sedi', 'dispositivi', 'contratti',
-  'ricambi', 'interventi', 'intervento_righe', 'impostazioni',
+  'ricambi', 'interventi', 'intervento_righe', 'allegati', 'impostazioni',
 ]
 
-/** Per ogni tabella: qual e' la chiave primaria e cosa decide il server. */
-export const DESCRITTORI: Record<NomeTabella, { chiave: string; campiServer: string[] }> = {
+/**
+ * Per ogni tabella: la chiave primaria, i campi che decide il server (tolti
+ * prima di inviare, per non sovrascriverli) e quelli che restano solo qui
+ * (l'immagine di una foto non va nel database: il file sta nello Storage).
+ */
+export const DESCRITTORI: Record<
+  NomeTabella,
+  { chiave: string; campiServer: string[]; campiLocali?: string[] }
+> = {
   profiles:         { chiave: 'id',     campiServer: ['synced_at'] },
   clienti:          { chiave: 'id',     campiServer: ['synced_at'] },
   sedi:             { chiave: 'id',     campiServer: ['synced_at'] },
@@ -61,6 +69,7 @@ export const DESCRITTORI: Record<NomeTabella, { chiave: string; campiServer: str
   // non lo manda mai per non sovrascriverlo con un nullo.
   interventi:       { chiave: 'id',     campiServer: ['synced_at', 'numero'] },
   intervento_righe: { chiave: 'id',     campiServer: ['synced_at'] },
+  allegati:         { chiave: 'id',     campiServer: ['synced_at'], campiLocali: ['blob', 'caricato'] },
   impostazioni:     { chiave: 'chiave', campiServer: ['synced_at'] },
 }
 
@@ -72,6 +81,7 @@ class DatabaseLocale extends Dexie {
   contratti!: Table<Contratto, string>
   interventi!: Table<Intervento, string>
   intervento_righe!: Table<InterventoRiga, string>
+  allegati!: Table<Allegato, string>
   ricambi!: Table<Ricambio, string>
   impostazioni!: Table<Impostazione, string>
   pendenti!: Table<Pendente, [string, string]>
@@ -91,6 +101,7 @@ class DatabaseLocale extends Dexie {
       contratti: 'id, cliente_id, data_scadenza, stato, tipo',
       interventi: 'id, cliente_id, sede_id, dispositivo_id, stato, tipo, data_intervento, tecnico_id',
       intervento_righe: 'id, intervento_id',
+      allegati: 'id, intervento_id',
       ricambi: 'id, codice',
       impostazioni: 'chiave',
       pendenti: '[tabella+chiave], seq, tabella',

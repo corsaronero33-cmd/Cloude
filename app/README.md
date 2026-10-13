@@ -24,8 +24,8 @@ telefono ritrova la linea, tutto sale da solo.
  |     IndexedDB  <-----+-- salita -----> |                        |
  |     (Dexie)    <-----+-- discesa ----- |   autenticazione       |
  |          |           |                 |                        |
- |   coda "pendenti"    |                 +------------------------+
- +----------------------+
+ |   coda "pendenti"    |                 |   Storage (le foto)    |
+ +----------------------+                 +------------------------+
 ```
 
 Le regole, scritte per esteso in `src/lib/db.ts` e `src/lib/sync.ts`:
@@ -103,19 +103,31 @@ di usarla sul serio, insieme al collegamento con Supabase.
    dentro l'Unione.
 
 2. **Creare le tabelle.** Nel pannello, `SQL Editor` → `New query`, incollare
-   tutto il contenuto di `supabase/migrations/0001_init.sql` e premere `Run`.
+   tutto il contenuto di `supabase/installazione.sql` e premere `Run`. E' un
+   unico file: contiene le tre migrazioni in fila (tabelle e policy, scadenzario
+   lato server, allegati e secchio delle foto), e si puo' rieseguire senza fare
+   danni.
+
+   Chi aveva collegato il server quando l'installatore era piu' corto esegue solo
+   le migrazioni che gli mancano, da `supabase/migrations/`, non di nuovo tutto.
 
 3. **Configurare l'app.** Copiare `.env.example` in `.env.local` e riempire i
    due valori, che si trovano in `Project Settings` → `API`:
 
    ```
    VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGciOi...
+   VITE_SUPABASE_ANON_KEY=sb_publishable_...
    ```
 
-   La chiave `anon` e' pubblica per sua natura: puo' stare nel browser perche' i
+   Nel secondo valore va la chiave pubblica del progetto: sui progetti nuovi si
+   chiama `publishable` e comincia con `sb_publishable_`, su quelli piu' vecchi
+   `anon` e comincia con `eyJ`. Vanno bene entrambe, e il nome della variabile
+   resta quello.
+
+   Quella chiave e' pubblica per sua natura: puo' stare nel browser perche' i
    permessi veri li impongono le policy RLS scritte nella migrazione. La chiave
-   `service_role`, invece, non va **mai** messa qui.
+   `secret` (prima `service_role`), invece, non va **mai** messa qui, ne'
+   mandata a nessuno: scavalca le policy e deve restare nel pannello.
 
 4. **Creare gli accessi.** `Authentication` → `Users` → `Add user`, uno per te e
    uno per ciascun tecnico, con email e password. Il profilo viene creato da solo
@@ -178,11 +190,15 @@ devono restare allineate, e il commento in testa a
 3. **Pubblicare la funzione dal browser**, senza installare niente. Nel pannello
    Supabase, `Edge Functions` -> `Deploy a new function` -> `Via Editor`:
    chiamala `avvisi-scadenze`, cancella il codice di esempio, incolla tutto il
-   contenuto di `supabase/functions/avvisi-scadenze/index.ts` e premi `Deploy`.
+   contenuto di `supabase/functions/avvisi-scadenze/funzione-completa.ts` e premi
+   `Deploy`.
 
-   La funzione importa `./messaggio.ts`, quindi crea anche quel secondo file
-   nell'editor, con lo stesso nome, e incollaci
-   `supabase/functions/avvisi-scadenze/messaggio.ts`.
+   Quel file e' un **unico pezzo**: nell'editor del pannello si crea un file solo e
+   si incolla una volta. Non e' scritto a mano due volte — lo genera
+   `npm run unisci-funzione` unendo `index.ts` e `messaggio.ts`, che restano i
+   file veri da modificare. Un test (`unito.test.ts`) fallisce se qualcuno
+   cambia i due e si dimentica di rigenerare l'unito, cosi' le due copie non
+   possono divergere in silenzio.
 
    Poi i due segreti, in `Edge Functions` -> `Secrets`:
 
@@ -193,9 +209,16 @@ devono restare allineate, e il commento in testa a
 
    L'editor del pannello non tiene le versioni: va bene per metterla in
    funzione, ma il codice buono resta quello del repository. Chi preferisce la
-   riga di comando puo' usare la [CLI](https://supabase.com/docs/guides/cli):
-   `supabase functions deploy avvisi-scadenze` e
+   riga di comando puo' usare la [CLI](https://supabase.com/docs/guides/cli), e in
+   quel caso si pubblica la cartella `avvisi-scadenze/` con i suoi due file veri,
+   non l'unito: `supabase functions deploy avvisi-scadenze` e
    `supabase secrets set RESEND_API_KEY=...`.
+
+   Per leggere il database la funzione usa la chiave di servizio del progetto, che
+   Supabase mette a disposizione da sola: cerca prima
+   `SUPABASE_SERVICE_ROLE_KEY`, poi `SUPABASE_SECRET_KEYS` (il formato nuovo, un
+   JSON), quindi va bene sia un progetto vecchio sia uno creato adesso. Non c'e'
+   niente da incollare: quella chiave non deve mai uscire dal pannello.
 
 4. **Dire a chi mandarli.** In `Impostazioni` → `Avvisi per email`: destinatari
    separati da virgola, orizzonte in giorni, e l'indirizzo dell'app per il
@@ -212,6 +235,40 @@ ha risposto il servizio di posta. Gli ultimi cinque invii si vedono direttamente
 in `Impostazioni`, sotto il pulsante di prova. Le tre cause piu' comuni sono il
 segreto `RESEND_API_KEY` non impostato, nessun destinatario, e gli avvisi
 disattivati dall'interruttore.
+
+## Foto negli interventi
+
+Dentro la scheda di un intervento c'e' un riquadro **Foto**: su telefono apre la
+fotocamera, su computer il solito scegli-file. Si possono aggiungere piu' foto
+alla volta.
+
+Come funziona, perche' conta sapere l'ordine:
+
+1. **La foto viene rimpicciolita sul dispositivo** prima di toccare qualsiasi
+   cosa: lato lungo 1600 pixel, JPEG. Una foto da telefono passa da qualche mega
+   a qualche decina di kilobyte. Se il rimpicciolimento non riesce — formato
+   strano, immagine rotta — viene tenuta l'originale invece di perdere lo scatto.
+2. **Resta sul dispositivo**, dentro il database locale, insieme al resto. Si
+   vede subito, anche senza campo, anche chiudendo e riaprendo l'app.
+3. **Sale su Supabase Storage** alla prima sincronizzazione utile, nel secchio
+   privato `foto-interventi`. Fino a quel momento la miniatura porta la pillola
+   *da inviare*, che e' la stessa informazione della coda delle scritture ma
+   messa dove la stai guardando.
+4. **Si rivede da un altro dispositivo** con un indirizzo firmato che vale un'ora:
+   il secchio non e' pubblico, quindi una foto di un cliente non e' raggiungibile
+   da chi non ha un accesso all'app.
+
+Una foto non puo' esistere senza il suo intervento, quindi aggiungendola a un
+intervento appena creato l'intervento viene **salvato da solo** in quel momento.
+
+Se il caricamento di una foto non riesce, quella riga non viene mandata al
+server: meglio una foto che resta "da inviare" e riprova, che una scheda che
+dice di avere un allegato che non c'e'. Le altre tabelle intanto continuano a
+sincronizzarsi.
+
+Il secchio e le sue policy li crea `supabase/migrations/0003_foto.sql` (incluso
+in `installazione.sql`). Chi aveva collegato il server prima che le foto
+esistessero esegue **solo** quel file, non di nuovo tutto l'installatore.
 
 ## Portare dentro i dati che hai oggi
 
@@ -236,7 +293,10 @@ motivo.
 | --- | --- |
 | `supabase/migrations/0001_init.sql` | Tabelle, trigger, policy RLS. E' la fonte di verita' dello schema |
 | `supabase/migrations/0002_avvisi.sql` | Lo scadenzario in SQL, per l'avviso che parte quando nessuno ha l'app aperta |
+| `supabase/migrations/0003_foto.sql` | La tabella degli allegati, il secchio delle foto e le sue policy |
+| `supabase/installazione.sql` | Le tre migrazioni in fila, da incollare una volta sola su un progetto nuovo |
 | `supabase/functions/avvisi-scadenze/` | La funzione che compone e manda il messaggio |
+| `strumenti/unisci-funzione.mjs` | Unisce i due file della funzione in quello da incollare nel pannello |
 | `supabase/avvisi/pianificazione.sql` | Il modello per programmare l'invio quotidiano |
 | `supabase/tests/scadenze.test.sql` | Prove sulla funzione SQL, da lanciare con psql |
 | `src/lib/types.ts` | I tipi del dominio, uno per tabella |
@@ -246,6 +306,7 @@ motivo.
 | `src/lib/dates.ts` | Aritmetica delle date sul calendario, senza fusi orari |
 | `src/lib/csv.ts` | Lettura e scrittura dei CSV di Excel |
 | `src/lib/pdf.ts` | Rapportino e verbale di verifica, generati sul dispositivo |
+| `src/lib/immagini.ts` | Rimpicciolimento delle foto prima di salvarle |
 | `src/lib/dati.ts` | Gli agganci reattivi fra IndexedDB e le schermate |
 | `src/lib/esempio.ts` | I dati di prova, con le date calcolate a partire da oggi |
 | `src/pages/` | Una schermata per file |
@@ -262,6 +323,7 @@ Coprono le parti che possono sbagliare in silenzio: l'aritmetica delle date (il
 scadenzario decide cosa mostrare, la lettura dei CSV veri di Excel (virgolette
 raddoppiate, campi che vanno a capo, BOM) e la composizione dell'email di avviso,
 che altrimenti nessuno guarderebbe prima che parta da sola alle sette del mattino.
+Un test a parte tiene allineato `funzione-completa.ts` ai due file da cui nasce.
 
 La funzione SQL ha le sue prove, da lanciare contro il database. Girano dentro una
 transazione annullata in fondo, quindi si possono lanciare anche sul database vero
@@ -272,8 +334,9 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/scadenze.test.sql
 ```
 
 ```bash
-npm run typecheck   # solo i tipi
-npm run build       # compila per la pubblicazione
+npm run typecheck        # solo i tipi
+npm run build            # compila per la pubblicazione
+npm run unisci-funzione  # rigenera il file unico della funzione
 ```
 
 ## Cosa c'e' e cosa manca
@@ -289,14 +352,14 @@ Funziona oggi:
 - importazione ed esportazione CSV
 - funzionamento offline con coda delle scritture visibile
 - **avviso giornaliero via email**, con registro degli invii e pulsante di prova
+- **foto negli interventi**: rimpicciolite sul dispositivo, in coda se non c'e' campo, su Storage privato
 
 Non c'e' ancora, in ordine di utilita':
 
-1. **foto negli interventi** — allegati su Supabase Storage, con coda offline;
-2. **calendario dei giri** dei tecnici, con assegnazione per zona;
-3. **magazzino ricambi** collegato alle righe dei rapportini (la tabella c'e' gia');
-4. **esportazione verso la fatturazione elettronica**;
-5. **permessi per zona**: oggi chi ha un accesso vede tutti i clienti.
+1. **calendario dei giri** dei tecnici, con assegnazione per zona;
+2. **magazzino ricambi** collegato alle righe dei rapportini (la tabella c'e' gia');
+3. **esportazione verso la fatturazione elettronica**;
+4. **permessi per zona**: oggi chi ha un accesso vede tutti i clienti.
 
 ## Una nota sulle scadenze normative
 

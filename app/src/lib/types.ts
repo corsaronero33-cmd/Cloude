@@ -148,6 +148,22 @@ export interface InterventoRiga extends Sincronizzabile {
   ricambio_id: string | null
 }
 
+export interface Allegato extends Sincronizzabile {
+  intervento_id: string
+  nome: string
+  /** Dove sta il file nello Storage: <id intervento>/<id allegato>.jpg */
+  percorso: string
+  tipo: string | null
+  dimensione: number | null
+  /**
+   * Solo locale, non sale mai al server: l'immagine vera. Resta anche dopo il
+   * caricamento, cosi' le foto si rivedono sul telefono senza rete.
+   */
+  blob?: Blob | null
+  /** Solo locale: vero quando il file e' arrivato nello Storage. */
+  caricato?: boolean
+}
+
 export interface Ricambio extends Sincronizzabile {
   codice: string
   descrizione: string

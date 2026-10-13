@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Firma from '../components/Firma'
+import Foto from '../components/Foto'
 import {
   Area, Bottone, Campo, Intestazione, Pillola, Scelta, Scheda, Spunta, Testo, Vuoto,
 } from '../components/ui'
@@ -97,6 +98,7 @@ function Modulo({ iniziale, nuovo }: { iniziale: Intervento; nuovo: boolean }) {
   const [righeToccate, setRigheToccate] = useState(false)
   const [aggiornaVerifica, setAggiornaVerifica] = useState(true)
   const [salvato, setSalvato] = useState<string | null>(null)
+  const salvatoAlmenoUnaVolta = useRef(!nuovo)
 
   // Le righe arrivano da IndexedDB in un secondo momento: si copiano nello
   // stato locale finche' l'utente non le ha toccate, per non sovrascrivere
@@ -152,6 +154,7 @@ function Modulo({ iniziale, nuovo }: { iniziale: Intervento; nuovo: boolean }) {
       } as unknown as Record<string, unknown>)
     }
 
+    salvatoAlmenoUnaVolta.current = true
     setSalvato('Salvato')
     setTimeout(() => setSalvato(null), 2500)
     if (nuovo) navigate(`/interventi/${bozza.id}`, { replace: true })
@@ -422,6 +425,19 @@ function Modulo({ iniziale, nuovo }: { iniziale: Intervento; nuovo: boolean }) {
           )}
         </Scheda>
       )}
+
+      <Foto
+        interventoId={bozza.id}
+        primaDiAggiungere={async () => {
+          // Una foto appesa a un intervento che non esiste ancora non potrebbe
+          // salire: il database rifiuterebbe la riga. Quindi alla prima foto
+          // l'intervento viene salvato, senza chiedere niente.
+          if (!salvatoAlmenoUnaVolta.current) {
+            await salvaTutto()
+            salvatoAlmenoUnaVolta.current = true
+          }
+        }}
+      />
 
       <RigheIntervento
         righe={righe}

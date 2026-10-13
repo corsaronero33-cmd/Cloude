@@ -2,8 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db, salva } from './db'
 import { costruisciScadenzario, riepiloga, type Scadenza } from './scadenze'
 import type {
-  Cliente, Contratto, Dispositivo, Impostazione, Intervento, InterventoRiga,
-  Profilo, Ricambio, Sede,
+  Allegato, Cliente, Contratto, Dispositivo, Impostazione, Intervento,
+  InterventoRiga, Profilo, Ricambio, Sede,
 } from './types'
 
 // Lettura dei dati locali. useLiveQuery tiene le schermate agganciate a
@@ -93,6 +93,17 @@ export function useRighe(interventoId: string | undefined): InterventoRiga[] {
     [interventoId],
   )
   return vivi(righe)
+}
+
+export function useAllegati(interventoId: string | undefined): Allegato[] {
+  const righe = useLiveQuery(
+    () =>
+      interventoId
+        ? db.allegati.where('intervento_id').equals(interventoId).toArray()
+        : Promise.resolve([] as Allegato[]),
+    [interventoId],
+  )
+  return vivi(righe).sort((a, b) => a.updated_at.localeCompare(b.updated_at))
 }
 
 export function useRicambi(): Ricambio[] {
