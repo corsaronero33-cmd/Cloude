@@ -49,6 +49,16 @@ function manda_email(array $destinatari, string $oggetto, string $html): array
   if (($c['server'] ?? '') === '' || ($c['mittente'] ?? '') === '') {
     return ['ok' => false, 'messaggio' => 'Posta non configurata in configurazione.php', 'dialogo' => ''];
   }
+  // Una password vuota il server la rifiuta con lo stesso codice di una
+  // password sbagliata, e si finisce a cercare il guaio dalla parte sbagliata.
+  if (($c['utente'] ?? '') !== '' && ($c['password'] ?? '') === '') {
+    return [
+      'ok' => false,
+      'messaggio' => 'La password della casella e\' vuota: non ho provato nemmeno a '
+        . 'collegarmi. Scrivila e riprova.',
+      'dialogo' => '',
+    ];
+  }
 
   $sicurezza = strtolower((string) ($c['sicurezza'] ?? 'ssl'));
   $indirizzo = ($sicurezza === 'ssl' ? 'ssl://' : '') . $c['server'] . ':' . (int) $c['porta'];
@@ -86,8 +96,11 @@ function manda_email(array $destinatari, string $oggetto, string $html): array
     return [(int) substr((string) $ultima, 0, 3), implode(' | ', $righe)];
   };
 
-  $scrivi = function (string $riga, bool $segreto = false) use ($socket, &$dialogo): void {
-    $dialogo[] = '--> ' . ($segreto ? '(nascosto)' : $riga);
+  // `$invece`: che cosa scrivere nel dialogo al posto della riga vera. Si usa
+  // per le credenziali: il nome del comando si vede (serve a capire dove si
+  // rompe), il suo contenuto no.
+  $scrivi = function (string $riga, ?string $invece = null) use ($socket, &$dialogo): void {
+    $dialogo[] = '--> ' . ($invece ?? $riga);
     fwrite($socket, $riga . "\r\n");
   };
 
@@ -191,7 +204,10 @@ function autentica(string $modo, array $c, callable $scrivi, callable $leggi): a
   $password = (string) $c['password'];
 
   if ($modo === 'PLAIN') {
-    $scrivi('AUTH PLAIN ' . base64_encode("\0" . $utente . "\0" . $password), true);
+    $scrivi(
+      'AUTH PLAIN ' . base64_encode("\0" . $utente . "\0" . $password),
+      'AUTH PLAIN (utente e password, nascosti)',
+    );
     [$codice, $testo] = $leggi();
     return [$codice === 235, $testo];
   }
@@ -200,11 +216,11 @@ function autentica(string $modo, array $c, callable $scrivi, callable $leggi): a
   [$codice, $testo] = $leggi();
   if ($codice !== 334) return [false, $testo];
 
-  $scrivi(base64_encode($utente), true);
+  $scrivi(base64_encode($utente), '(utente, nascosto)');
   [$codice, $testo] = $leggi();
   if ($codice !== 334) return [false, $testo];
 
-  $scrivi(base64_encode($password), true);
+  $scrivi(base64_encode($password), '(password, nascosta)');
   [$codice, $testo] = $leggi();
   return [$codice === 235, $testo];
 }

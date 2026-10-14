@@ -132,8 +132,9 @@ intestazione('Diagnostica della posta', 'Serve a capire perche\' il server rifiu
         </select></div>
       <div><label>Utente <span class="aiuto">L'indirizzo email completo</span></label>
         <input type="text" name="utente" value="<?= h(p('utente') ?: (string) ($conf['utente'] ?? '')) ?>"></div>
-      <div><label>Password <span class="aiuto">Scrivila a mano, non incollarla</span></label>
-        <input type="password" name="password" autocomplete="off"></div>
+      <div><label>Password <span class="aiuto">Va riscritta a ogni prova: per sicurezza
+          il campo non si ricorda</span></label>
+        <input type="password" name="password" autocomplete="off" required></div>
       <div><label>Mittente</label>
         <input type="text" name="mittente" value="<?= h(p('mittente') ?: (string) ($conf['mittente'] ?? '')) ?>"></div>
       <div class="larga"><label>Manda a</label>
@@ -145,6 +146,13 @@ intestazione('Diagnostica della posta', 'Serve a capire perche\' il server rifiu
   <?php if ($esito !== null): ?>
     <p class="<?= $esito['ok'] ? 'fatto' : 'errore' ?>" style="margin-top:14px">
       <?= h($esito['messaggio']) ?>
+    </p>
+    <p class="sotto">
+      Ho provato con:
+      <code><?= h(p('utente')) ?></code> su
+      <code><?= h(p('server')) ?>:<?= (int) p('porta') ?></code>
+      (<?= h(p('sicurezza')) ?>), password di
+      <b><?= strlen((string) ($_POST['password'] ?? '')) ?> caratteri</b>.
     </p>
   <?php endif ?>
 
