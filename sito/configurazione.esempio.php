@@ -33,14 +33,25 @@ return [
 
   // --- Posta (avvisi delle scadenze) ---------------------------------------
   // Sono i dati della TUA casella di posta, gli stessi che metti in Outlook o
-  // nel telefono. Li trovi nel pannello dell'hosting, alla voce Email.
+  // nel telefono.
+  //
+  // ATTENZIONE AL NOME DEL SERVER: NON e' "smtp." seguito dal tuo dominio --
+  // quel nome non esiste, e l'errore che si ottiene e' "Name or service not
+  // known". E' il server del fornitore che ti ospita la posta, uguale per tutti
+  // i suoi clienti: su IONOS e' `smtp.ionos.com`.
+  //
+  // Con un altro fornitore, il nome sta nel pannello della casella, alla voce
+  // "impostazioni per i programmi di posta" (le stesse che metteresti in
+  // Outlook): copia quello, non inventarlo.
   //
   //   porta 465 -> sicurezza 'ssl'       (la piu' comune)
   //   porta 587 -> sicurezza 'starttls'
   'posta' => [
-    'server'     => 'smtp.tuodominio.it',
+    'server'     => 'smtp.ionos.com',
     'porta'      => 465,
     'sicurezza'  => 'ssl',
+    // L'utente e' l'indirizzo email COMPLETO, e la casella deve esistere
+    // davvero: va creata nel pannello dell'hosting, voce Email.
     'utente'     => 'info@tuodominio.it',
     'password'   => 'la-password-della-casella',
     'mittente'   => 'info@tuodominio.it',
