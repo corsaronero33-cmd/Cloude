@@ -33,7 +33,10 @@ declare(strict_types=1);
  */
 function manda_email(array $destinatari, string $oggetto, string $html): array
 {
-  $c = conf('posta');
+  // Di norma i dati della posta vengono da configurazione.php. La pagina
+  // diagnostica-posta.php ne mette di diversi qui, per provarli senza
+  // ricaricare il file sul server.
+  $c = $GLOBALS['POSTA_DI_PROVA'] ?? conf('posta');
   $dialogo = [];
 
   $destinatari = array_values(array_filter(array_map('trim', $destinatari)));
@@ -100,6 +103,9 @@ function manda_email(array $destinatari, string $oggetto, string $html): array
   $scrivi('EHLO ' . $miodominio);
   [$codice, $testo] = $leggi();
   if ($codice !== 250) return $chiudi("EHLO rifiutato: $testo");
+  // Nella risposta a EHLO il server elenca quello che sa fare, compresi i modi
+  // di autenticazione che accetta.
+  $capacita = $testo;
 
   if ($sicurezza === 'starttls') {
     $scrivi('STARTTLS');
@@ -112,20 +118,33 @@ function manda_email(array $destinatari, string $oggetto, string $html): array
     $scrivi('EHLO ' . $miodominio);
     [$codice, $testo] = $leggi();
     if ($codice !== 250) return $chiudi("EHLO dopo STARTTLS rifiutato: $testo");
+    $capacita = $testo;
   }
 
   if (($c['utente'] ?? '') !== '') {
-    $scrivi('AUTH LOGIN');
-    [$codice, $testo] = $leggi();
-    if ($codice !== 334) return $chiudi("Il server non accetta AUTH LOGIN: $testo");
-    $scrivi(base64_encode((string) $c['utente']), true);
-    [$codice, $testo] = $leggi();
-    if ($codice !== 334) return $chiudi("Utente rifiutato: $testo");
-    $scrivi(base64_encode((string) $c['password']), true);
-    [$codice, $testo] = $leggi();
-    if ($codice !== 235) {
-      return $chiudi('Utente o password della casella non accettati. '
-        . 'Prova a entrare nella webmail con le stesse credenziali. (' . $testo . ')');
+
+    // Due modi di dire le stesse credenziali. Non tutti i server accettano
+    // tutti e due, e qualcuno risponde "credenziali non valide" al primo
+    // mentre accetta il secondo: si prova quello che il server dichiara, e se
+    // non basta si prova l'altro prima di arrendersi.
+    $dichiarati = strtoupper($capacita);
+    $modi = [];
+    if (str_contains($dichiarati, 'PLAIN')) $modi[] = 'PLAIN';
+    if (str_contains($dichiarati, 'LOGIN')) $modi[] = 'LOGIN';
+    if ($modi === []) $modi = ['LOGIN', 'PLAIN'];
+
+    $entrato = false;
+    $ultimo = '';
+    foreach ($modi as $modo) {
+      [$entrato, $ultimo] = autentica($modo, $c, $scrivi, $leggi);
+      if ($entrato) break;
+    }
+
+    if (!$entrato) {
+      return $chiudi('Utente o password della casella non accettati ('
+        . implode(' e ', $modi) . '). Controlla che l\'utente sia l\'indirizzo '
+        . 'email completo e che la password sia esattamente quella della casella. ('
+        . $ultimo . ')');
     }
   }
 
@@ -153,6 +172,41 @@ function manda_email(array $destinatari, string $oggetto, string $html): array
   fclose($socket);
 
   return ['ok' => true, 'messaggio' => 'Inviata a ' . implode(', ', $destinatari), 'dialogo' => implode("\n", $dialogo)];
+}
+
+/**
+ * Un tentativo di autenticazione, in uno dei due modi.
+ *
+ *   PLAIN  manda utente e password in un colpo solo, dentro un'unica riga.
+ *   LOGIN  li manda uno per volta, ciascuno dopo un invito del server.
+ *
+ * Nessuno dei due nasconde niente: e' il collegamento cifrato a proteggerli,
+ * ed e' per questo che la porta 465 (o STARTTLS sulla 587) non e' facoltativa.
+ *
+ * @return array{0: bool, 1: string} riuscito, e l'ultima risposta del server
+ */
+function autentica(string $modo, array $c, callable $scrivi, callable $leggi): array
+{
+  $utente = (string) $c['utente'];
+  $password = (string) $c['password'];
+
+  if ($modo === 'PLAIN') {
+    $scrivi('AUTH PLAIN ' . base64_encode("\0" . $utente . "\0" . $password), true);
+    [$codice, $testo] = $leggi();
+    return [$codice === 235, $testo];
+  }
+
+  $scrivi('AUTH LOGIN');
+  [$codice, $testo] = $leggi();
+  if ($codice !== 334) return [false, $testo];
+
+  $scrivi(base64_encode($utente), true);
+  [$codice, $testo] = $leggi();
+  if ($codice !== 334) return [false, $testo];
+
+  $scrivi(base64_encode($password), true);
+  [$codice, $testo] = $leggi();
+  return [$codice === 235, $testo];
 }
 
 /**

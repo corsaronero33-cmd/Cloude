@@ -177,7 +177,10 @@ log*, oppure aggiungi temporaneamente in cima a `comune.php`:
 `ini_set('display_errors', '1'); error_reporting(E_ALL);` — e ricordati di
 toglierlo.
 
-**L'email non parte** — `Impostazioni` mostra gli ultimi cinque tentativi con
+**L'email non parte** — apri `diagnostica-posta.php`: mostra che cosa sta
+leggendo da `configurazione.php` (senza rivelare la password), lascia provare
+altri valori scritti a mano e stampa la conversazione col server di posta.
+`Impostazioni` mostra invece gli ultimi cinque tentativi con
 la risposta del server di posta. Le cause più comuni: porta e sicurezza non
 abbinate (465 va con `ssl`, 587 con `starttls`), oppure la password della
 casella cambiata.

@@ -198,6 +198,13 @@ modo che il gestionale prevede.
    perché (server sbagliato, password rifiutata, destinatario non valido):
    quello è il momento di sistemare il passo 3.
 
+   Se dice che le credenziali non sono accettate, apri
+   `https://kronos-software.it/assistenza/diagnostica-posta.php`: ti mostra che
+   cosa sta leggendo dal file (lunghezza della password, prima e ultima lettera,
+   spazi di troppo) e ti lascia provare altri valori scrivendoli a mano, senza
+   ricaricare niente. Se scritti a mano funzionano, il guaio è nel file.
+   Quando la posta va, quel file si può cancellare dal server.
+
 2. Poi, nel pannello IONOS: **Menu → Hosting → riquadro Cronjobs → Gestisci**
    (*Manage*), e aggiungi un lavoro che chiami ogni giorno alle **7:00**:
 
