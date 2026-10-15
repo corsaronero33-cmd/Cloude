@@ -14,6 +14,7 @@ fine di ogni sessione di lavoro.
 | 2026-10-15 | Scartati twinBASIC e Access | twinBASIC e' in beta e di un solo autore; Access si corrompe come DB multiutente su dati fiscali |
 | 2026-10-15 | RT: pilotare hardware esistente (Epson per primo) | nessuna certificazione richiesta; la soluzione software certificata (PEM/PEL) e' un obiettivo successivo |
 | 2026-10-15 | Fattura elettronica: solo generazione XML, nessuna conservazione | scelta del committente |
+| 2026-10-15 | **Xojo valutato e scartato** | vedi la nota qui sotto: e' una scelta buona per consegnare in fretta, sbagliata per l'obiettivo dichiarato di diventare programmatore professionista |
 | 2026-10-15 | **Obiettivo didattico: programmatore professionista**, non "saper mantenere il prodotto" | correzione esplicita del committente. Comporta le tre fasi su chi scrive il codice, la revisione sistematica, e il rientro di async, generics, LINQ, DI e pattern nel programma |
 
 ## Questioni aperte
@@ -29,6 +30,49 @@ fine di ogni sessione di lavoro.
 - [ ] Verificare sulle fonti ufficiali dell'Agenzia delle Entrate: versione
       corrente dello schema FatturaPA, e data di operativita' della soluzione
       software certificata.
+
+## Nota: perche' non Xojo
+
+Sollevato dal committente, e omesso per errore nel confronto iniziale fra
+gli stack: andava incluso. Xojo **puo'** costruire questo prodotto (designer
+visuale maturo, PostgreSQL supportato, HTTP e XML per il registratore
+telematico) ed e' davvero piu' semplice da imparare, soprattutto per chi
+viene da FileMaker. Scartato per quattro motivi, in ordine di peso:
+
+1. **L'obiettivo e' il mestiere, non il prodotto.** Xojo e' un ambiente
+   proprietario di nicchia: si diventa sviluppatori Xojo, non programmatori
+   nel senso del mercato. Le fonti non danno dati solidi sulla domanda, ma
+   tutti i segnali indicano un mercato minuscolo, fatto di consulenti e
+   freelance. Con C# la competenza e' trasferibile.
+2. **Il tipo per i soldi.** `Currency` e' fixed-point a **4 decimali**
+   (la documentazione Xojo dice esplicitamente di non usare `Double` per gli
+   importi). Quattro decimali bastano ai centesimi ma sono stretti sui
+   calcoli intermedi, e sul forum ci sono segnalazioni (2023) di
+   arrotondamenti inattesi su valori come 32,175, con chi sostiene che
+   tronchi; non ho trovato documentazione ufficiale sul trattamento dei casi
+   di parita'. Per software che deve quadrare al centesimo con la memoria
+   fiscale di un RT certificato, "non e' documentato come arrotonda" e' un
+   problema. In C# `decimal` ha 28-29 cifre significative e
+   `MidpointRounding` esplicito.
+3. **Costo ricorrente e dipendenza da un fornitore unico.** La licenza per
+   distribuire ad altri e' a pagamento: dopo la revisione del luglio 2025 le
+   fonti indicano Desktop 499 $/anno, Pro 999 $/anno, Pro Plus 1.999 $/anno
+   (gli aggregatori mostrano cifre piu' basse, probabilmente anteriori: da
+   verificare su xojo.com). E' un costo fisso prima del primo cliente, dove
+   .NET costa zero, e un cambio di prezzo o di strategia dell'azienda
+   diventa un problema del nostro prodotto.
+4. **La storia recente.** Critiche diffuse su stabilita' e rilasci, e
+   soprattutto la transizione **API 2.0** (2020-2021) che per molti ha
+   richiesto di riscrivere codice di produzione senza percorso di
+   aggiornamento. Fonti: forum e blog di ex utenti di lungo corso, quindi
+   esperienze e non dati misurati, ma convergenti.
+
+**Quando sarebbe stata la scelta giusta:** se l'obiettivo fosse stato
+consegnare in fretta e mantenere senza voler imparare il mestiere. In quel
+caso andava proposto seriamente.
+
+Se il committente volesse riaprire la questione, il costo del cambio e'
+ancora quasi nullo (due serate investite).
 
 ## Riferimenti fissi
 
