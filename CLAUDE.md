@@ -103,6 +103,18 @@ Regole di lavoro, da rispettare sempre:
 `docs/00-percorso/diario.md`, perche' la memoria tra una sessione e l'altra
 sta nel repository, non nella conversazione.
 
+**Gli artefatti vanno fatti spuntabili.** Richiesta esplicita del
+committente: ogni manuale, lezione o elenco di passi che pubblichiamo deve
+avere caselle da spuntare, cosi' si vede a colpo d'occhio dove si e'
+arrivati. Le spunte **non** vanno tenute nel codice della pagina (andrebbero
+perse a ogni ripubblicazione) ne' nel solo `localStorage`: stanno nella
+capacita' `db` dell'artefatto, documento `progresso/manuale`, campo `voci`
+come mappa `id -> true/false`, con copia locale nel browser come rete di
+sicurezza. Gli identificativi delle caselle sono stabili: `mod-<n>` per i
+moduli del percorso, `m0-*` per il modulo 0, `l1-*` per il modulo 1, e cosi'
+via. **Non spuntare mai una casella per conto suo** se non ha riportato di
+aver fatto quella cosa: si semina solo cio' che ha dichiarato.
+
 **Il committente non legge i file Markdown**: li apre su GitHub dal browser,
 oppure legge la pagina web pubblicata. Quindi, quando il contenuto didattico
 cambia in modo sostanziale, aggiornare `docs/manuale/index.html` e

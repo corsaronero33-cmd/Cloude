@@ -180,6 +180,48 @@
     font-size: .88rem; color: var(--ink-soft);
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+  /* --- spunte e avanzamento --- */
+  .avanzamento {
+    border: 1px solid var(--rule); border-radius: 6px; background: var(--surface);
+    padding: 1rem 1.1rem; margin: 0 0 1rem;
+    display: grid; gap: .7rem;
+  }
+  .avanzamento h2 {
+    font-family: var(--font-mono); font-size: .7rem; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft);
+    margin: 0; display: block;
+  }
+  .riga-avz { display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem; align-items: baseline; }
+  .riga-avz .et { font-size: .92rem; }
+  .riga-avz .ct {
+    font-family: var(--font-mono); font-size: .78rem; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .barra {
+    grid-column: 1 / -1; height: 5px; border-radius: 3px;
+    background: var(--rule); overflow: hidden;
+  }
+  .barra span { display: block; height: 100%; width: 0; background: var(--accent); }
+  .nota-salvataggio {
+    font-family: var(--font-mono); font-size: .68rem; letter-spacing: .04em;
+    color: var(--ink-soft); margin: 0;
+  }
+
+  ul.compiti { list-style: none; padding-left: 0; margin: 0 0 1.4rem; display: grid; gap: .1rem; }
+  ul.compiti li { margin: 0; }
+  label.tick {
+    display: flex; gap: .6rem; align-items: baseline;
+    padding: .4rem .5rem; border-radius: 4px; cursor: pointer;
+  }
+  label.tick:hover { background: var(--accent-soft); }
+  label.tick input { margin: 0; flex: none; width: 1.05em; height: 1.05em; accent-color: var(--accent); transform: translateY(.15em); }
+  label.tick input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  li.fatto > label.tick > span { color: var(--ink-soft); text-decoration: line-through; text-decoration-thickness: 1px; }
+  td.tickcol, th.tickcol { width: 1.8rem; padding-right: 0; }
+  td.tickcol input { margin: 0; width: 1.05em; height: 1.05em; accent-color: var(--accent); }
+  tr.fatto td:not(.tickcol) { color: var(--ink-soft); }
+  tr.fatto td strong { font-weight: 400; }
 </style>
 
 <div class="wrap">
@@ -190,6 +232,14 @@
     <p class="standfirst">Il percorso verso il mestiere, il glossario e la prima lezione. Scritto per chi arriva da FileMaker e non ha mai scritto una riga di C#.</p>
   </header>
 
+
+  <section class="avanzamento" aria-label="Avanzamento">
+    <h2>Avanzamento</h2>
+    <div class="riga-avz"><span class="et">Moduli del percorso</span><span class="ct" data-conta="mod-">0 di 0</span><span class="barra"><span></span></span></div>
+    <div class="riga-avz"><span class="et">Modulo 0 &mdash; gli attrezzi</span><span class="ct" data-conta="m0-">0 di 0</span><span class="barra"><span></span></span></div>
+    <div class="riga-avz"><span class="et">Modulo 1 &mdash; i metodi</span><span class="ct" data-conta="l1-">0 di 0</span><span class="barra"><span></span></span></div>
+    <p class="nota-salvataggio" id="nota-salvataggio">Verifica del salvataggio in corso&hellip;</p>
+  </section>
   <nav class="toc" aria-label="Indice">
     <ol>
       <li><a href="#leggere">Come leggerlo</a></li>
@@ -258,14 +308,14 @@
     <h3>Parte I &mdash; Le fondamenta: saper leggere e far girare</h3>
     <div class="scroll">
       <table>
-        <thead><tr><th>#</th><th>Modulo</th><th>Cosa sai fare dopo</th><th>Serate</th></tr></thead>
+        <thead><tr><th class="tickcol"></th><th>#</th><th>Modulo</th><th>Cosa sai fare dopo</th><th>Serate</th></tr></thead>
         <tbody>
-          <tr><td class="num">0</td><td><strong>Gli attrezzi</strong></td><td>strumenti installati e un tuo programma che gira</td><td class="num">1</td></tr>
-          <tr><td class="num">1</td><td><strong>Il linguaggio, le basi</strong></td><td>tipi, <code>if</code>, cicli, metodi, classi; perch&eacute; i soldi sono <code>decimal</code></td><td class="num">3&ndash;4</td></tr>
-          <tr><td class="num">2</td><td><strong>I test come maestro</strong></td><td>scrivi un test, lo vedi fallire, lo fai passare</td><td class="num">1&ndash;2</td></tr>
-          <tr><td class="num">3</td><td><strong>Il database, le basi</strong></td><td>SQL scritto a mano, e le migrazioni</td><td class="num">3&ndash;4</td></tr>
-          <tr><td class="num">4</td><td><strong>L&rsquo;interfaccia</strong></td><td>disegni una form, colleghi una griglia, gestisci gli eventi</td><td class="num">3&ndash;4</td></tr>
-          <tr><td class="num">5</td><td><strong>Git e debugger</strong></td><td>rami e conflitti senza paura; fermare il programma e guardarci dentro</td><td class="num">2</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-0" aria-label="Modulo 0 completato"></td><td class="num">0</td><td><strong>Gli attrezzi</strong></td><td>strumenti installati e un tuo programma che gira</td><td class="num">1</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-1" aria-label="Modulo 1 completato"></td><td class="num">1</td><td><strong>Il linguaggio, le basi</strong></td><td>tipi, <code>if</code>, cicli, metodi, classi; perch&eacute; i soldi sono <code>decimal</code></td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-2" aria-label="Modulo 2 completato"></td><td class="num">2</td><td><strong>I test come maestro</strong></td><td>scrivi un test, lo vedi fallire, lo fai passare</td><td class="num">1&ndash;2</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-3" aria-label="Modulo 3 completato"></td><td class="num">3</td><td><strong>Il database, le basi</strong></td><td>SQL scritto a mano, e le migrazioni</td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-4" aria-label="Modulo 4 completato"></td><td class="num">4</td><td><strong>L&rsquo;interfaccia</strong></td><td>disegni una form, colleghi una griglia, gestisci gli eventi</td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-5" aria-label="Modulo 5 completato"></td><td class="num">5</td><td><strong>Git e debugger</strong></td><td>rami e conflitti senza paura; fermare il programma e guardarci dentro</td><td class="num">2</td></tr>
         </tbody>
       </table>
     </div>
@@ -275,14 +325,14 @@
     <p>Qui si gira la manopola: cominci a scrivere tu.</p>
     <div class="scroll">
       <table>
-        <thead><tr><th>#</th><th>Modulo</th><th>Contenuto</th></tr></thead>
+        <thead><tr><th class="tickcol"></th><th>#</th><th>Modulo</th><th>Contenuto</th></tr></thead>
         <tbody>
-          <tr><td class="num">6</td><td><strong>Oggetti, davvero</strong></td><td>incapsulamento, interfacce, composizione contro ereditariet&agrave;, collezioni e LINQ, <code>null</code> e tipi nullable, eccezioni fatte bene</td></tr>
-          <tr><td class="num">7</td><td><strong>Progettare</strong></td><td>separazione delle responsabilit&agrave;, perch&eacute; la logica sta fuori dalla UI, quando astrarre e <strong>quando non astrarre</strong>, iniezione delle dipendenze</td></tr>
-          <tr><td class="num">8</td><td><strong>Dati, davvero</strong></td><td>modellazione e normalizzazione, indici, transazioni e livelli di isolamento, leggere un piano di esecuzione, concorrenza</td></tr>
-          <tr><td class="num">9</td><td><strong>Test, davvero</strong></td><td>unitari contro integrazione, doppi di test, la testabilit&agrave; come pressione sul progetto</td></tr>
-          <tr><td class="num">10</td><td><strong>Concorrenza e asincronia</strong></td><td><code>async</code>/<code>await</code>, condizioni di corsa, cosa succede davvero quando due casse salvano insieme</td></tr>
-          <tr><td class="num">11</td><td><strong>Leggere le specifiche</strong></td><td>le specifiche Epson del registratore e quelle dell&rsquo;Agenzia delle Entrate: saper leggere un documento tecnico ostile e cavarne codice</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-6" aria-label="Modulo 6 completato"></td><td class="num">6</td><td><strong>Oggetti, davvero</strong></td><td>incapsulamento, interfacce, composizione contro ereditariet&agrave;, collezioni e LINQ, <code>null</code> e tipi nullable, eccezioni fatte bene</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-7" aria-label="Modulo 7 completato"></td><td class="num">7</td><td><strong>Progettare</strong></td><td>separazione delle responsabilit&agrave;, perch&eacute; la logica sta fuori dalla UI, quando astrarre e <strong>quando non astrarre</strong>, iniezione delle dipendenze</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-8" aria-label="Modulo 8 completato"></td><td class="num">8</td><td><strong>Dati, davvero</strong></td><td>modellazione e normalizzazione, indici, transazioni e livelli di isolamento, leggere un piano di esecuzione, concorrenza</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-9" aria-label="Modulo 9 completato"></td><td class="num">9</td><td><strong>Test, davvero</strong></td><td>unitari contro integrazione, doppi di test, la testabilit&agrave; come pressione sul progetto</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-10" aria-label="Modulo 10 completato"></td><td class="num">10</td><td><strong>Concorrenza e asincronia</strong></td><td><code>async</code>/<code>await</code>, condizioni di corsa, cosa succede davvero quando due casse salvano insieme</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-11" aria-label="Modulo 11 completato"></td><td class="num">11</td><td><strong>Leggere le specifiche</strong></td><td>le specifiche Epson del registratore e quelle dell&rsquo;Agenzia delle Entrate: saper leggere un documento tecnico ostile e cavarne codice</td></tr>
         </tbody>
       </table>
     </div>
@@ -292,14 +342,14 @@
     <p>Da qui non &egrave; pi&ugrave; un corso con una fine: &egrave; pratica deliberata su un prodotto vivo.</p>
     <div class="scroll">
       <table>
-        <thead><tr><th>#</th><th>Modulo</th><th>Contenuto</th></tr></thead>
+        <thead><tr><th class="tickcol"></th><th>#</th><th>Modulo</th><th>Contenuto</th></tr></thead>
         <tbody>
-          <tr><td class="num">12</td><td><strong>Codice mantenibile</strong></td><td>nomi, refactoring, revisione del codice da entrambi i lati</td></tr>
-          <tr><td class="num">13</td><td><strong>Diagnostica in produzione</strong></td><td>logging, riprodurre un bug partendo da una telefonata, cosa chiedere al cliente</td></tr>
-          <tr><td class="num">14</td><td><strong>Sicurezza</strong></td><td>validazione degli input, SQL injection, gestione dei segreti, privilegi minimi, GDPR per quel che ci riguarda</td></tr>
-          <tr><td class="num">15</td><td><strong>Rilascio e operazioni</strong></td><td>versioni, installer, aggiornamenti automatici, backup e <strong>ripristino provato</strong>, telemetria</td></tr>
-          <tr><td class="num">16</td><td><strong>Il costo delle cose</strong></td><td>strutture dati e complessit&agrave; quanto basta per ragionare sulle prestazioni invece di indovinare</td></tr>
-          <tr><td class="num">17</td><td><strong>Leggere codice non tuo</strong></td><td>una libreria del nostro stack, aperta, letta e capita fino in fondo</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-12" aria-label="Modulo 12 completato"></td><td class="num">12</td><td><strong>Codice mantenibile</strong></td><td>nomi, refactoring, revisione del codice da entrambi i lati</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-13" aria-label="Modulo 13 completato"></td><td class="num">13</td><td><strong>Diagnostica in produzione</strong></td><td>logging, riprodurre un bug partendo da una telefonata, cosa chiedere al cliente</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-14" aria-label="Modulo 14 completato"></td><td class="num">14</td><td><strong>Sicurezza</strong></td><td>validazione degli input, SQL injection, gestione dei segreti, privilegi minimi, GDPR per quel che ci riguarda</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-15" aria-label="Modulo 15 completato"></td><td class="num">15</td><td><strong>Rilascio e operazioni</strong></td><td>versioni, installer, aggiornamenti automatici, backup e <strong>ripristino provato</strong>, telemetria</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-16" aria-label="Modulo 16 completato"></td><td class="num">16</td><td><strong>Il costo delle cose</strong></td><td>strutture dati e complessit&agrave; quanto basta per ragionare sulle prestazioni invece di indovinare</td></tr>
+          <tr><td class="tickcol"><input type="checkbox" data-task="mod-17" aria-label="Modulo 17 completato"></td><td class="num">17</td><td><strong>Leggere codice non tuo</strong></td><td>una libreria del nostro stack, aperta, letta e capita fino in fondo</td></tr>
         </tbody>
       </table>
     </div>
@@ -467,13 +517,15 @@ decimal aliquotaIva = 22m;</code></pre>
       <p>Non d&agrave; nessun messaggio, non si schianta, non si vede. Produce soltanto totali sbagliati di un centesimo, che scopri quando un cliente ti chiama perch&eacute; il registratore telematico rifiuta lo scontrino, o perch&eacute; la chiusura di cassa non torna. Il mestiere, in buona parte, &egrave; sapere dove stanno questi.</p>
     </div>
 
-    <h3>Cosa riportarmi</h3>
-    <ol class="steps">
-      <li>I tre numeri che ti stampa il primo programma.</li>
-      <li>I due totali dell&rsquo;esercizio, prima e dopo aver tolto il parametro.</li>
-      <li>Quale versione di .NET ti ha installato Visual Studio: <strong>Progetto &rsaquo; Propriet&agrave;</strong>, voce <em>Framework di destinazione</em>.</li>
-      <li><strong>Dove ti sei bloccato o cosa non ti &egrave; tornato</strong>, anche se ti sembra una sciocchezza. Serve a me per calibrare il modulo 1, e una domanda che non fai &egrave; una lacuna che resta.</li>
-    </ol>
+    <h3>I passi del modulo 0</h3>
+    <ul class="compiti">
+      <li><label class="tick"><input type="checkbox" data-task="m0-vs"><span>Visual Studio Community installato, con il workload <em>Sviluppo di applicazioni desktop .NET</em></span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="m0-pg"><span>PostgreSQL e pgAdmin installati, password dell&rsquo;utente <code>postgres</code> annotata</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="m0-git"><span>Git installato</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="m0-prog"><span>Primo programma eseguito: 2,60 / 2,13 / 0,47</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="m0-ex"><span>Esercizio dell&rsquo;arrotondamento: visto 1,45 diventare 1,44</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="m0-rep"><span>Risultati e versione di .NET riportati</span></label></li>
+    </ul>
   </section>
 
   <section id="lezione1">
@@ -622,14 +674,16 @@ Verifica.Controlla("costo 3,33 ricarico 35% IVA 22%",
       <p>Attenzione che la regola <strong>non</strong> &egrave; &ldquo;arrotonda sempre in fondo e basta&rdquo;: sullo scontrino l&rsquo;imponibile di riga viene stampato e trasmesso, quindi l&agrave; va arrotondato per forza. La regola vera &egrave;: <em>si arrotonda quando un numero diventa un importo che qualcuno legge o riceve, non mentre lo stai ancora calcolando.</em> Torna in continuazione.</p>
     </div>
 
-    <h3>Cosa riportarmi</h3>
-    <ol class="steps">
-      <li>Le risposte alle <strong>tre domande</strong> sul modulo 0.</li>
-      <li><strong>Il codice del tuo metodo <code>PrezzoDiVendita</code></strong>, incollato per intero. Non solo &ldquo;funziona&rdquo;: voglio leggerlo. Anche con i tre controlli verdi, su come &egrave; scritto ci sar&agrave; qualcosa da dire, ed &egrave; la prima volta che facciamo questa cosa.</li>
-      <li>L&rsquo;output dei controlli.</li>
-      <li>Il terzo caso ti ha dato 5,48 o 5,49 al primo tentativo?</li>
-      <li>Cosa non ti &egrave; tornato.</li>
-    </ol>
+    <h3>I passi del modulo 1</h3>
+    <ul class="compiti">
+      <li><label class="tick"><input type="checkbox" data-task="l1-code"><span>Progetto <code>Calcoli</code> creato e i sette controlli tutti <code>OK</code></span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="l1-rompi"><span>Test rotto di proposito e visto fallire, poi rimesso a posto</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="l1-pdv"><span>Metodo <code>PrezzoDiVendita</code> scritto da me</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="l1-tre"><span>I tre controlli del ricarico tutti <code>OK</code>, compreso il 5,48</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="l1-dom"><span>Risposte alle tre domande sul modulo 0</span></label></li>
+      <li><label class="tick"><input type="checkbox" data-task="l1-rep"><span>Codice incollato in chat per la revisione</span></label></li>
+    </ul>
+    <p>Sull&rsquo;ultimo punto non transigo: anche con i tre controlli verdi, su <em>come</em> &egrave; scritto ci sar&agrave; qualcosa da dire. Dimmi anche se il terzo caso ti ha dato 5,48 o 5,49 al primo tentativo, e cosa non ti &egrave; tornato.</p>
   </section>
 
   <section id="trappole">
@@ -684,5 +738,101 @@ Verifica.Controlla("costo 3,33 ricarico 35% IVA 22%",
         }
       });
     });
+  })();
+</script>
+
+<script>
+  // Le spunte del manuale.
+  //
+  // Vivono in un archivio separato dalla pagina (la capacita' "db"), non nel
+  // suo codice: cosi' sopravvivono alle ripubblicazioni, e il manuale viene
+  // ripubblicato a ogni lezione nuova. In piu' si tiene una copia nel browser,
+  // che fa da rete di sicurezza e da sorgente immediata al primo disegno.
+  (function () {
+    var CHIAVE = 'cloude-progresso-v1';
+    var stato = {};
+    var caselle = Array.prototype.slice.call(
+      document.querySelectorAll('input[type="checkbox"][data-task]'));
+    var nota = document.getElementById('nota-salvataggio');
+
+    var doc = null;             // documento dell'archivio, quando disponibile
+    var inVolo = false;         // una scrittura per volta sullo stesso documento
+    var daRiscrivere = false;
+
+    function leggiLocale() {
+      try { return JSON.parse(localStorage.getItem(CHIAVE)) || {}; }
+      catch (e) { return {}; }
+    }
+    function salvaLocale() {
+      try { localStorage.setItem(CHIAVE, JSON.stringify(stato)); } catch (e) {}
+    }
+
+    // Se arrivano altre spunte mentre la scrittura precedente e' in volo, si
+    // accodano in una sola invece di accavallarsi.
+    function salvaRemoto() {
+      if (!doc || inVolo) { daRiscrivere = !!doc; return; }
+      inVolo = true;
+      doc.set({ voci: stato, aggiornato: new Date().toISOString() })
+        .catch(function () { messaggio('Salvataggio non riuscito: le spunte restano su questo browser.'); })
+        .then(function () {
+          inVolo = false;
+          if (daRiscrivere) { daRiscrivere = false; salvaRemoto(); }
+        });
+    }
+
+    function messaggio(testo) { if (nota) nota.textContent = testo; }
+
+    function disegna() {
+      caselle.forEach(function (c) {
+        var fatto = !!stato[c.getAttribute('data-task')];
+        c.checked = fatto;
+        var contenitore = c.closest('tr, li');
+        if (contenitore) contenitore.classList.toggle('fatto', fatto);
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-conta]'), function (el) {
+        var prefisso = el.getAttribute('data-conta');
+        var gruppo = caselle.filter(function (c) {
+          return c.getAttribute('data-task').indexOf(prefisso) === 0;
+        });
+        var fatti = gruppo.filter(function (c) {
+          return !!stato[c.getAttribute('data-task')];
+        }).length;
+        el.textContent = fatti + ' di ' + gruppo.length;
+        var barra = el.parentNode.querySelector('.barra > span');
+        if (barra) barra.style.width = (gruppo.length ? (fatti / gruppo.length * 100) : 0) + '%';
+      });
+    }
+
+    caselle.forEach(function (c) {
+      c.addEventListener('change', function () {
+        stato[c.getAttribute('data-task')] = c.checked;
+        disegna();
+        salvaLocale();
+        salvaRemoto();
+      });
+    });
+
+    stato = leggiLocale();
+    disegna();
+    messaggio('Spunte salvate solo su questo browser.');
+
+    if (window.claude && window.claude.use) {
+      window.claude.use('db').then(function (db) {
+        if (!db) return;
+        doc = db.doc('progresso/manuale');
+        doc.onSnapshot(function (snap) {
+          var corpo = snap.exists ? snap.data() : null;
+          if (corpo && corpo.voci) {
+            stato = corpo.voci;
+            disegna();
+            salvaLocale();
+          }
+          messaggio('Spunte salvate: restano anche quando il manuale viene aggiornato.');
+        }, function () {
+          doc = null;
+          messaggio('Spunte salvate solo su questo browser.');
+        });
+      }).catch(function () {});
+    }
   })();
 </script>

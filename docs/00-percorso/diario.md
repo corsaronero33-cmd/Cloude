@@ -27,8 +27,9 @@ fine di ogni sessione di lavoro.
 - [ ] **Specifiche del PC di sviluppo del committente** (RAM, CPU, SSD o
       disco meccanico). Serve per decidere se Visual Studio e' usabile o se
       si lavora con VS Code + CLI. Non presumere: chiedere.
-- [ ] Deciso l'ambiente leggero: VS Code + dotnet CLI, ibrido, o Visual
-      Studio pieno. Vedi la nota "Il peso dell'ambiente" sotto.
+- [ ] Confermare se PostgreSQL/pgAdmin e Git sono stati installati: nel
+      modulo 0 ha riportato solo il programma, l'esercizio e la versione, e
+      le due caselle restano non spuntate perche' non vanno presunte.
 - [ ] Nome definitivo del prodotto.
 - [ ] Sbloccare `builds.dotnet.microsoft.com` e `api.nuget.org` nella policy
       di rete dell'ambiente cloud, per poter compilare e testare il motore qui.
@@ -147,6 +148,27 @@ La pagina si aggiorna ripubblicando quel file con lo strumento Artifact: lo
 stesso percorso file mantiene lo stesso URL.
 
 ## Sessioni
+
+### 2026-10-15 (notte) — Stack confermato, manuale spuntabile
+
+Stack **confermato dal committente**: Visual Studio + C#. Chiusa la
+discussione su Xojo, Lazarus e il peso dell'ambiente; non serve riaprirla
+salvo richiesta sua.
+
+Su sua richiesta il manuale e' ora **spuntabile**: 30 caselle (18 moduli del
+percorso, 6 passi del modulo 0, 6 del modulo 1) e un pannello di avanzamento
+con i conteggi e le barre. Le spunte stanno nella capacita' `db`
+dell'artefatto (`progresso/manuale`, campo `voci`), non nella pagina, cosi'
+sopravvivono alle ripubblicazioni; copia locale nel browser come rete di
+sicurezza. Verificato con una rilettura dell'archivio dopo la scrittura.
+
+Seminate come fatte **solo** le quattro voci che ha effettivamente
+riportato: Visual Studio installato, primo programma, esercizio
+dell'arrotondamento, risultati comunicati. PostgreSQL e Git restano da
+spuntare a lui, e per questo `mod-0` non e' spuntato.
+
+Resta aperto il suo compito: il metodo `PrezzoDiVendita` e le tre domande.
+Prossima consegna mia: il modello dati del magazzino.
 
 ### 2026-10-15 (sera) — Modulo 0 superato, consegnato il modulo 1a
 
