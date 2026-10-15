@@ -24,6 +24,11 @@ fine di ogni sessione di lavoro.
 - [ ] **C'e' un cliente pilota** disposto a fare da cavia?
 - [ ] **Procurare un RT fisico** da banco di lavoro (Epson FP-81II usata,
       ~300-500 euro). L'integrazione non si sviluppa alla cieca.
+- [ ] **Specifiche del PC di sviluppo del committente** (RAM, CPU, SSD o
+      disco meccanico). Serve per decidere se Visual Studio e' usabile o se
+      si lavora con VS Code + CLI. Non presumere: chiedere.
+- [ ] Deciso l'ambiente leggero: VS Code + dotnet CLI, ibrido, o Visual
+      Studio pieno. Vedi la nota "Il peso dell'ambiente" sotto.
 - [ ] Nome definitivo del prodotto.
 - [ ] Sbloccare `builds.dotnet.microsoft.com` e `api.nuget.org` nella policy
       di rete dell'ambiente cloud, per poter compilare e testare il motore qui.
@@ -73,6 +78,62 @@ caso andava proposto seriamente.
 
 Se il committente volesse riaprire la questione, il costo del cambio e'
 ancora quasi nullo (due serate investite).
+
+## Nota: il peso dell'ambiente, e Lazarus
+
+Il committente osserva che .NET gli sembra pesante e chiede ambienti piu'
+rapidi da imparare e da usare. Osservazione **in parte corretta**, e va
+distinta:
+
+- **Visual Studio 2026 e' pesante**: Microsoft dichiara 4 GB di RAM minimi,
+  16 GB raccomandati, 64 GB per il meglio, e 20-50 GB di disco per
+  un'installazione tipica, con SSD raccomandato.
+- **.NET come piattaforma non lo e'**: l'SDK e' una frazione di quei numeri e
+  l'applicazione **compilata** gira in decine di MB e parte in meno di un
+  secondo, che per un PC da negozio e' un vantaggio, non un problema.
+
+Quindi la leva e' **l'IDE, non la piattaforma**. Tre configurazioni possibili,
+da scegliere in base all'hardware reale:
+
+1. **VS Code + dotnet CLI** &mdash; leggerissimo, ma **senza designer
+   WinForms**: le maschere si scrivono a mano. Nota di licenza: l'estensione
+   C# base e' MIT, il **C# Dev Kit** segue il modello Visual Studio (gratuito
+   per individui e piccole realta', a pagamento sopra 250 PC o un milione di
+   dollari di ricavi).
+2. **Ibrido** &mdash; VS Code per libreria di dominio, test e logica; Visual
+   Studio aperto solo quando si toccano le maschere. Probabilmente il miglior
+   compromesso.
+3. **Visual Studio pieno**, se la macchina ha almeno 16 GB e un SSD.
+
+### Lazarus / Free Pascal come alternativa leggera
+
+E' la risposta onesta a "leggero + RAD + gratis", e va sul tavolo: IDE di
+qualche centinaio di MB (il minimo dichiarato per la 4.8 parte da Windows
+2000), designer visuale RAD classico, eseguibili nativi singoli e piccoli
+senza runtime da installare dal cliente, nessun costo di licenza, comunita'
+viva (Lazarus 4.8 rilasciata l'11 giugno 2026) e molto piu' grande di quella
+di Xojo. Object Pascal e' fortemente tipizzato e leggibile, con lunga
+tradizione nel gestionale.
+
+Contro, applicando **lo stesso metro usato per scartare Xojo**:
+
+- il tipo `Currency` di Object Pascal e' fixed point a **4 decimali**, cioe'
+  **lo stesso limite contestato a Xojo**. Si aggira con interi scalati o
+  librerie dedicate, ma e' lavoro in piu' su cui si puo' sbagliare, dove
+  `decimal` di C# non chiede niente;
+- ecosistema molto piu' piccolo di .NET: per PDF, grafici e simili le opzioni
+  ci sono ma sono meno curate;
+- il mercato freelance Object Pascal e' piccolo e invecchia;
+- **l'assistente e' meno affidabile in Object Pascal che in C#**: meno
+  materiale su cui e' stato addestrato significa piu' codice da correggere, e
+  su questo progetto genera molto codice.
+
+Da verificare prima di un eventuale passaggio: componenti database per
+PostgreSQL, libreria di stampa PDF e di grafici all'altezza dei KPI.
+
+**Raccomandazione attuale:** restare su C# e risolvere il peso cambiando IDE,
+non piattaforma. Se l'hardware risultasse davvero inadeguato, la seconda
+scelta e' **Lazarus**, non Xojo.
 
 ## Riferimenti fissi
 
