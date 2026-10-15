@@ -1,0 +1,460 @@
+<title>Manuale di Cloude</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+  /* Manuale a colonna singola, navigazione fissa in testa, blocchi "scontrino"
+     in monospaziato per gli output fiscali. */
+  :root {
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --ink: #16202b;
+    --ink-soft: #57636f;
+    --rule: #dce3e8;
+    --accent: #0f5a72;
+    --accent-soft: #e3eef2;
+    --warn: #8f5512;
+    --warn-soft: #fcf2e4;
+    --good: #2c6442;
+    --good-soft: #e7f1ea;
+    --font-display: 'Bitter', Georgia, 'Times New Roman', serif;
+    --font-body: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0e141a;
+      --surface: #161e26;
+      --ink: #e6ecf1;
+      --ink-soft: #98a5b2;
+      --rule: #263039;
+      --accent: #63bbd5;
+      --accent-soft: #14303b;
+      --warn: #dca763;
+      --warn-soft: #30240f;
+      --good: #7cc098;
+      --good-soft: #14281d;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0e141a;
+    --surface: #161e26;
+    --ink: #e6ecf1;
+    --ink-soft: #98a5b2;
+    --rule: #263039;
+    --accent: #63bbd5;
+    --accent-soft: #14303b;
+    --warn: #dca763;
+    --warn-soft: #30240f;
+    --good: #7cc098;
+    --good-soft: #14281d;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 0 4rem;
+  }
+
+  /* --- testata --- */
+  header.hero { padding-block: 2.5rem 1.5rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: .7rem; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 .6rem;
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(2rem, 7vw, 2.9rem); line-height: 1.08;
+    margin: 0 0 .7rem; text-wrap: balance; letter-spacing: -.015em;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-soft); margin: 0; max-width: 32rem; }
+
+  /* --- navigazione --- */
+  nav.toc {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: var(--paper); border-bottom: 1px solid var(--rule);
+    margin-bottom: 2.5rem;
+  }
+  nav.toc ol {
+    list-style: none; margin: 0; padding: .7rem 0;
+    display: flex; flex-wrap: wrap; gap: .3rem 1.1rem;
+    font-family: var(--font-mono); font-size: .76rem;
+  }
+  nav.toc a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid transparent; }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* --- sezioni --- */
+  section { margin-bottom: 3.5rem; }
+  h2 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 1.6rem; line-height: 1.2; margin: 0 0 1rem;
+    text-wrap: balance; letter-spacing: -.01em;
+    display: flex; gap: .7rem; align-items: baseline;
+  }
+  h2 .num {
+    font-family: var(--font-mono); font-size: .8rem; font-weight: 600;
+    color: var(--accent); flex: none; padding-top: .25rem;
+  }
+  h3 {
+    font-family: var(--font-body); font-weight: 600; font-size: 1.1rem;
+    margin: 2rem 0 .5rem; color: var(--ink);
+  }
+  p { margin: 0 0 1rem; }
+  ul, ol.steps { margin: 0 0 1rem; padding-left: 1.3rem; }
+  li { margin-bottom: .45rem; }
+  strong { font-weight: 600; }
+  a { color: var(--accent); text-underline-offset: .18em; }
+  code {
+    font-family: var(--font-mono); font-size: .88em;
+    background: var(--accent-soft); padding: .1em .35em; border-radius: 3px;
+  }
+
+  /* --- tabelle --- */
+  .scroll { overflow-x: auto; margin: 0 0 1.4rem; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; min-width: 23rem; font-size: .94rem; }
+  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--font-mono); font-size: .7rem; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft);
+    border-bottom-color: var(--ink);
+  }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* --- codice --- */
+  .code { margin: 0 0 1.4rem; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+  .code-head {
+    display: flex; align-items: center; justify-content: space-between; gap: .8rem;
+    padding: .45rem .5rem .45rem .8rem; border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono); font-size: .7rem; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .code pre { margin: 0; padding: .9rem; overflow-x: auto; font-family: var(--font-mono); font-size: .82rem; line-height: 1.65; }
+  .code pre code { background: none; padding: 0; font-size: inherit; }
+  button.copy {
+    font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-soft);
+    border: 1px solid var(--accent); border-radius: 4px;
+    padding: .3rem .6rem; cursor: pointer; flex: none;
+  }
+  button.copy:hover { background: var(--accent); color: var(--surface); }
+
+  /* --- scontrino --- */
+  .scontrino {
+    font-family: var(--font-mono); font-size: .84rem; line-height: 1.8;
+    background: var(--surface); color: var(--ink);
+    border: 1px dashed var(--ink-soft); border-radius: 2px;
+    padding: 1rem 1.1rem; margin: 0 0 1.4rem; max-width: 20rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .scontrino div { display: flex; justify-content: space-between; gap: 1.5rem; }
+  .scontrino .tot { border-top: 1px solid var(--rule); margin-top: .4rem; padding-top: .4rem; font-weight: 600; }
+
+  /* --- richiami --- */
+  .nota {
+    border-left: 3px solid var(--accent); background: var(--accent-soft);
+    padding: .9rem 1.1rem; margin: 0 0 1.4rem; border-radius: 0 4px 4px 0;
+  }
+  .nota > :last-child { margin-bottom: 0; }
+  .trappola { border-left-color: var(--warn); background: var(--warn-soft); }
+  .trappola .tag, .nota .tag {
+    display: block; font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; margin-bottom: .35rem; color: var(--accent);
+  }
+  .trappola .tag { color: var(--warn); }
+
+  footer {
+    border-top: 1px solid var(--rule); padding-top: 1.2rem;
+    font-size: .88rem; color: var(--ink-soft);
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Gestionale cassa e magazzino &middot; nome provvisorio</p>
+    <h1>Manuale di Cloude</h1>
+    <p class="standfirst">Il percorso, il glossario e la prima lezione. Scritto per chi arriva da FileMaker e non ha mai scritto una riga di C#.</p>
+  </header>
+
+  <nav class="toc" aria-label="Indice">
+    <ol>
+      <li><a href="#leggere">Come leggerlo</a></li>
+      <li><a href="#percorso">Il percorso</a></li>
+      <li><a href="#salto">Il salto mentale</a></li>
+      <li><a href="#glossario">Glossario</a></li>
+      <li><a href="#lezione">Lezione 0</a></li>
+      <li><a href="#trappole">Le trappole</a></li>
+    </ol>
+  </nav>
+
+  <section id="leggere">
+    <h2><span class="num">00</span> Come leggere questa roba</h2>
+    <p>I file che produco nel progetto sono <code>.md</code>, cio&egrave; <strong>Markdown</strong>: testo semplice con qualche convenzione di formattazione (un cancelletto davanti a un titolo, due asterischi intorno al grassetto). Qualunque editor li apre, anche il Blocco note di Windows, ma senza un programma che li <em>interpreti</em> vedi i simboli invece della formattazione.</p>
+    <p>Hai tre modi per leggerli, dal pi&ugrave; comodo al pi&ugrave; tecnico:</p>
+    <ol class="steps">
+      <li><strong>Questa pagina.</strong> Tienila nei preferiti: la aggiorno quando il manuale cambia. &Egrave; la via senza attrezzi.</li>
+      <li><strong>GitHub, dal browser.</strong> I file sono nel tuo repository e GitHub li mostra gi&agrave; formattati, senza installare niente. Comodo dal telefono.</li>
+      <li><strong>Visual Studio, quando lo avrai installato.</strong> Apri un <code>.md</code> e c&rsquo;&egrave; il bottone di anteprima. Da l&igrave; in avanti li leggi dove lavori.</li>
+    </ol>
+    <div class="nota">
+      <span class="tag">Da ricordare</span>
+      <p>Il Markdown non &egrave; una mia stranezza: &egrave; il formato in cui si scrive la documentazione dentro i progetti software, perch&eacute; essendo testo semplice finisce nello storico di Git e si vede cosa &egrave; cambiato riga per riga. Ci conviene tenerlo.</p>
+    </div>
+  </section>
+
+  <section id="percorso">
+    <h2><span class="num">01</span> Il percorso</h2>
+    <p>Non si fa &ldquo;prima il corso, poi il progetto&rdquo;. Si fanno insieme: <strong>ogni modulo sblocca il pezzo di prodotto successivo</strong>. Impari la cosa nel momento in cui ti serve per costruire qualcosa che poi vendi, e per questo te la ricordi.</p>
+    <p>L&rsquo;obiettivo non &egrave; farti diventare programmatore professionista. &Egrave; arrivare a <strong>leggere tutto il codice del tuo prodotto e modificarne la maggior parte</strong>, perch&eacute; da quello dipende la tua capacit&agrave; di dare assistenza ai clienti che ti pagano l&rsquo;abbonamento.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Modulo</th><th>Cosa sai fare dopo</th><th>Serate</th></tr></thead>
+        <tbody>
+          <tr><td class="num">0</td><td><strong>Gli attrezzi</strong></td><td>hai gli strumenti installati e un tuo programma che gira</td><td class="num">1</td></tr>
+          <tr><td class="num">1</td><td><strong>Il linguaggio, il minimo</strong></td><td>leggi e scrivi tipi, <code>if</code>, cicli, metodi, classi; sai perch&eacute; i soldi sono <code>decimal</code></td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="num">2</td><td><strong>I test come maestro</strong></td><td>scrivi un test, lo vedi fallire, lo fai passare: da qui verifichi da solo</td><td class="num">1&ndash;2</td></tr>
+          <tr><td class="num">3</td><td><strong>Il database</strong></td><td>leggi e scrivi SQL a mano, capisci le migrazioni</td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="num">4</td><td><strong>L&rsquo;interfaccia</strong></td><td>disegni una form, colleghi una griglia, gestisci gli eventi</td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="num">5</td><td><strong>Gli strumenti</strong></td><td>Git senza paura, e il debugger: fermare il programma e guardarci dentro</td><td class="num">2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Totale 13&ndash;18 serate</strong>, su 6&ndash;10 settimane a due o tre serate per settimana, mentre il prodotto avanza in parallelo. Non &egrave; un preventivo: dipende da quanto tempo ci metti e da quanto a fondo vuoi andare.</p>
+    <h3>Cosa non studieremo</h3>
+    <p>Escluso di proposito, per non farti perdere tempo: <code>async</code>/<code>await</code>, i generics progettati da te, LINQ con le expression tree, la dependency injection come teoria, i pattern architetturali, XAML, la programmazione web. Qualcuna di queste cose comparir&agrave; nel codice dove serve davvero: in quel caso te la spiego sul posto, al livello che basta per leggerla.</p>
+  </section>
+
+  <section id="salto">
+    <h2><span class="num">02</span> Il salto mentale da FileMaker</h2>
+    <p>In FileMaker <strong>un solo file</strong> contiene i dati, le maschere, gli script e le relazioni. Qui sono <strong>tre cose separate</strong>, che vivono in posti diversi:</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Pezzo</th><th>Dove sta</th><th>Cosa contiene</th></tr></thead>
+        <tbody>
+          <tr><td><strong>I dati</strong></td><td>PostgreSQL, sul PC &ldquo;server&rdquo; del negozio</td><td>tabelle e righe</td></tr>
+          <tr><td><strong>La logica</strong></td><td>una libreria C# (<code>Cassa.Core</code>)</td><td>calcoli, regole, driver del registratore</td></tr>
+          <tr><td><strong>L&rsquo;interfaccia</strong></td><td>un programma WinForms (<code>Cassa.App</code>)</td><td>finestre e bottoni</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Il motivo &egrave; pratico, non accademico: con i dati su un server vero il multiutente funziona senza corrompere niente, e con la logica separata dall&rsquo;interfaccia i calcoli si possono verificare automaticamente.</p>
+  </section>
+
+  <section id="glossario">
+    <h2><span class="num">03</span> Glossario</h2>
+    <p>Da consultare, non da imparare a memoria.</p>
+    <h3>Concetti che hai gi&agrave;, con un altro nome</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>FileMaker</th><th>Qui</th><th>Nota</th></tr></thead>
+        <tbody>
+          <tr><td>Tabella</td><td>Tabella (nel DB) / classe (nel codice)</td><td>due rappresentazioni della stessa cosa</td></tr>
+          <tr><td>Campo</td><td>Colonna / propriet&agrave;</td><td></td></tr>
+          <tr><td>Record</td><td>Riga / oggetto</td><td></td></tr>
+          <tr><td>Relazione fra tabelle</td><td>Chiave esterna + <code>JOIN</code></td><td>non si &ldquo;disegna&rdquo;, si scrive nella query</td></tr>
+          <tr><td>Campo calcolato</td><td>Propriet&agrave; calcolata</td><td>la vedrai nella lezione 0</td></tr>
+          <tr><td>Script</td><td>Metodo</td><td></td></tr>
+          <tr><td>Passo di script</td><td>Istruzione</td><td></td></tr>
+          <tr><td>Variabile <code>$locale</code></td><td>Variabile locale</td><td>vive dentro il metodo</td></tr>
+          <tr><td>Variabile <code>$$globale</code></td><td>Campo della classe</td><td>vive quanto l&rsquo;oggetto</td></tr>
+          <tr><td>Imposta campo</td><td>Assegnazione con <code>=</code></td><td></td></tr>
+          <tr><td>Layout</td><td>Form WinForms</td><td>si disegna trascinando, come un layout</td></tr>
+          <tr><td>Portale</td><td><code>DataGridView</code></td><td>la griglia che mostra tante righe</td></tr>
+          <tr><td>Modalit&agrave; Trova</td><td><code>WHERE</code> in SQL</td><td></td></tr>
+          <tr><td>Ordina record</td><td><code>ORDER BY</code></td><td></td></tr>
+          <tr><td>Script trigger</td><td>Evento (<code>Click</code>, <code>TextChanged</code>)</td><td></td></tr>
+          <tr><td>Lista valori</td><td>Sorgente dati di una <code>ComboBox</code></td><td></td></tr>
+          <tr><td>FileMaker Server</td><td>PostgreSQL</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Termini nuovi</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Termine</th><th>Cosa significa, in una riga</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Compilare</strong></td><td>tradurre il codice in un programma eseguibile; se hai scritto una fesseria lo scopri <em>adesso</em>, non davanti al cliente</td></tr>
+          <tr><td><strong>Tipo</strong></td><td>il genere di dato che una variabile pu&ograve; contenere; dichiararlo serve a far controllare al compilatore che non si sommino mele con date</td></tr>
+          <tr><td><strong><code>decimal</code></strong></td><td>il tipo per i soldi: conta in centesimi esatti. Mai <code>double</code> per un importo</td></tr>
+          <tr><td><strong>Classe</strong></td><td>lo stampo: descrive com&rsquo;&egrave; fatta una cosa</td></tr>
+          <tr><td><strong>Oggetto</strong></td><td>un esemplare concreto fatto con quello stampo</td></tr>
+          <tr><td><strong>Metodo</strong></td><td>uno script che appartiene a una classe</td></tr>
+          <tr><td><strong>Eccezione</strong></td><td>un errore che interrompe l&rsquo;esecuzione; si intercetta con <code>try</code> / <code>catch</code></td></tr>
+          <tr><td><strong>Test automatico</strong></td><td>codice che verifica altro codice e dice &ldquo;ok&rdquo; o &ldquo;sbagliato&rdquo; in mezzo secondo</td></tr>
+          <tr><td><strong>Git / commit</strong></td><td>lo storico del progetto: ogni salvataggio importante resta e si pu&ograve; tornare indietro</td></tr>
+          <tr><td><strong>Migrazione</strong></td><td>un&rsquo;istruzione che aggiorna la struttura del database, anche sui PC dei clienti gi&agrave; installati</td></tr>
+          <tr><td><strong>EF Core</strong></td><td>il traduttore fra le classi C# e le tabelle PostgreSQL, cos&igrave; non scrivi SQL per le cose banali</td></tr>
+          <tr><td><strong>Breakpoint</strong></td><td>un segnalibro nel codice: l&rsquo;esecuzione si ferma l&igrave; e puoi guardare ogni variabile</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Sigle del mestiere</h3>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Sigla</th><th>Significato</th></tr></thead>
+        <tbody>
+          <tr><td><strong>RT</strong></td><td>Registratore Telematico: la cassa fiscale certificata che stampa e trasmette i corrispettivi</td></tr>
+          <tr><td><strong>Documento commerciale</strong></td><td>il nome corretto dello &ldquo;scontrino&rdquo; dal 2020</td></tr>
+          <tr><td><strong>Chiusura Z</strong></td><td>la chiusura fiscale di giornata dell&rsquo;RT</td></tr>
+          <tr><td><strong>SdI</strong></td><td>Sistema di Interscambio: il canale dell&rsquo;Agenzia delle Entrate per le fatture elettroniche</td></tr>
+          <tr><td><strong>PEM / PEL</strong></td><td>Punto di Emissione / Punto di Elaborazione: l&rsquo;architettura della futura soluzione software certificata al posto dell&rsquo;RT hardware</td></tr>
+          <tr><td><strong>Scorporo</strong></td><td>ricavare l&rsquo;imponibile da un prezzo che ha l&rsquo;IVA gi&agrave; dentro</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="lezione">
+    <h2><span class="num">04</span> Lezione 0 &mdash; Gli attrezzi</h2>
+    <p><strong>Obiettivo della serata:</strong> avere gli strumenti installati e <strong>un tuo programma che gira</strong> e calcola lo scorporo dell&rsquo;IVA di una riga di scontrino. Nient&rsquo;altro. Non impari il linguaggio stasera: metti su il banco di lavoro.</p>
+
+    <h3>Visual Studio Community</h3>
+    <p>&Egrave; gratuita e contiene tutto il resto: il compilatore C#, il designer visuale delle finestre, il debugger. Durante l&rsquo;installazione ti chiede quali <em>workload</em> vuoi: spunta <strong>Sviluppo di applicazioni desktop .NET</strong> e basta quella. Sono alcuni gigabyte, mettila a scaricare e vai a cena.</p>
+    <div class="nota">
+      <span class="tag">Sulla licenza, dato che venderai il prodotto</span>
+      <p>La licenza Community consente a <strong>uno sviluppatore individuale di creare proprie applicazioni, anche a pagamento</strong>. Dentro un&rsquo;organizzazione il limite &egrave; di cinque utenti, e non &egrave; utilizzabile dalle organizzazioni che Microsoft definisce <em>enterprise</em>: oltre 250 PC o utenti, oppure oltre un milione di dollari di ricavi annui. Sei lontanissimo da quelle soglie. Ricontrolla il giorno che l&rsquo;azienda cresce, e l&rsquo;autorit&agrave; &egrave; sempre il testo di licenza della versione che installi.</p>
+    </div>
+
+    <h3>PostgreSQL</h3>
+    <p>Installer per Windows dal sito di PostgreSQL. Lascia spuntato <strong>pgAdmin</strong>: &egrave; il programma per guardare dentro al database, il tuo equivalente della gestione database di FileMaker. Ti chieder&agrave; una <strong>password per l&rsquo;utente <code>postgres</code></strong>: scrivila da qualche parte, serve ogni volta e non si recupera comodamente. Porta: lascia <strong>5432</strong>. Stasera non ci fai nulla, serve installato per il modulo 3.</p>
+
+    <h3>Git</h3>
+    <p>Da <code>git-scm.com</code>, installazione tutta avanti-avanti. Visual Studio lo usa da solo, quindi non devi imparare comandi stasera. Git &egrave; lo storico del progetto: &egrave; il motivo per cui puoi smanettare sul codice senza paura di rompere nulla in modo definitivo.</p>
+
+    <h3>Il primo programma</h3>
+    <p>In Visual Studio: <strong>Crea un nuovo progetto</strong>, cerca <code>console</code>, scegli <strong>App console</strong> in <strong>C#</strong>, chiamalo <code>PrimoCalcolo</code>. Si apre <code>Program.cs</code> con una riga dentro: cancella tutto e incolla questo.</p>
+    <div class="code">
+      <div class="code-head"><span>Program.cs</span><button class="copy" type="button" data-copy="code1">Copia</button></div>
+      <pre><code id="code1">// Una riga di scontrino: 2 confezioni a 1,30 euro, IVA 22%.
+decimal quantita = 2m;
+decimal prezzoUnitarioLordo = 1.30m;
+decimal aliquotaIva = 22m;
+
+// Il totale di riga, arrotondato al centesimo.
+decimal totaleLordo = Math.Round(
+    quantita * prezzoUnitarioLordo, 2, MidpointRounding.AwayFromZero);
+
+// Lo scorporo: il prezzo ha l'IVA dentro, l'imponibile si ricava dividendo.
+decimal imponibile = Math.Round(
+    totaleLordo / (1m + aliquotaIva / 100m), 2, MidpointRounding.AwayFromZero);
+
+// L'imposta per differenza, cosi' le tre voci quadrano sempre al centesimo.
+decimal imposta = totaleLordo - imponibile;
+
+Console.WriteLine($"Totale      {totaleLordo,8:N2}");
+Console.WriteLine($"Imponibile  {imponibile,8:N2}");
+Console.WriteLine($"IVA 22%     {imposta,8:N2}");</code></pre>
+    </div>
+    <p>Premi <strong>F5</strong>. Deve comparire una finestra nera con questi tre numeri:</p>
+    <div class="scontrino">
+      <div><span>Totale</span><span>2,60</span></div>
+      <div><span>Imponibile</span><span>2,13</span></div>
+      <div><span>IVA 22%</span><span>0,47</span></div>
+      <div class="tot"><span>Verifica</span><span>2,13 + 0,47 = 2,60</span></div>
+    </div>
+    <p>Se vedi quei numeri, il banco di lavoro &egrave; in piedi. E quadra <strong>per costruzione</strong>, non per fortuna: &egrave; il punto di tutta la lezione.</p>
+
+    <h3>Cosa hai appena letto, riga per riga</h3>
+    <ul>
+      <li><code>// commento</code> &mdash; tutto ci&ograve; che segue <code>//</code> &egrave; per gli umani, il compilatore lo ignora.</li>
+      <li><code>decimal quantita = 2m;</code> &mdash; dichiari una variabile dicendo <strong>di che tipo &egrave;</strong>. &Egrave; la differenza pi&ugrave; visibile rispetto a FileMaker, dove il campo lo definisci nella struttura e poi lo usi. Qui lo dici nel codice, e il compilatore ti blocca <em>prima di eseguire</em> se provi a metterci dentro una cosa sbagliata. Sembra una seccatura: &egrave; il tuo primo collaudatore gratuito.</li>
+      <li><code>decimal</code> &mdash; il tipo per i soldi, conta in centesimi esatti. Esiste anche <code>double</code>, pi&ugrave; veloce ma approssima: in <code>double</code> <code>0,1 + 0,2</code> non fa esattamente <code>0,3</code>. Su un gestionale <strong>mai <code>double</code> per un importo</strong>.</li>
+      <li>Il suffisso <code>m</code> in <code>2m</code> significa &ldquo;questo numero &egrave; un <code>decimal</code>&rdquo;. Senza, C# lo legge come <code>double</code> e si rifiuta. Te lo scorderai per due settimane e il compilatore te lo ricorder&agrave; ogni volta.</li>
+      <li>Il <strong>punto decimale</strong>: nel <em>codice</em> si scrive <code>1.30</code> col punto, sempre, qualunque sia la lingua del computer. Nell&rsquo;<em>output</em> vedi <code>2,60</code> con la virgola, perch&eacute; Windows &egrave; in italiano. Due mondi diversi, non confonderli.</li>
+      <li><code>Math.Round(valore, 2, MidpointRounding.AwayFromZero)</code> &mdash; arrotonda a due decimali col mezzo centesimo <strong>verso l&rsquo;alto</strong>. Il terzo parametro non &egrave; pignoleria: lo vedi nell&rsquo;esercizio.</li>
+      <li><code>$"Totale {totaleLordo,8:N2}"</code> &mdash; il <code>$</code> abilita i segnaposto fra graffe. Dentro: il valore, <code>,8</code> incolonna in otto caratteri, <code>:N2</code> formatta con due decimali.</li>
+      <li><strong>Nessun <code>Main</code></strong> &mdash; negli esempi in giro vedrai un <code>static void Main(string[] args)</code> che racchiude tutto. Nelle versioni recenti di C# si possono scrivere le istruzioni direttamente: &egrave; la stessa cosa con meno cerimonia.</li>
+    </ul>
+
+    <h3>L&rsquo;esercizio</h3>
+    <p>Sostituisci le prime tre righe con queste ed esegui. Mezzo chilo a 2,89: fa 1,445 euro, un mezzo centesimo esatto. Annota il totale.</p>
+    <div class="code">
+      <div class="code-head"><span>Variante</span><button class="copy" type="button" data-copy="code2">Copia</button></div>
+      <pre><code id="code2">decimal quantita = 0.5m;
+decimal prezzoUnitarioLordo = 2.89m;
+decimal aliquotaIva = 22m;</code></pre>
+    </div>
+    <p>Ora <strong>togli il terzo parametro</strong> dalla prima <code>Math.Round</code>, lasciando <code>Math.Round(quantita * prezzoUnitarioLordo, 2)</code>, ed esegui di nuovo. <strong>Il totale cambia di un centesimo:</strong> 1,45 diventa 1,44.</p>
+    <div class="nota trappola">
+      <span class="tag">La forma di errore pi&ugrave; pericolosa che incontrerai</span>
+      <p>Il comportamento di default di <code>Math.Round</code> in .NET &egrave; l&rsquo;arrotondamento <strong>&ldquo;al pari&rdquo;</strong>: davanti a un mezzo centesimo va verso la cifra pari, quindi 1,445 diventa 1,44. L&rsquo;arrotondamento <strong>commerciale</strong>, quello che vuole il fisco italiano, porta sempre verso l&rsquo;alto: 1,45.</p>
+      <p>Non d&agrave; nessun messaggio, non si schianta, non si vede. Produce soltanto totali sbagliati di un centesimo, che scopri quando un cliente ti chiama perch&eacute; il registratore telematico rifiuta lo scontrino, o perch&eacute; la chiusura di cassa non torna. Il mestiere, in buona parte, &egrave; sapere dove stanno questi.</p>
+    </div>
+
+    <h3>Cosa riportarmi</h3>
+    <ol class="steps">
+      <li>I tre numeri che ti stampa il primo programma.</li>
+      <li>I due totali dell&rsquo;esercizio, prima e dopo aver tolto il parametro.</li>
+      <li>Quale versione di .NET ti ha installato Visual Studio: <strong>Progetto &rsaquo; Propriet&agrave;</strong>, voce <em>Framework di destinazione</em>.</li>
+      <li><strong>Dove ti sei bloccato o cosa non ti &egrave; tornato</strong>, anche se ti sembra una sciocchezza. Serve a me per calibrare il modulo 1, e una domanda che non fai &egrave; una lacuna che resta.</li>
+    </ol>
+  </section>
+
+  <section id="trappole">
+    <h2><span class="num">05</span> Le trappole del dominio</h2>
+    <p>Note tenute nel repository perch&eacute; non si perdano fra una sessione e l&rsquo;altra. Non le devi capire tutte adesso: le incontrerai una per una.</p>
+    <ul>
+      <li><strong>L&rsquo;imposta per differenza</strong> dal totale lordo, mai ricalcolata a parte: evita lo scarto di un centesimo che il registratore rifiuta.</li>
+      <li><strong>Arrotondamento commerciale</strong> sempre, mai il default di <code>Math.Round</code>.</li>
+      <li><strong>La vendita si salva prima</strong> di parlare con l&rsquo;RT; all&rsquo;avvio le vendite rimaste in sospeso si riconciliano <em>interrogando</em> l&rsquo;RT, non indovinando. &Egrave; ci&ograve; che impedisce di emettere due scontrini per un incasso, o nessuno.</li>
+      <li><strong>La chiusura di cassa</strong> confronta il totale dell&rsquo;RT con il totale delle vendite registrate e <em>segnala</em> la differenza. Nessun negoziante si fida di una cassa che non gli dimostra di quadrare.</li>
+      <li><strong>Ripartizione per forma di pagamento</strong> su ogni scontrino: dal 1&deg; gennaio 2026 c&rsquo;&egrave; l&rsquo;obbligo di collegamento RT&ndash;POS e i totali devono corrispondere.</li>
+      <li><strong>Codice lotteria</strong>: campo opzionale sulla vendita, da passare all&rsquo;RT.</li>
+      <li><strong>I movimenti di magazzino sono append-only</strong>: la giacenza &egrave; una somma ricalcolabile, non un contatore che si modifica. &Egrave; questo che ti far&agrave; avere i KPI quasi gratis.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Manuale di lavoro del progetto, aggiornato mano a mano. I file sorgente stanno nel repository sotto <code>docs/00-percorso/</code>; questa pagina &egrave; la loro versione leggibile.</p>
+  </footer>
+</div>
+
+<script>
+  (function () {
+    function flash(btn, testo) {
+      var originale = btn.textContent;
+      btn.textContent = testo;
+      setTimeout(function () { btn.textContent = originale; }, 1800);
+    }
+    document.querySelectorAll('button.copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var blocco = document.getElementById(btn.getAttribute('data-copy'));
+        if (!blocco) return;
+        var testo = blocco.innerText;
+        function selezionaInvece() {
+          try {
+            var r = document.createRange();
+            r.selectNodeContents(blocco);
+            var s = window.getSelection();
+            s.removeAllRanges();
+            s.addRange(r);
+            flash(btn, 'Selezionato');
+          } catch (e) {
+            flash(btn, 'Copia a mano');
+          }
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(testo).then(function () {
+            flash(btn, 'Copiato');
+          }, selezionaInvece);
+        } else {
+          selezionaInvece();
+        }
+      });
+    });
+  })();
+</script>

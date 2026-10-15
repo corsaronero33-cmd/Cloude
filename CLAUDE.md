@@ -77,12 +77,19 @@ Regole di lavoro, da rispettare sempre:
 | --- | --- |
 | `docs/00-percorso/` | Percorso didattico, glossario, lezioni |
 | `docs/00-percorso/diario.md` | Cosa e' stato affrontato e cosa resta aperto |
+| `docs/manuale/index.html` | **Versione leggibile** del manuale, pubblicata come pagina web |
 | `docs/01-scelta-linguaggio/` | Confronto C# / VB.NET che ha portato alla scelta |
 | `Sources/` | **Vecchio** esperimento in twinBASIC (tbToolkit), non fa parte del prodotto |
 
 **All'inizio di ogni sessione**: leggere questo file e
 `docs/00-percorso/diario.md`, perche' la memoria tra una sessione e l'altra
 sta nel repository, non nella conversazione.
+
+**Il committente non legge i file Markdown**: li apre su GitHub dal browser,
+oppure legge la pagina web pubblicata. Quindi, quando il contenuto didattico
+cambia in modo sostanziale, aggiornare `docs/manuale/index.html` e
+**ripubblicarlo** con lo strumento Artifact sullo stesso URL, indicato nel
+diario. I `.md` restano la fonte: la pagina e' la loro versione leggibile.
 
 ## Note di dominio da non dimenticare
 

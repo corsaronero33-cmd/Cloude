@@ -29,6 +29,17 @@ fine di ogni sessione di lavoro.
       corrente dello schema FatturaPA, e data di operativita' della soluzione
       software certificata.
 
+## Riferimenti fissi
+
+| Cosa | Dove |
+| --- | --- |
+| Manuale leggibile (pagina web) | https://claude.ai/artifact/2kBUSYQ3KW5qFQxUKZvZwK |
+| Sorgente della pagina | `docs/manuale/index.html` |
+| Repository, branch di lavoro | `corsaronero33-cmd/Cloude`, branch `ccr-64a51a7b-wapao4` |
+
+La pagina si aggiorna ripubblicando quel file con lo strumento Artifact: lo
+stesso percorso file mantiene lo stesso URL.
+
 ## Sessioni
 
 ### 2026-10-15 — Impostazione
@@ -42,4 +53,9 @@ Prodotto: `CLAUDE.md`, `docs/00-percorso/` (percorso, glossario, lezione 0),
 Prossimo passo: modulo 0 (installazione attrezzi) da parte del committente,
 poi schema del database di magazzino.
 
-Didattica: nessun modulo ancora completato.
+Emerso a fine sessione: il committente **non riesce a leggere i file
+Markdown**. Aggiunta la pagina web del manuale come versione leggibile, e
+annotata in `CLAUDE.md` la regola di tenerla aggiornata.
+
+Didattica: nessun modulo ancora completato. Modulo 0 consegnato, in attesa
+che venga svolto.
