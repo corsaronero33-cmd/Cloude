@@ -749,6 +749,9 @@ Verifica.Controlla("costo 3,33 ricarico 35% IVA 22%",
   // ripubblicato a ogni lezione nuova. In piu' si tiene una copia nel browser,
   // che fa da rete di sicurezza e da sorgente immediata al primo disegno.
   (function () {
+    'use strict';   // cosi' un'assegnazione impossibile solleva un errore
+                    // invece di essere scartata in silenzio.
+
     var CHIAVE = 'cloude-progresso-v1';
     var stato = {};
     var caselle = Array.prototype.slice.call(
@@ -823,7 +826,11 @@ Verifica.Controlla("costo 3,33 ricarico 35% IVA 22%",
         doc.onSnapshot(function (snap) {
           var corpo = snap.exists ? snap.data() : null;
           if (corpo && corpo.voci) {
-            stato = corpo.voci;
+            // L'archivio consegna un corpo CONGELATO (Object.freeze).
+            // Assegnandolo direttamente a "stato" diventava immutabile anche
+            // "stato", e da quel momento le spunte non attaccavano piu': in
+            // silenzio, senza nessun errore. Serve una copia modificabile.
+            stato = Object.assign({}, corpo.voci);
             disegna();
             salvaLocale();
           }

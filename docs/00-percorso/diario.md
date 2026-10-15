@@ -167,6 +167,20 @@ riportato: Visual Studio installato, primo programma, esercizio
 dell'arrotondamento, risultati comunicati. PostgreSQL e Git restano da
 spuntare a lui, e per questo `mod-0` non e' spuntato.
 
+**Difetto trovato subito dopo e corretto**: le caselle non erano
+cliccabili. Causa: `onSnapshot` consegna il corpo del documento
+**congelato** (`Object.freeze`), e il codice lo assegnava direttamente alla
+variabile di stato, che diventava percio' immutabile; la spunta veniva
+scartata **in silenzio** (codice non in strict mode) e la casella tornava
+indietro. Corretto con `Object.assign({}, corpo.voci)` e aggiunto
+`'use strict'` al blocco, cosi' lo stesso errore in futuro solleva un
+`TypeError` invece di tacere. Diagnosi verificata con una riproduzione
+eseguita, non assunta.
+
+Lezione da riusare: un difetto che **non da' nessun messaggio** e' della
+stessa famiglia dell'arrotondamento "al pari" del modulo 0. Vale come
+esempio quando si arrivera' a parlare di immutabilita' e di strict mode.
+
 Resta aperto il suo compito: il metodo `PrezzoDiVendita` e le tre domande.
 Prossima consegna mia: il modello dati del magazzino.
 
