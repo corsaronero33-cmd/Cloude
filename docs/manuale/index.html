@@ -187,7 +187,7 @@
   <header class="hero">
     <p class="eyebrow">Gestionale cassa e magazzino &middot; nome provvisorio</p>
     <h1>Manuale di Cloude</h1>
-    <p class="standfirst">Il percorso, il glossario e la prima lezione. Scritto per chi arriva da FileMaker e non ha mai scritto una riga di C#.</p>
+    <p class="standfirst">Il percorso verso il mestiere, il glossario e la prima lezione. Scritto per chi arriva da FileMaker e non ha mai scritto una riga di C#.</p>
   </header>
 
   <nav class="toc" aria-label="Indice">
@@ -218,24 +218,95 @@
 
   <section id="percorso">
     <h2><span class="num">01</span> Il percorso</h2>
-    <p>Non si fa &ldquo;prima il corso, poi il progetto&rdquo;. Si fanno insieme: <strong>ogni modulo sblocca il pezzo di prodotto successivo</strong>. Impari la cosa nel momento in cui ti serve per costruire qualcosa che poi vendi, e per questo te la ricordi.</p>
-    <p>L&rsquo;obiettivo non &egrave; farti diventare programmatore professionista. &Egrave; arrivare a <strong>leggere tutto il codice del tuo prodotto e modificarne la maggior parte</strong>, perch&eacute; da quello dipende la tua capacit&agrave; di dare assistenza ai clienti che ti pagano l&rsquo;abbonamento.</p>
+    <p>L&rsquo;obiettivo &egrave; <strong>diventare un programmatore professionista</strong>. Non &ldquo;imparare quel tanto che basta per mantenere il prodotto&rdquo;: il mestiere, per intero.</p>
+    <p>Il gestionale &egrave; il mezzo, non il fine. Ed &egrave; un mezzo migliore di qualunque corso, per una ragione che non si compra: ha <strong>utenti veri, soldi veri e vincoli di correttezza fiscale</strong>. La debolezza tipica di chi impara da autodidatta &egrave; non aver mai dovuto mantenere in produzione qualcosa da cui dipendono altre persone. Qui succeder&agrave; dal primo cliente.</p>
+
+    <h3>Cosa distingue un professionista</h3>
+    <p>Non la quantit&agrave; di sintassi che ricorda. Queste cinque cose:</p>
+    <ul>
+      <li>scrive codice che <strong>altri possono mantenere</strong>, non solo codice che funziona;</li>
+      <li>sa <strong>perch&eacute;</strong>, non solo come: pu&ograve; difendere una scelta e scartarne un&rsquo;altra con un argomento;</li>
+      <li>sa <strong>leggere e correggere codice che non ha scritto lui</strong>;</li>
+      <li>sa <strong>stimare</strong>, e sa riconoscere quando non sa;</li>
+      <li>si prende la <strong>responsabilit&agrave; della correttezza in produzione</strong>.</li>
+    </ul>
+
+    <h3>Chi scrive il codice</h3>
+    <p>&Egrave; il punto pi&ugrave; importante di tutto il manuale. Se continuo a scrivere io e tu a leggere, impari a <em>leggere</em>, che &egrave; il 30% del mestiere. Si scrive codice per imparare a scrivere codice. Quindi il rapporto cambia nel tempo, a tappe dichiarate:</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Fase</th><th>Chi scrive</th><th>Cosa fa l&rsquo;altro</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A</strong><br>moduli 0&ndash;5</td><td>io, quasi tutto</td><td>tu leggi tutto e mi spieghi cosa fa; scrivi gli esercizi</td></tr>
+          <tr><td><strong>B</strong><br>moduli 6&ndash;9</td><td><strong>a met&agrave;</strong></td><td>tu scrivi usando i test come specifica, io rivedo riga per riga</td></tr>
+          <tr><td><strong>C</strong><br>moduli 10+</td><td><strong>tu, quasi tutto</strong></td><td>io faccio il revisore e l&rsquo;avvocato del diavolo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Nella fase B la divisione non &egrave; casuale: <strong>tu prendi i pezzi dove un errore non costa</strong> (anagrafiche, maschere, report, importazioni) e <strong>io prendo i pezzi dove un errore costa caro</strong> (XML fiscale, driver del registratore telematico, concorrenza sulla numerazione). Man mano che i tuoi test diventano affidabili, i pezzi rischiosi passano anche a te.</p>
+    <div class="nota trappola">
+      <span class="tag">Il costo, detto chiaramente</span>
+      <p>Questo <strong>rallenta il prodotto</strong>. Codice scritto da chi sta imparando, pi&ugrave; la revisione, pi&ugrave; le riscritture, costa in tempo. Non si pu&ograve; avere insieme la massima velocit&agrave; di consegna e la massima crescita tua: competono per le stesse serate.</p>
+      <p>La divisione per rischio &egrave; il compromesso che minimizza il danno, ma resta un compromesso, e la proporzione la decidi tu. Se a un certo punto serve consegnare, si sposta l&rsquo;ago su di me per qualche settimana e poi si torna. Basta dirlo: non &egrave; un fallimento.</p>
+    </div>
+
+    <h3>La revisione del codice</h3>
+    <p>Dalla fase B in avanti, <strong>ogni cosa che scrivi passa da una revisione</strong> fatta come fra professionisti: non &ldquo;va bene&rdquo;, ma rilievi puntuali con il motivo e la gravit&agrave;. All&rsquo;inizio severit&agrave; bassa, solo ci&ograve; che &egrave; sbagliato; poi crescente, anche ci&ograve; che &egrave; fragile, poco chiaro, o che un collega faticher&agrave; a mantenere.</p>
+    <p>&Egrave; il meccanismo che separa chi programma da dieci anni ed &egrave; bravo da chi programma da dieci anni e ha ripetuto dieci volte il primo anno.</p>
+
+    <h3>Parte I &mdash; Le fondamenta: saper leggere e far girare</h3>
     <div class="scroll">
       <table>
         <thead><tr><th>#</th><th>Modulo</th><th>Cosa sai fare dopo</th><th>Serate</th></tr></thead>
         <tbody>
-          <tr><td class="num">0</td><td><strong>Gli attrezzi</strong></td><td>hai gli strumenti installati e un tuo programma che gira</td><td class="num">1</td></tr>
-          <tr><td class="num">1</td><td><strong>Il linguaggio, il minimo</strong></td><td>leggi e scrivi tipi, <code>if</code>, cicli, metodi, classi; sai perch&eacute; i soldi sono <code>decimal</code></td><td class="num">3&ndash;4</td></tr>
-          <tr><td class="num">2</td><td><strong>I test come maestro</strong></td><td>scrivi un test, lo vedi fallire, lo fai passare: da qui verifichi da solo</td><td class="num">1&ndash;2</td></tr>
-          <tr><td class="num">3</td><td><strong>Il database</strong></td><td>leggi e scrivi SQL a mano, capisci le migrazioni</td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="num">0</td><td><strong>Gli attrezzi</strong></td><td>strumenti installati e un tuo programma che gira</td><td class="num">1</td></tr>
+          <tr><td class="num">1</td><td><strong>Il linguaggio, le basi</strong></td><td>tipi, <code>if</code>, cicli, metodi, classi; perch&eacute; i soldi sono <code>decimal</code></td><td class="num">3&ndash;4</td></tr>
+          <tr><td class="num">2</td><td><strong>I test come maestro</strong></td><td>scrivi un test, lo vedi fallire, lo fai passare</td><td class="num">1&ndash;2</td></tr>
+          <tr><td class="num">3</td><td><strong>Il database, le basi</strong></td><td>SQL scritto a mano, e le migrazioni</td><td class="num">3&ndash;4</td></tr>
           <tr><td class="num">4</td><td><strong>L&rsquo;interfaccia</strong></td><td>disegni una form, colleghi una griglia, gestisci gli eventi</td><td class="num">3&ndash;4</td></tr>
-          <tr><td class="num">5</td><td><strong>Gli strumenti</strong></td><td>Git senza paura, e il debugger: fermare il programma e guardarci dentro</td><td class="num">2</td></tr>
+          <tr><td class="num">5</td><td><strong>Git e debugger</strong></td><td>rami e conflitti senza paura; fermare il programma e guardarci dentro</td><td class="num">2</td></tr>
         </tbody>
       </table>
     </div>
-    <p><strong>Totale 13&ndash;18 serate</strong>, su 6&ndash;10 settimane a due o tre serate per settimana, mentre il prodotto avanza in parallelo. Non &egrave; un preventivo: dipende da quanto tempo ci metti e da quanto a fondo vuoi andare.</p>
-    <h3>Cosa non studieremo</h3>
-    <p>Escluso di proposito, per non farti perdere tempo: <code>async</code>/<code>await</code>, i generics progettati da te, LINQ con le expression tree, la dependency injection come teoria, i pattern architetturali, XAML, la programmazione web. Qualcuna di queste cose comparir&agrave; nel codice dove serve davvero: in quel caso te la spiego sul posto, al livello che basta per leggerla.</p>
+    <p><strong>Fine della parte I: leggi tutto il codice del prodotto e modifichi i pezzi semplici.</strong> Circa 2&ndash;3 mesi a due o tre serate per settimana.</p>
+
+    <h3>Parte II &mdash; Scrivere: l&rsquo;autonomia</h3>
+    <p>Qui si gira la manopola: cominci a scrivere tu.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Modulo</th><th>Contenuto</th></tr></thead>
+        <tbody>
+          <tr><td class="num">6</td><td><strong>Oggetti, davvero</strong></td><td>incapsulamento, interfacce, composizione contro ereditariet&agrave;, collezioni e LINQ, <code>null</code> e tipi nullable, eccezioni fatte bene</td></tr>
+          <tr><td class="num">7</td><td><strong>Progettare</strong></td><td>separazione delle responsabilit&agrave;, perch&eacute; la logica sta fuori dalla UI, quando astrarre e <strong>quando non astrarre</strong>, iniezione delle dipendenze</td></tr>
+          <tr><td class="num">8</td><td><strong>Dati, davvero</strong></td><td>modellazione e normalizzazione, indici, transazioni e livelli di isolamento, leggere un piano di esecuzione, concorrenza</td></tr>
+          <tr><td class="num">9</td><td><strong>Test, davvero</strong></td><td>unitari contro integrazione, doppi di test, la testabilit&agrave; come pressione sul progetto</td></tr>
+          <tr><td class="num">10</td><td><strong>Concorrenza e asincronia</strong></td><td><code>async</code>/<code>await</code>, condizioni di corsa, cosa succede davvero quando due casse salvano insieme</td></tr>
+          <tr><td class="num">11</td><td><strong>Leggere le specifiche</strong></td><td>le specifiche Epson del registratore e quelle dell&rsquo;Agenzia delle Entrate: saper leggere un documento tecnico ostile e cavarne codice</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Fine della parte II: scrivi moduli interi da solo, con revisione.</strong> Circa 6&ndash;9 mesi.</p>
+
+    <h3>Parte III &mdash; Il mestiere</h3>
+    <p>Da qui non &egrave; pi&ugrave; un corso con una fine: &egrave; pratica deliberata su un prodotto vivo.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>#</th><th>Modulo</th><th>Contenuto</th></tr></thead>
+        <tbody>
+          <tr><td class="num">12</td><td><strong>Codice mantenibile</strong></td><td>nomi, refactoring, revisione del codice da entrambi i lati</td></tr>
+          <tr><td class="num">13</td><td><strong>Diagnostica in produzione</strong></td><td>logging, riprodurre un bug partendo da una telefonata, cosa chiedere al cliente</td></tr>
+          <tr><td class="num">14</td><td><strong>Sicurezza</strong></td><td>validazione degli input, SQL injection, gestione dei segreti, privilegi minimi, GDPR per quel che ci riguarda</td></tr>
+          <tr><td class="num">15</td><td><strong>Rilascio e operazioni</strong></td><td>versioni, installer, aggiornamenti automatici, backup e <strong>ripristino provato</strong>, telemetria</td></tr>
+          <tr><td class="num">16</td><td><strong>Il costo delle cose</strong></td><td>strutture dati e complessit&agrave; quanto basta per ragionare sulle prestazioni invece di indovinare</td></tr>
+          <tr><td class="num">17</td><td><strong>Leggere codice non tuo</strong></td><td>una libreria del nostro stack, aperta, letta e capita fino in fondo</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Livello professionista solido: 18&ndash;30 mesi dall&rsquo;inizio</strong>, con pratica regolare. &Egrave; una stima onesta, non una promessa: dipende quasi solo dalle ore che ci metti davvero.</p>
+
+    <h3>Cosa resta fuori</h3>
+    <p>Poco, e per ragioni precise. <strong>XAML e WPF</strong>, perch&eacute; abbiamo scelto WinForms. <strong>Web e mobile</strong>, fuori ambito per questo prodotto: il giorno che vuoi una versione cloud diventa il modulo successivo. <strong>Informatica teorica</strong> oltre quel che serve a ragionare sui costi: algoritmi da concorso, teoria dei linguaggi. Utili, non sulla strada critica.</p>
+    <p>Tutto il resto che una versione precedente di questo manuale escludeva &mdash; <code>async</code>/<code>await</code>, i generics, LINQ, l&rsquo;iniezione delle dipendenze, i pattern di progetto &mdash; <strong>&egrave; rientrato</strong>: escluderlo aveva senso solo con l&rsquo;obiettivo pi&ugrave; piccolo di prima.</p>
   </section>
 
   <section id="salto">

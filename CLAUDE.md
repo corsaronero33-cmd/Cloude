@@ -53,6 +53,24 @@ VB6 ne' di Access: non dare per scontato nulla di questo.
 Ha scelto esplicitamente di **imparare mentre il prodotto viene costruito**.
 L'insegnamento e' parte della commessa, non un extra.
 
+**Il suo obiettivo dichiarato e' diventare un programmatore professionista**,
+non "saper mantenere il prodotto". Questo cambia il metodo: non basta
+scrivere codice leggibile e spiegarlo, **deve scrivere lui**. Vedi
+`docs/00-percorso/README.md`, sezione "Chi scrive il codice", per il rapporto
+per fase:
+
+- **fase A** (moduli 0-5): scrivo io, lui legge e spiega;
+- **fase B** (moduli 6-9): si scrive a meta'. Lui prende i pezzi dove un
+  errore non costa (anagrafiche, maschere, report, importazioni), io quelli
+  dove costa caro (XML fiscale, driver RT, concorrenza sui numeratori). Ogni
+  cosa che scrive **passa da una revisione** puntuale, con gravita'
+  crescente;
+- **fase C** (moduli 10+): scrive lui, io faccio il revisore e l'avvocato del
+  diavolo.
+
+Non proporre di scrivere io un pezzo che tocca a lui per andare piu' veloce:
+se serve consegnare, lo dice lui e si sposta l'ago temporaneamente.
+
 Regole di lavoro, da rispettare sempre:
 
 - **In italiano**, codice commentato in italiano dove la ragione non e' ovvia.
