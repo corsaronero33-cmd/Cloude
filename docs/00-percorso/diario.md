@@ -43,6 +43,36 @@ stesso percorso file mantiene lo stesso URL.
 
 ## Sessioni
 
+### 2026-10-15 (sera) — Modulo 0 superato, consegnato il modulo 1a
+
+Il committente ha installato gli attrezzi e svolto il modulo 0. Riscontro:
+
+- i tre numeri dello scorporo: **2,60 / 2,13 / 0,47**, corretti;
+- l'esercizio sull'arrotondamento: **1,45** e **1,44**, corretti, quindi ha
+  visto la differenza fra arrotondamento commerciale e "al pari";
+- versione installata: **.NET 10.0**, che e' l'attuale LTS. Nessuna azione.
+- non si e' bloccato da nessuna parte.
+
+Consegnato `lezione-01-metodi.md` (modulo 1a, "Dai calcoli ai metodi"):
+metodi con parametri tipizzati e valore di ritorno, `static`, `public`,
+`void`, `==` contro `=`, e un `Verifica.Controlla` scritto a mano come
+anticipazione di xUnit al modulo 2.
+
+Esercizio assegnato: scrive **lui** il metodo `PrezzoDiVendita`
+(costo netto + ricarico + aliquota -> prezzo al pubblico), che serve davvero
+al carico da fattura fornitore. Tre casi attesi dati, il terzo (3,33 / 35% /
+22% -> 5,48) e' costruito per far emergere l'errore di arrotondare
+l'imponibile intermedio, che darebbe 5,49.
+
+Tutti i valori attesi della lezione sono stati **verificati con un calcolo
+indipendente** in `Decimal`/ROUND_HALF_UP prima della consegna.
+
+Da fare al rientro: leggere il suo codice e fargli la **prima revisione**,
+anche se i controlli sono verdi. E' il primo codice che scrive lui.
+
+Tre domande di verifica poste sul modulo 0: il suffisso `m`, punto contro
+virgola fra codice e output, e perche' l'imposta si calcola per differenza.
+
 ### 2026-10-15 — Impostazione
 
 Fatto: analisi degli stack, scelta di C#/.NET + WinForms + PostgreSQL,

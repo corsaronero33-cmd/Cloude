@@ -197,6 +197,7 @@
       <li><a href="#salto">Il salto mentale</a></li>
       <li><a href="#glossario">Glossario</a></li>
       <li><a href="#lezione">Lezione 0</a></li>
+      <li><a href="#lezione1">Lezione 1</a></li>
       <li><a href="#trappole">Le trappole</a></li>
     </ol>
   </nav>
@@ -475,8 +476,164 @@ decimal aliquotaIva = 22m;</code></pre>
     </ol>
   </section>
 
+  <section id="lezione1">
+    <h2><span class="num">05</span> Lezione 1 &mdash; Dai calcoli ai metodi</h2>
+    <p>Il codice del modulo 0 funziona, ma calcola <strong>una</strong> riga sola. Per calcolarne un&rsquo;altra devi riscriverlo tutto. Oggi lo trasformi in qualcosa di riutilizzabile, e scrivi il tuo primo controllo automatico.</p>
+
+    <h3>Prima: tre domande sul modulo 0</h3>
+    <p>Rispondimi a parole tue, anche sbagliando. Se una risposta non la sai, scrivi &ldquo;non lo so&rdquo;: &egrave; un&rsquo;informazione utile, non una brutta figura.</p>
+    <ol class="steps">
+      <li>Perch&eacute; ho scritto <code>2m</code> e non semplicemente <code>2</code>?</li>
+      <li>Nel codice ho scritto <code>1.30</code> con il <strong>punto</strong>, ma a schermo &egrave; uscito <code>2,60</code> con la <strong>virgola</strong>. Perch&eacute; non &egrave; un errore?</li>
+      <li>L&rsquo;imposta l&rsquo;ho calcolata come <code>totaleLordo - imponibile</code> invece di <code>imponibile * 0,22</code>. Che problema evita questa scelta?</li>
+    </ol>
+
+    <h3>Il problema</h3>
+    <p>Guarda il codice del modulo 0 con occhio critico. Per la riga successiva dello scontrino dovresti copiare e incollare tutto cambiando i numeri. Dieci righe, dieci copie della stessa formula. E il giorno che l&rsquo;arrotondamento va corretto, va corretto in dieci posti &mdash; cio&egrave; in nove, perch&eacute; uno te lo dimentichi.</p>
+    <p>In FileMaker avresti fatto uno <strong>script con parametri</strong>. Qui si fa un <strong>metodo</strong>, che &egrave; la stessa idea con due differenze: i parametri hanno un <strong>tipo dichiarato</strong>, quindi il compilatore verifica che tu passi un importo dove serve un importo; e il risultato <strong>esce</strong> dal metodo con <code>return</code>, invece di restare in una variabile globale che qualcun altro deve ricordarsi di leggere.</p>
+
+    <h3>Il codice</h3>
+    <p>Nuovo progetto console, chiamalo <code>Calcoli</code>. Cancella il contenuto di <code>Program.cs</code> e incolla questo.</p>
+    <div class="code">
+      <div class="code-head"><span>Program.cs</span><button class="copy" type="button" data-copy="code3">Copia</button></div>
+      <pre><code id="code3">// I calcoli fiscali di base, raccolti in un posto solo.
+// Da qui in avanti chiunque abbia bisogno di scorporare l'IVA chiama questi
+// metodi, invece di riscrivere la formula: se un giorno la regola cambia,
+// si cambia qui e cambia per tutti.
+static class Calcoli
+{
+    // Arrotondamento commerciale a due decimali: il mezzo centesimo va in su.
+    public static decimal Arrotonda(decimal valore)
+    {
+        return Math.Round(valore, 2, MidpointRounding.AwayFromZero);
+    }
+
+    // Il totale di una riga: quantita' per prezzo, meno lo sconto di riga.
+    public static decimal TotaleRiga(
+        decimal quantita, decimal prezzoLordo, decimal scontoPercentuale)
+    {
+        decimal lordo = quantita * prezzoLordo * (1m - scontoPercentuale / 100m);
+        return Arrotonda(lordo);
+    }
+
+    // L'imponibile scorporato da un importo che ha l'IVA dentro.
+    public static decimal Imponibile(decimal totaleLordo, decimal aliquotaIva)
+    {
+        return Arrotonda(totaleLordo / (1m + aliquotaIva / 100m));
+    }
+
+    // L'imposta, ricavata per differenza: cosi' imponibile + imposta fa
+    // sempre esattamente il totale lordo, al centesimo.
+    public static decimal Imposta(decimal totaleLordo, decimal aliquotaIva)
+    {
+        return totaleLordo - Imponibile(totaleLordo, aliquotaIva);
+    }
+}
+
+// Un controllo automatico fatto in casa: confronta cio' che il calcolo
+// restituisce con cio' che dovrebbe restituire, e lo dice.
+static class Verifica
+{
+    public static void Controlla(string descrizione, decimal atteso, decimal ottenuto)
+    {
+        string esito = (atteso == ottenuto) ? "OK    " : "ERRORE";
+        Console.WriteLine(
+            $"{esito}  {descrizione,-30}  atteso {atteso,8:N2}   ottenuto {ottenuto,8:N2}");
+    }
+}
+
+// --- il programma ---
+
+Verifica.Controlla("2 pezzi a 1,30",
+    2.60m, Calcoli.TotaleRiga(2m, 1.30m, 0m));
+
+Verifica.Controlla("mezzo chilo a 2,89",
+    1.45m, Calcoli.TotaleRiga(0.5m, 2.89m, 0m));
+
+Verifica.Controlla("3 pezzi a 10,00 sconto 10%",
+    27.00m, Calcoli.TotaleRiga(3m, 10.00m, 10m));
+
+Verifica.Controlla("imponibile di 2,60 al 22%",
+    2.13m, Calcoli.Imponibile(2.60m, 22m));
+
+Verifica.Controlla("imposta di 2,60 al 22%",
+    0.47m, Calcoli.Imposta(2.60m, 22m));
+
+Verifica.Controlla("imponibile di 4,52 al 10%",
+    4.11m, Calcoli.Imponibile(4.52m, 10m));
+
+Verifica.Controlla("imposta di 4,52 al 10%",
+    0.41m, Calcoli.Imposta(4.52m, 10m));</code></pre>
+    </div>
+    <p>Premi F5: devono comparire sette righe che cominciano tutte con <code>OK</code>.</p>
+
+    <h3>Cosa hai letto</h3>
+    <ul>
+      <li><code>static class Calcoli</code> &mdash; una classe usata come <strong>contenitore con un nome</strong>. Lo <code>static</code> dice &ldquo;questi metodi non hanno bisogno di un oggetto per funzionare&rdquo;: sono formule, non cose. Gli oggetti veri (un articolo, una vendita, che hanno uno stato e vivono nel tempo) arrivano al modulo 6; qui la classe d&agrave; solo un indirizzo ai calcoli, cos&igrave; si scrive <code>Calcoli.Arrotonda(...)</code> e si sa da dove viene.</li>
+      <li><code>public</code> &mdash; chiunque, da fuori, pu&ograve; chiamare questo metodo. Il suo opposto, <code>private</code>, lo nasconde. Per ora lascia tutto <code>public</code>: a cosa serve nascondere lo vedremo quando ci sar&agrave; qualcosa da nascondere.</li>
+      <li><strong>La firma del metodo.</strong> In <code>public static decimal Imponibile(decimal totaleLordo, decimal aliquotaIva)</code> il tipo davanti al nome &egrave; quello del <strong>risultato</strong>, fra parentesi stanno i <strong>parametri</strong>, ognuno col tipo e col nome. Il compilatore la usa come un contratto: se chiami <code>Imponibile("due euro", 22m)</code> non compila, perch&eacute; quello &egrave; testo e non un importo. In FileMaker un errore cos&igrave; lo scoprivi eseguendo; qui non arrivi a eseguire.</li>
+      <li><code>return</code> &mdash; restituisce il valore e termina il metodo. Ci&ograve; che sta dopo non viene eseguito.</li>
+      <li><code>void</code> &mdash; &ldquo;non restituisce niente&rdquo;: il metodo serve per l&rsquo;effetto che produce, qui scrivere a schermo. &Egrave; il tipo di ritorno dei metodi che <em>fanno</em> invece di <em>calcolare</em>.</li>
+      <li><code>(atteso == ottenuto) ? "OK" : "ERRORE"</code> &mdash; un <code>if</code> compresso in un&rsquo;espressione: &ldquo;se sono uguali allora il primo, altrimenti il secondo&rdquo;. Nota il <strong>doppio uguale</strong>: <code>==</code> domanda <em>sono uguali?</em>, il singolo <code>=</code> ordina <em>diventa uguale a</em>. Confonderli &egrave; fra gli errori pi&ugrave; comuni dei primi mesi.</li>
+      <li><code>{descrizione,-30}</code> &mdash; il meno allinea a sinistra in trenta caratteri; senza il meno, come in <code>{atteso,8:N2}</code>, allinea a destra. Per questo i numeri risultano incolonnati.</li>
+      <li><strong><code>Imposta</code> chiama <code>Imponibile</code>.</strong> Un metodo pu&ograve; usarne un altro, e dovrebbe: la regola dell&rsquo;imposta per differenza &egrave; scritta <strong>una volta sola</strong>, e nessuno pu&ograve; sbagliarla per distrazione.</li>
+    </ul>
+
+    <h3>Quello che hai appena scritto &egrave; un test</h3>
+    <p>Quelle sette righe sono una suite di test fatta a mano. Il meccanismo &egrave; tutto qui: dichiari cosa deve venire, esegui il calcolo, confronti. Al modulo 2 sostituiremo <code>Verifica.Controlla</code> con <strong>xUnit</strong>, che fa la stessa cosa in modo serio. Te lo faccio scrivere a mano prima proprio per questo: quando arriverai a xUnit non lo prenderai per magia, saprai che dentro c&rsquo;&egrave; un confronto fra due valori.</p>
+    <div class="nota">
+      <span class="tag">Prova a romperlo</span>
+      <p>Cambia un valore atteso: metti <code>2.14m</code> al posto di <code>2.13m</code> e riesegui. Deve comparire una riga <code>ERRORE</code> con i due valori a confronto. <strong>Un test che non hai mai visto fallire non ti dice niente</strong>: non sai se funziona o se &egrave; sempre verde per sbaglio. Poi rimetti <code>2.13m</code>.</p>
+    </div>
+
+    <h3>L&rsquo;esercizio: lo scrivi tu</h3>
+    <p>Serve al prodotto: quando carichi la merce da una fattura fornitore, il programma deve <strong>proporre il prezzo di vendita</strong> partendo dal costo e dal ricarico che il negoziante vuole applicare.</p>
+    <p>Aggiungi alla classe <code>Calcoli</code> un metodo con questa firma, e scrivine tu il corpo.</p>
+    <div class="code">
+      <div class="code-head"><span>Da completare</span><button class="copy" type="button" data-copy="code4">Copia</button></div>
+      <pre><code id="code4">// Il prezzo di vendita al pubblico (IVA compresa) partendo dal costo netto
+// di acquisto e dal ricarico desiderato.
+public static decimal PrezzoDiVendita(
+    decimal costoNetto, decimal ricaricoPercentuale, decimal aliquotaIva)
+{
+    // ...
+}</code></pre>
+    </div>
+    <p>Il ragionamento: al costo netto applichi il ricarico e ottieni l&rsquo;imponibile di vendita; all&rsquo;imponibile aggiungi l&rsquo;IVA e ottieni il prezzo da mettere sul cartellino. Riusa <code>Arrotonda</code>. Poi aggiungi questi tre controlli e falli venire tutti <code>OK</code>.</p>
+    <div class="code">
+      <div class="code-head"><span>I tre controlli</span><button class="copy" type="button" data-copy="code5">Copia</button></div>
+      <pre><code id="code5">Verifica.Controlla("costo 4,10 ricarico 60% IVA 22%",
+    8.00m, Calcoli.PrezzoDiVendita(4.10m, 60m, 22m));
+
+Verifica.Controlla("costo 1,25 ricarico 35% IVA 10%",
+    1.86m, Calcoli.PrezzoDiVendita(1.25m, 35m, 10m));
+
+Verifica.Controlla("costo 3,33 ricarico 35% IVA 22%",
+    5.48m, Calcoli.PrezzoDiVendita(3.33m, 35m, 22m));</code></pre>
+    </div>
+    <div class="nota trappola">
+      <span class="tag">Se il terzo ti d&agrave; 5,49 invece di 5,48</span>
+      <p>Non &egrave; distrazione, &egrave; <strong>il punto dell&rsquo;esercizio</strong>: significa che hai arrotondato l&rsquo;imponibile intermedio prima di aggiungere l&rsquo;IVA.</p>
+      <div class="scontrino" style="max-width:26rem">
+        <div><span>arrotondando a met&agrave;</span><span>5,49</span></div>
+        <div><span>arrotondando in fondo</span><span>5,48</span></div>
+      </div>
+      <p><strong>Dove arrotondi cambia il risultato.</strong> La regola qui &egrave;: si arrotonda <strong>una volta sola, alla fine</strong>, sul valore che diventa un prezzo vero. L&rsquo;imponibile intermedio non &egrave; un prezzo, &egrave; un passaggio di conto.</p>
+      <p>Attenzione che la regola <strong>non</strong> &egrave; &ldquo;arrotonda sempre in fondo e basta&rdquo;: sullo scontrino l&rsquo;imponibile di riga viene stampato e trasmesso, quindi l&agrave; va arrotondato per forza. La regola vera &egrave;: <em>si arrotonda quando un numero diventa un importo che qualcuno legge o riceve, non mentre lo stai ancora calcolando.</em> Torna in continuazione.</p>
+    </div>
+
+    <h3>Cosa riportarmi</h3>
+    <ol class="steps">
+      <li>Le risposte alle <strong>tre domande</strong> sul modulo 0.</li>
+      <li><strong>Il codice del tuo metodo <code>PrezzoDiVendita</code></strong>, incollato per intero. Non solo &ldquo;funziona&rdquo;: voglio leggerlo. Anche con i tre controlli verdi, su come &egrave; scritto ci sar&agrave; qualcosa da dire, ed &egrave; la prima volta che facciamo questa cosa.</li>
+      <li>L&rsquo;output dei controlli.</li>
+      <li>Il terzo caso ti ha dato 5,48 o 5,49 al primo tentativo?</li>
+      <li>Cosa non ti &egrave; tornato.</li>
+    </ol>
+  </section>
+
   <section id="trappole">
-    <h2><span class="num">05</span> Le trappole del dominio</h2>
+    <h2><span class="num">06</span> Le trappole del dominio</h2>
     <p>Note tenute nel repository perch&eacute; non si perdano fra una sessione e l&rsquo;altra. Non le devi capire tutte adesso: le incontrerai una per una.</p>
     <ul>
       <li><strong>L&rsquo;imposta per differenza</strong> dal totale lordo, mai ricalcolata a parte: evita lo scarto di un centesimo che il registratore rifiuta.</li>
