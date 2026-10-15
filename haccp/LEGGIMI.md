@@ -16,7 +16,7 @@ File ospitato, accesso da desktop e da **FileMaker Go** su iPhone/iPad
 | **Il piano** | **`TABELLA-DI-MARCIA.md`** — dodici tappe, dove siamo, cosa aspetta. Tutto in una pagina |
 | | <https://claude.ai/artifact/7XnevvYVZU5pPmpdkpMcDZ> |
 | **Come si scrive qui dentro** | `CLAUDE.md` — convenzioni, valide per chiunque, persona o assistente |
-| **Ultima verifica del file reale** | `archivio/collaudo-011.md` — verifica della tappa 3 |
+| **Ultima verifica del file reale** | `archivio/collaudo-012.md` — tappa 3 chiusa, nessun difetto |
 
 Il file `Haccp.fmp12` **non sta nel repository**: e' binario e non si confronta
 fra due versioni. Qui stanno la specifica e i pezzi da incollare. Ad ogni
@@ -66,6 +66,7 @@ ognuna parte da dove finisce la precedente.
 | 14 | `guide/13-punticontrollo.md` | <https://claude.ai/artifact/TwBbUExwCuU8ZT8yf26qP2> |
 | 15 | `guide/14-reparti-dei-punti.md` | <https://claude.ai/artifact/Aoap5JQVJJFMnMNSMU9Kqq> |
 | 16 | `archivio/collaudo-011.md` | <https://claude.ai/artifact/FmkcGXHaATyFF55ATWKeiA> |
+| 17 | `guide/15-impresa.md` | <https://claude.ai/artifact/XwN5T92X5WNoucdKtQmBsf> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione
@@ -77,7 +78,7 @@ ognuna parte da dove finisce la precedente.
 | | |
 |---|---|
 | `archivio/` | I collaudi, uno per giro di verifica: il diario di cosa si e' rotto e come si e' aggiustato |
-| `ddr/` | Le ultime due esportazioni XML del file reale. Le precedenti stanno nella storia di git (`git log -- haccp/ddr`) |
+| `ddr/` | Le ultime esportazioni XML del file reale. Le precedenti stanno nella storia di git (`git log -- haccp/ddr`) |
 | `import/` | I file da importare: `schema/` (15 tabelle vuote), `dati/` (6 gia' piene, compresi i 33 punti di controllo) |
 
 ---

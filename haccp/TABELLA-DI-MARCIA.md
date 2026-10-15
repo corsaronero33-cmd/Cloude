@@ -18,8 +18,8 @@ funziona** e con un DDR da verificare.
 | 0 | Le fondamenta | 26 tabelle, 42 relazioni, 23 liste valori, 13 funzioni, gli script del motore | **fatto** |
 | 1 | Il menu e cinque anagrafiche | Reparti, Attrezzature, Fornitori, Prodotti, Operatori: elenco e scheda, ricerca, navigazione | **fatto** |
 | 2 | Account e permessi | due set di privilegi, login all'apertura, script `94` che crea gli account | **fatto** |
-| **3** | **Punti di controllo** | **l'ultima anagrafica: cosa il programma controlla e con quali limiti** | **← sei qui**, `guide/13-punticontrollo.md` |
-| 4 | Impresa e Parametri | due schede piccole; chiudono i due pulsanti del menu che oggi non portano da nessuna parte | |
+| 3 | Punti di controllo | l'ultima anagrafica | **fatto** — `archivio/collaudo-012.md` |
+| **4** | **Impresa e Parametri** | **due schede piccole; chiudono i due pulsanti del menu che oggi non portano da nessuna parte** | **← sei qui**, `guide/15-impresa.md` |
 | 5 | Le larghezze | tutti i formati a una misura sola (**1020**), ridistribuendo le colonne dei tre elenchi piu' larghi | |
 | 6 | Le rilevazioni | si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita' | |
 | 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
@@ -38,40 +38,32 @@ rivendibile; la 9 lo rende **consegnabile**.
 
 ---
 
-## Tappa 3 — Punti di controllo
+## Tappa 4 — Impresa e Parametri
 
-Scheda di lavoro: `guide/13-punticontrollo.md` —
-<https://claude.ai/artifact/TwBbUExwCuU8ZT8yf26qP2>
+Due maschere, una scheda di lavoro ciascuna. **Il DDR si fa a fine tappa**,
+con tutte e due montate.
 
-**La larghezza di progetto e' da rivedere.** Avevo proposto 960; costruendo,
-le schede si sono assestate fra 1004 e 1018, che e' dove servono. Alla tappa 5
-la misura da proporre e' **1020**. Vedi `archivio/collaudo-011.md`.
+### `D_Impresa scheda` — `guide/15-impresa.md`
 
-L'unica anagrafica che **il programma legge da solo** mentre lavora. Le altre
-servono a scegliere una voce in una tendina; questa dice al motore cosa
-misurare, entro quali limiti, ogni quanto, e cosa far fare quando il limite
-salta.
+<https://claude.ai/artifact/XwN5T92X5WNoucdKtQmBsf>
 
-| Gruppo | Campi |
-|---|---|
-| Identita' | `Codice`, `Descrizione`, `Tipo` (CCP/CP/PRP), `Fase` |
-| Dove si applica | `IdAttrezzatura`, `IdReparto` — i due campi collegati |
-| Cosa si misura | `Grandezza`, `UnitaMisura`, `LimiteMin`, `LimiteMax` |
-| Quando | `Frequenza`, `OrarioAtteso1`, `OrarioAtteso2` |
-| Se salta | **`AzioneCorrettiva`** |
-| Come si registra | `RichiedeFoto`, `RichiedeFirma` |
-| Servizio | `Attivo`, `Ordine`, `Note` |
+L'unica maschera **senza elenco**: l'impresa e' un record solo. Niente
+ricerca, niente `+ Nuovo`, niente `Elimina`, niente contatore.
 
-**`AzioneCorrettiva` e' il testo che qualcuno leggera' col fiato corto**, sul
-telefono, mentre un frigo segna 12 gradi. Non e' documentazione: e'
-l'istruzione da eseguire adesso. Imperativo, breve, nessun condizionale.
+Porta con se' tre cose nuove: due campi **Contenitore** (`Logo` e
+`ManualeAutocontrollo`, memorizzati esternamente), lo script
+**`96 - Impresa - Apri la scheda`** che porta sull'unico record e **lo crea se
+la tabella e' vuota**, e il fatto che da qui in poi il menu mostra finalmente
+il nome del locale invece di una riga bianca.
 
-**I limiti stanno qui e in nessun calcolo.** E' la regola che regge la
-rivendita: se il numero 75 compare in una formula, un locale con un limite
-diverso diventa una versione diversa del programma.
+### `D_Parametri elenco` — dopo
 
-Ci sono gia' **33 punti di controllo** in `import/dati/`: la scheda serve a
-vederli e correggerli, non a inventarli.
+Venti parametri chiave/valore, elenco editabile direttamente senza scheda.
+La parte da progettare: **otto parametri non vanno toccati dal cliente**, fra
+cui `VersioneSchema`, che cambiato a mano rende il file non aggiornabile. La
+tabella ha gia' la colonna `ModificabileDalCliente`: si useranno **due campi
+sovrapposti**, uno scrivibile e uno bloccato, e comparira' quello giusto a
+seconda di chi guarda.
 
 ---
 
