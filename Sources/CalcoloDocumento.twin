@@ -39,6 +39,27 @@
 '      volta sola sul totale del rigo e non riga per riga;
 '   6. bollo, ritenuta, totali.
 '
+' Sul punto 5 i due modi di prezzare si comportano in modo diverso, e non
+' e' un dettaglio:
+'
+'   prezzi netti   l'imposta e' l'imponibile per l'aliquota, arrotondato.
+'                  Il totale e' imponibile piu' imposta ed e' esatto per
+'                  costruzione.
+'   prezzi ivati   l'imposta e' il lordo meno l'imponibile. Non si
+'                  ricalcola: si ricava per differenza.
+'
+' La ragione e' aritmetica. Tre pezzi da 0,99 al 22 per cento fanno 2,97
+' allo scaffale, ma lo scorporo da' 2,43 di imponibile, e 2,43 per 22 per
+' cento fa 0,53: sommati, 2,96. Nessuna coppia di valori arrotondati somma
+' a 2,97. Ricavando l'imposta per differenza viene 0,54 e il totale torna
+' al centesimo. Conta perche' il cliente ha letto 2,97 sull'etichetta e
+' perche' il registratore telematico stampa la somma dei prezzi di
+' scaffale: se il gestionale dicesse 2,96, sarebbe il gestionale a essere
+' sbagliato.
+'
+' Spese e cassa previdenziale si intendono sempre al netto, anche in un
+' documento a prezzi ivati: sono voci che si calcolano sull'imponibile.
+'
 Class CalcoloDocumento
 
     ' --- impostazioni del documento ------------------------------------
@@ -193,11 +214,10 @@ Class CalcoloDocumento
                 lordo = Money.Dec(riga.Quantita) * prezzoScontato - Money.Dec(riga.ScontoImporto)
                 If riga.Omaggio Then lordo = CDec(0)
 
-                If PrezziIvati Then
-                    riga.Imponibile = Money.Amount(Money.NetOfVat(lordo, riga.PercentualeIva))
-                Else
-                    riga.Imponibile = Money.Amount(lordo)
-                End If
+                ' il totale di riga si arrotonda qui: e' il numero che il
+                ' cliente legge e che il registratore stampa
+                riga.Lordo = Money.Amount(lordo)
+                riga.Imponibile = ImponibileDa(riga.Lordo, riga.PercentualeIva)
             End If
         Next riga
 
@@ -215,10 +235,20 @@ Class CalcoloDocumento
 
         For Each riga In mRighe
             If riga.Conteggiata Then
-                riga.Imponibile = Money.Amount(Money.ApplyDiscounts(riga.Imponibile, ScontoPiedePerc))
+                riga.Lordo = Money.Amount(Money.ApplyDiscounts(riga.Lordo, ScontoPiedePerc))
+                riga.Imponibile = ImponibileDa(riga.Lordo, riga.PercentualeIva)
             End If
         Next riga
     End Sub
+
+    ' Imponibile corrispondente a un totale di riga, secondo il modo di
+    ' prezzare del documento.
+    Private Function ImponibileDa(ByVal lordo As Currency, ByVal percentuale As Double) As Currency
+        If PrezziIvati Then
+            Return Money.Amount(Money.NetOfVat(lordo, percentuale))
+        End If
+        Return lordo
+    End Function
 
     ' Passi 3 e 4: righe, cassa previdenziale, spese.
     Private Sub CostruisciRiepilogo()
@@ -231,7 +261,7 @@ Class CalcoloDocumento
 
         For Each riga In mRighe
             If riga.Conteggiata Then
-                Accumula riga.PercentualeIva, riga.NaturaIva, riga.Imponibile, _
+                Accumula riga.PercentualeIva, riga.NaturaIva, riga.Imponibile, riga.Lordo, _
                          riga.RilevantePerBollo, riga.RiferimentoNormativo
             End If
         Next riga
@@ -245,16 +275,16 @@ Class CalcoloDocumento
             Next riga
             mCassaPrevidenziale = Money.Amount(Money.PercentOf(baseCassa, CassaPrevidenzialePerc))
             If mCassaPrevidenziale <> 0 Then
-                Accumula PercentualeIvaCassa, NaturaIvaCassa, mCassaPrevidenziale, _
-                         (PercentualeIvaCassa = 0 And Len(NaturaIvaCassa) > 0), ""
+                AccumulaNetto PercentualeIvaCassa, NaturaIvaCassa, mCassaPrevidenziale, _
+                              (PercentualeIvaCassa = 0 And Len(NaturaIvaCassa) > 0)
             End If
         End If
 
         totaleSpese = Money.Amount(Money.Dec(SpeseTrasporto) + Money.Dec(SpeseIncasso) + _
                                    Money.Dec(SpeseImballo))
         If totaleSpese <> 0 Then
-            Accumula PercentualeIvaSpese, NaturaIvaSpese, totaleSpese, _
-                     (PercentualeIvaSpese = 0 And Len(NaturaIvaSpese) > 0), ""
+            AccumulaNetto PercentualeIvaSpese, NaturaIvaSpese, totaleSpese, _
+                          (PercentualeIvaSpese = 0 And Len(NaturaIvaSpese) > 0)
         End If
     End Sub
 
@@ -273,7 +303,13 @@ Class CalcoloDocumento
         sospesa = CDec(0)
 
         For Each voce In mRiepilogo
-            voce.Imposta = Money.Amount(Money.VatOn(voce.Imponibile, voce.PercentualeIva))
+            If PrezziIvati Then
+                ' per differenza, cosi' il totale torna al prezzo di
+                ' scaffale: vedere l'intestazione della classe
+                voce.Imposta = Money.Amount(Money.Dec(voce.Lordo) - Money.Dec(voce.Imponibile))
+            Else
+                voce.Imposta = Money.Amount(Money.VatOn(voce.Imponibile, voce.PercentualeIva))
+            End If
             If SplitPayment And voce.PercentualeIva > 0 Then
                 voce.Esigibilita = Costanti.ESIGIBILITA_SCISSIONE
                 sospesa = sospesa + Money.Dec(voce.Imposta)
@@ -291,7 +327,11 @@ Class CalcoloDocumento
         ' imposta indicativa di riga, per la stampa di controllo
         For Each riga In mRighe
             If riga.Conteggiata Then
-                riga.Imposta = Money.Amount(Money.VatOn(riga.Imponibile, riga.PercentualeIva))
+                If PrezziIvati Then
+                    riga.Imposta = Money.Amount(Money.Dec(riga.Lordo) - Money.Dec(riga.Imponibile))
+                Else
+                    riga.Imposta = Money.Amount(Money.VatOn(riga.Imponibile, riga.PercentualeIva))
+                End If
             End If
         Next riga
     End Sub
@@ -494,9 +534,20 @@ Class CalcoloDocumento
 
     ' Accumula un imponibile sul rigo di riepilogo della sua coppia
     ' aliquota piu' natura, creandolo se non c'e' ancora.
+    ' Voce che si intende al netto: il suo lordo e' imponibile piu'
+    ' imposta. Spese e cassa previdenziale passano da qui anche nei
+    ' documenti a prezzi ivati, perche' si calcolano sull'imponibile.
+    Private Sub AccumulaNetto(ByVal percentuale As Double, ByVal natura As String, _
+                              ByVal imponibile As Currency, ByVal concorreAlBollo As Boolean)
+        Dim lordo As Currency
+
+        lordo = Money.Amount(Money.Dec(imponibile) + Money.VatOn(imponibile, percentuale))
+        Accumula percentuale, natura, imponibile, lordo, concorreAlBollo, ""
+    End Sub
+
     Private Sub Accumula(ByVal percentuale As Double, ByVal natura As String, _
-                         ByVal imponibile As Currency, ByVal concorreAlBollo As Boolean, _
-                         ByVal riferimento As String)
+                         ByVal imponibile As Currency, ByVal lordo As Currency, _
+                         ByVal concorreAlBollo As Boolean, ByVal riferimento As String)
         Dim candidata As RiepilogoIva
         Dim voce As RiepilogoIva
 
@@ -513,6 +564,7 @@ Class CalcoloDocumento
         End If
 
         voce.Imponibile = voce.Imponibile + imponibile
+        voce.Lordo = voce.Lordo + lordo
         If concorreAlBollo Then voce.ConcorreAlBollo = True
         If Len(voce.RiferimentoNormativo) = 0 Then voce.RiferimentoNormativo = riferimento
     End Sub

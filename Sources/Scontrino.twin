@@ -1,0 +1,339 @@
+'
+' Scontrino - una vendita al banco.
+'
+' Non reimplementa niente: i conti li fa CalcoloDocumento con PrezziIvati
+' attivo, che e' lo stesso motore delle fatture e ha gli stessi test. Qui
+' sopra ci sono le tre cose che una fattura non ha: i prezzi di scaffale,
+' i pagamenti multipli e il resto.
+'
+'     Dim sc As Scontrino
+'     Set sc = New Scontrino
+'     sc.AggiungiArticolo "PANE", "Pane casereccio", 1, 3.5@, 4, 4
+'     sc.AggiungiArticolo "VINO", "Vino rosso", 2, 6@, 22, 1
+'     sc.AggiungiPagamento Costanti.PAG_CONTANTI, "Contanti", 20@
+'     sc.Calcola
+'     Debug.Print Money.FormatAmount(sc.Resto)
+'
+' Due regole che valgono la pena di essere scritte:
+'
+'   Lo sconto di riga si applica al prezzo unitario e si arrotonda subito.
+'   Il registratore telematico ricalcola quantita' per prezzo unitario, e
+'   se il gestionale tenesse il prezzo a quattro decimali i due conti
+'   divergerebbero di un centesimo. Quello che fa fede e' lo scontrino,
+'   quindi e' il gestionale che si adegua.
+'
+'   Il resto esce solo dai contanti. Un bancomat da trenta euro su una
+'   spesa da venti non esiste, e un registratore che se lo vede arrivare
+'   stampa un corrispettivo sbagliato.
+'
+' Un reso si compila con quantita' positive e TipoVendita a reso: il verso
+' lo da' SegnoContabile, cosi' nessuno rischia di negare due volte.
+'
+Class Scontrino
+
+    Public IdCassa As Long
+    Public DataVendita As Date
+    Public Operatore As String
+    Public TipoVendita As String
+    Public IdSoggetto As Long
+    Public CodiceLotteria As String
+    Public RepartoPredefinito As Long
+
+    ' Se attivo, Validazione segnala un resto che non puo' uscire dai
+    ' contanti. Si spegne solo per casi particolari, tipo i buoni che il
+    ' negozio rimborsa in contanti per scelta propria.
+    Public RestoSoloContanti As Boolean
+
+    Private mCalcolo As CalcoloDocumento
+    Private mPagamenti As Collection
+    Private mTotalePagato As Currency
+    Private mResto As Currency
+    Private mResiduo As Currency
+    Private mCalcolato As Boolean
+
+    Private Sub Class_Initialize()
+        Set mCalcolo = New CalcoloDocumento
+        Set mPagamenti = New Collection
+
+        ' in negozio si ragiona sul prezzo di scaffale
+        mCalcolo.PrezziIvati = True
+        ' sul documento commerciale il bollo non esiste
+        mCalcolo.BolloAutomatico = False
+
+        TipoVendita = Costanti.VENDITA_SCONTRINO
+        DataVendita = Now()
+        RestoSoloContanti = True
+        RepartoPredefinito = 1
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Righe
+    ' ------------------------------------------------------------------
+
+    ' Il prezzo e' quello di scaffale, IVA compresa. Lo sconto e' in
+    ' percentuale e si scarica subito sul prezzo unitario arrotondato, per
+    ' la ragione spiegata nell'intestazione.
+    Public Function AggiungiArticolo(ByVal codice As String, ByVal descrizione As String, _
+                                     ByVal quantita As Double, ByVal prezzoIvato As Currency, _
+                                     ByVal percentualeIva As Double, _
+                                     Optional ByVal reparto As Long = 0, _
+                                     Optional ByVal scontoPerc As Double = 0, _
+                                     Optional ByVal natura As String = "") As RigaCalcolo
+        Dim riga As RigaCalcolo
+
+        Set riga = mCalcolo.AggiungiRiga()
+        riga.Codice = codice
+        riga.Descrizione = descrizione
+        riga.Quantita = quantita
+        riga.PercentualeIva = percentualeIva
+        riga.NaturaIva = natura
+        riga.PrezzoListino = prezzoIvato
+        riga.ScontoApplicatoPerc = scontoPerc
+
+        If scontoPerc = 0 Then
+            riga.PrezzoUnitario = prezzoIvato
+        Else
+            riga.PrezzoUnitario = Money.Amount(Money.ApplyDiscounts(prezzoIvato, scontoPerc))
+        End If
+
+        If reparto > 0 Then
+            riga.Reparto = reparto
+        Else
+            riga.Reparto = RepartoPredefinito
+        End If
+
+        mCalcolato = False
+        Return riga
+    End Function
+
+    ' Sconto a valore su una riga gia' inserita, per i casi in cui il
+    ' prezzo si tratta al banco.
+    Public Sub ScontaRiga(ByVal posizione As Long, ByVal importo As Currency)
+        Dim riga As RigaCalcolo
+
+        Set riga = mCalcolo.Righe.Item(posizione)
+        riga.ScontoImporto = importo
+        mCalcolato = False
+    End Sub
+
+    Public Sub RimuoviRiga(ByVal posizione As Long)
+        mCalcolo.Righe.Remove posizione
+        mCalcolato = False
+    End Sub
+
+    Public Property Get Righe() As Collection
+        Return mCalcolo.Righe
+    End Property
+
+    Public Property Get NumeroRighe() As Long
+        Return mCalcolo.NumeroRighe
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Pagamenti
+    ' ------------------------------------------------------------------
+
+    Public Function AggiungiPagamento(ByVal tipo As String, ByVal descrizione As String, _
+                                      ByVal importo As Currency, _
+                                      Optional ByVal codiceRt As Long = 0) As PagamentoScontrino
+        Dim pagamento As PagamentoScontrino
+
+        Set pagamento = New PagamentoScontrino
+        pagamento.Tipo = tipo
+        pagamento.Descrizione = descrizione
+        pagamento.Importo = importo
+        pagamento.CodiceRt = codiceRt
+        mPagamenti.Add pagamento
+
+        mCalcolato = False
+        Return pagamento
+    End Function
+
+    ' Scorciatoia per il caso piu' frequente: tutto in contanti.
+    Public Function PagaInContanti(ByVal importo As Currency) As PagamentoScontrino
+        Return AggiungiPagamento(Costanti.PAG_CONTANTI, "Contanti", importo)
+    End Function
+
+    Public Sub SvuotaPagamenti()
+        Set mPagamenti = New Collection
+        mCalcolato = False
+    End Sub
+
+    Public Property Get Pagamenti() As Collection
+        Return mPagamenti
+    End Property
+
+    Public Sub Svuota()
+        Set mCalcolo = New CalcoloDocumento
+        mCalcolo.PrezziIvati = True
+        mCalcolo.BolloAutomatico = False
+        Set mPagamenti = New Collection
+        mCalcolato = False
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Calcolo
+    ' ------------------------------------------------------------------
+
+    Public Sub Calcola()
+        Dim pagamento As PagamentoScontrino
+        Dim pagato As Variant
+        Dim daPagare As Variant
+
+        mCalcolo.Calcola
+
+        pagato = CDec(0)
+        For Each pagamento In mPagamenti
+            pagato = pagato + Money.Dec(pagamento.Importo)
+        Next pagamento
+        mTotalePagato = Money.Amount(pagato)
+
+        daPagare = Money.Dec(mCalcolo.TotaleDocumento)
+        If pagato >= daPagare Then
+            mResto = Money.Amount(pagato - daPagare)
+            mResiduo = 0
+        Else
+            mResto = 0
+            mResiduo = Money.Amount(daPagare - pagato)
+        End If
+
+        mCalcolato = True
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Risultati
+    ' ------------------------------------------------------------------
+
+    Public Property Get TotaleImponibile() As Currency
+        Return mCalcolo.TotaleImponibile
+    End Property
+
+    Public Property Get TotaleImposta() As Currency
+        Return mCalcolo.TotaleImposta
+    End Property
+
+    ' Totale da pagare, cioe' quello stampato in fondo allo scontrino.
+    Public Property Get Totale() As Currency
+        Return mCalcolo.TotaleDocumento
+    End Property
+
+    Public Property Get TotaleSconti() As Currency
+        Return mCalcolo.TotaleSconti
+    End Property
+
+    Public Property Get Riepilogo() As Collection
+        Return mCalcolo.Riepilogo
+    End Property
+
+    Public Property Get TotalePagato() As Currency
+        PretendiCalcolo
+        Return mTotalePagato
+    End Property
+
+    Public Property Get Resto() As Currency
+        PretendiCalcolo
+        Return mResto
+    End Property
+
+    ' Quanto manca ancora per chiudere la vendita.
+    Public Property Get Residuo() As Currency
+        PretendiCalcolo
+        Return mResiduo
+    End Property
+
+    Public Property Get Saldato() As Boolean
+        PretendiCalcolo
+        Return (mResiduo = 0)
+    End Property
+
+    ' Totale di una macro-categoria di pagamento. Serve alla chiusura
+    ' giornaliera e al controllo sul resto.
+    Public Function TotalePerTipo(ByVal tipo As String) As Currency
+        Dim pagamento As PagamentoScontrino
+        Dim somma As Variant
+
+        somma = CDec(0)
+        For Each pagamento In mPagamenti
+            If pagamento.Tipo = tipo Then somma = somma + Money.Dec(pagamento.Importo)
+        Next pagamento
+        Return Money.Amount(somma)
+    End Function
+
+    ' Verso contabile della vendita: un reso vale meno uno. Gli importi
+    ' restano positivi, il segno lo applica chi salva e chi muove il
+    ' magazzino, in un punto solo.
+    Public Property Get SegnoContabile() As Long
+        If TipoVendita = Costanti.VENDITA_RESO Then Return -1
+        If TipoVendita = Costanti.VENDITA_ANNULLO Then Return -1
+        Return 1
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Validazione
+    ' ------------------------------------------------------------------
+
+    ' Da chiamare prima di mandare la vendita al registratore. Comprende i
+    ' rilievi del motore di calcolo piu' quelli propri dello scontrino.
+    Public Function Validazione() As Collection
+        Dim problemi As Collection
+        Dim ereditati As Collection
+        Dim problema As Variant
+        Dim riga As RigaCalcolo
+        Dim pagamento As PagamentoScontrino
+        Dim posizione As Long
+
+        Set problemi = New Collection
+
+        Set ereditati = mCalcolo.Validazione()
+        For Each problema In ereditati
+            problemi.Add CStr(problema)
+        Next problema
+
+        posizione = 0
+        For Each riga In mCalcolo.Righe
+            posizione += 1
+            If riga.Conteggiata And riga.Reparto <= 0 Then
+                problemi.Add "Riga " & CStr(posizione) & _
+                             ": nessun reparto indicato per il registratore"
+            End If
+        Next riga
+
+        If mPagamenti.Count = 0 Then
+            problemi.Add "La vendita non ha pagamenti"
+        End If
+
+        For Each pagamento In mPagamenti
+            If pagamento.Importo = 0 Then
+                problemi.Add "Pagamento " & pagamento.Descrizione & ": importo a zero"
+            ElseIf pagamento.Importo < 0 Then
+                problemi.Add "Pagamento " & pagamento.Descrizione & ": importo negativo"
+            End If
+        Next pagamento
+
+        If mCalcolato Then
+            If mResiduo > 0 Then
+                problemi.Add "Mancano ancora " & Money.FormatAmount(mResiduo) & _
+                             " per chiudere la vendita"
+            End If
+            If RestoSoloContanti And mResto > 0 Then
+                If TotalePerTipo(Costanti.PAG_CONTANTI) < mResto Then
+                    problemi.Add "Il resto di " & Money.FormatAmount(mResto) & _
+                                 " non puo' uscire da un pagamento che non sia in contanti"
+                End If
+            End If
+        End If
+
+        Return problemi
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Sub PretendiCalcolo()
+        If Not mCalcolato Then
+            Err.Raise 5, "Scontrino", "Chiamare Calcola prima di leggere i totali"
+        End If
+    End Sub
+
+End Class

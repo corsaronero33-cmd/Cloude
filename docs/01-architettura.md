@@ -10,17 +10,21 @@ di calcolo dell'IVA no.
 
 | Fatto | Dove |
 | --- | --- |
-| Schema dell'archivio, 20 tabelle | `Database/sql/0001_schema.sql` |
+| Schema dell'archivio, 38 tabelle | `Database/sql/000*.sql` |
 | Aliquote, nature IVA, tipi documento, pagamenti | `Database/sql/0002_dati_base.sql` |
+| Varianti, reparti RT, casse, vendite, prima nota | `Database/sql/0003_negozio.sql` |
 | Aritmetica monetaria e arrotondamento | `Sources/Money.twin` |
 | Motore di calcolo del documento | `Sources/CalcoloDocumento.twin` |
+| Vendita al banco | `Sources/Scontrino.twin` |
+| Protocollo del registratore telematico | `Sources/RtEpsonXml.twin`, `Sources/Rt.twin` |
 | Scadenzario | `Sources/CalcoloScadenze.twin` |
+| Magazzino e prima nota | `Sources/Magazzino.twin`, `Sources/PrimaNota.twin` |
 | Accesso ai dati, pensato per la LAN | `Sources/Database.twin` |
 | Numerazione sicura in multiutenza | `Sources/Numeratore.twin` |
 | Versioni dello schema | `Sources/Migrator.twin` |
 | Password degli utenti | `Sources/Crypto.twin` |
 | Impostazioni della postazione | `Sources/AppConfig.twin` |
-| Test, 200 e oltre asserzioni | `Sources/*Tests.twin` |
+| Test, oltre 320 asserzioni | `Sources/*Tests.twin` |
 
 Quello che manca e il perche' di quest'ordine stanno in
 [04-roadmap.md](04-roadmap.md).
@@ -36,13 +40,21 @@ Quello che manca e il perche' di quest'ordine stanno in
    |                             |
 dominio                     infrastruttura
 CalcoloDocumento            Database
-CalcoloScadenze             Migrator
-RigaCalcolo                 Numeratore
-RiepilogoIva                AppConfig
+Scontrino                   Migrator
+CalcoloScadenze             Numeratore
+RigaCalcolo                 Magazzino
+RiepilogoIva                PrimaNota
+PagamentoScontrino          AppConfig
 Scadenza                    Crypto
 Costanti                    Money
+RtEpsonXml                  Rt
                             AdoConst
 ```
+
+`RtEpsonXml` sta fra i moduli di dominio e non fra quelli di
+infrastruttura, e non e' una svista: costruisce e legge testo, non apre
+connessioni. Il trasporto verso la stampante e' `Rt`. La divisione serve a
+poter provare il protocollo senza avere il registratore sul tavolo.
 
 La regola che tiene in piedi la cosa e' una sola: **il dominio non conosce
 l'archivio**. `CalcoloDocumento` non sa che esiste Access, non apre

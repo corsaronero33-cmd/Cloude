@@ -27,6 +27,28 @@ Module Costanti
     Public Const ESIGIBILITA_DIFFERITA As String = "D"
     Public Const ESIGIBILITA_SCISSIONE As String = "S"
 
+    ' VenditePagamenti.Tipo - sono le macro-categorie che l'Agenzia delle
+    ' Entrate vuole nel documento commerciale e nella chiusura giornaliera.
+    ' Il dettaglio leggibile (bancomat, assegno, Visa) sta nella
+    ' descrizione: qui conta solo in quale delle quattro caselle cade.
+    Public Const PAG_CONTANTI As String = "contanti"        ' assegno compreso
+    Public Const PAG_ELETTRONICO As String = "elettronico"  ' carta, bancomat, bonifico
+    Public Const PAG_NONRISCOSSO As String = "nonriscosso"
+    Public Const PAG_BUONOPASTO As String = "buonopasto"
+
+    ' Vendite.TipoVendita
+    Public Const VENDITA_SCONTRINO As String = "scontrino"
+    Public Const VENDITA_RESO As String = "reso"
+    Public Const VENDITA_ANNULLO As String = "annullo"
+
+    ' Casse.TipoRt - quale driver pilota il registratore
+    Public Const RT_EPSON As String = "epson"
+    Public Const RT_SIMULATO As String = "simulato"
+
+    ' Inventari.Stato
+    Public Const INVENTARIO_BOZZA As String = "bozza"
+    Public Const INVENTARIO_CONFERMATO As String = "confermato"
+
     ' Utenti.Ruolo
     Public Const RUOLO_AMMINISTRATORE As String = "amministratore"
     Public Const RUOLO_VENDITE As String = "vendite"

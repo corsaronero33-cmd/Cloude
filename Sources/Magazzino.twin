@@ -1,0 +1,376 @@
+'
+' Magazzino - movimenti e giacenze.
+'
+' La giacenza vera e' la somma dei movimenti. Articoli.Giacenza e
+' ArticoliVarianti.Giacenza sono una cache, tenuta aggiornata per non
+' sommare mezzo milione di righe ogni volta che si cerca un articolo, e
+' ricostruibile in qualunque momento con RicalcolaTutte. Se la cache e la
+' somma dei movimenti divergono, ha ragione la somma dei movimenti.
+'
+' Questa separazione non e' pignoleria: a fine anno il commercialista chiede
+' la giacenza a una data, e quella si ottiene solo dai movimenti. Un
+' gestionale che tiene solo il numero corrente non sa rispondere.
+'
+' I movimenti nascono alla CONFERMA di un documento o di una vendita, non
+' al salvataggio della bozza. MuoviDaDocumento e MuoviDaVendita cancellano
+' prima i movimenti di quel documento e li rigenerano, cosi' confermare due
+' volte non raddoppia lo scarico: l'operazione e' ripetibile.
+'
+Class Magazzino
+
+    Private mDb As Database
+
+    Public Sub Init(ByVal db As Database)
+        Set mDb = db
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Movimenti singoli
+    ' ------------------------------------------------------------------
+
+    ' Registra un movimento e aggiorna la giacenza. La quantita' si passa
+    ' sempre positiva: il verso lo da' il segno.
+    Public Function Registra(ByVal idArticolo As Long, ByVal idVariante As Long, _
+                             ByVal segno As Long, ByVal quantita As Double, _
+                             ByVal prezzoUnitario As Currency, ByVal causale As String, _
+                             Optional ByVal dataMovimento As Variant, _
+                             Optional ByVal idDocumento As Long = 0, _
+                             Optional ByVal idRigaDocumento As Long = 0, _
+                             Optional ByVal idVendita As Long = 0, _
+                             Optional ByVal idSoggetto As Long = 0, _
+                             Optional ByVal note As String = "") As Long
+        Dim quando As Date
+        Dim idMovimento As Long
+
+        RequireDb
+        If segno <> 1 And segno <> -1 Then
+            Err.Raise 5, "Magazzino.Registra", "Il segno puo' essere solo 1 o -1"
+        End If
+        If quantita < 0 Then
+            Err.Raise 5, "Magazzino.Registra", _
+                      "La quantita' va passata positiva: il verso lo da' il segno"
+        End If
+
+        If IsMissing(dataMovimento) Then
+            quando = Now()
+        Else
+            quando = CDate(dataMovimento)
+        End If
+
+        mDb.Execute "INSERT INTO MovimentiMagazzino (DataMovimento, IdArticolo, IdVariante, " & _
+                    "Segno, Quantita, PrezzoUnitario, Causale, IdDocumento, IdRigaDocumento, " & _
+                    "IdVendita, IdSoggetto, Note, CreatoIl, CreatoDa) " & _
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", _
+                    quando, idArticolo, NullSeZero(idVariante), segno, quantita, prezzoUnitario, _
+                    causale, NullSeZero(idDocumento), NullSeZero(idRigaDocumento), _
+                    NullSeZero(idVendita), NullSeZero(idSoggetto), note, Now(), _
+                    AppConfig.UtentePerTraccia
+
+        idMovimento = mDb.LastAutoNumber()
+        AggiornaGiacenza idArticolo, idVariante
+        Return idMovimento
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Giacenze
+    ' ------------------------------------------------------------------
+
+    ' Giacenza calcolata dai movimenti. Senza data e' quella attuale, con
+    ' una data e' quella a quel momento: e' la domanda di fine anno.
+    Public Function GiacenzaDaMovimenti(ByVal idArticolo As Long, ByVal idVariante As Long, _
+                                        Optional ByVal alla As Variant) As Double
+        Dim sql As String
+        Dim valore As Variant
+
+        RequireDb
+        sql = "SELECT SUM(Segno * Quantita) FROM MovimentiMagazzino WHERE IdArticolo = ?"
+
+        If idVariante > 0 Then
+            sql = sql & " AND IdVariante = ?"
+            If IsMissing(alla) Then
+                valore = mDb.ScalarValue(sql, idArticolo, idVariante)
+            Else
+                valore = mDb.ScalarValue(sql & " AND DataMovimento <= ?", _
+                                         idArticolo, idVariante, FineGiornata(CDate(alla)))
+            End If
+        Else
+            If IsMissing(alla) Then
+                valore = mDb.ScalarValue(sql, idArticolo)
+            Else
+                valore = mDb.ScalarValue(sql & " AND DataMovimento <= ?", _
+                                         idArticolo, FineGiornata(CDate(alla)))
+            End If
+        End If
+
+        If IsNull(valore) Then Return 0
+        Return CDbl(valore)
+    End Function
+
+    ' Riallinea la cache con i movimenti per un articolo o una variante.
+    Public Sub AggiornaGiacenza(ByVal idArticolo As Long, ByVal idVariante As Long)
+        RequireDb
+
+        If idVariante > 0 Then
+            mDb.Execute "UPDATE ArticoliVarianti SET Giacenza = ? WHERE Id = ?", _
+                        GiacenzaDaMovimenti(idArticolo, idVariante), idVariante
+        End If
+
+        ' la giacenza dell'articolo e' il totale, varianti comprese
+        mDb.Execute "UPDATE Articoli SET Giacenza = ? WHERE Id = ?", _
+                    GiacenzaDaMovimenti(idArticolo, 0), idArticolo
+    End Sub
+
+    ' Ricostruisce tutte le giacenze dai movimenti e restituisce quante
+    ' righe ha corretto. Da eseguire a archivio tranquillo: legge e scrive
+    ' tutto il magazzino.
+    Public Function RicalcolaTutte() As Long
+        Dim rs As Object
+        Dim quante As Long
+
+        RequireDb
+
+        Set rs = mDb.OpenRecordset("SELECT Id FROM Articoli")
+        Do While Not rs.EOF
+            AggiornaGiacenza CLng(rs.Fields("Id").Value), 0
+            quante += 1
+            rs.MoveNext
+        Loop
+        rs.Close
+
+        Set rs = mDb.OpenRecordset("SELECT Id, IdArticolo FROM ArticoliVarianti")
+        Do While Not rs.EOF
+            AggiornaGiacenza CLng(rs.Fields("IdArticolo").Value), CLng(rs.Fields("Id").Value)
+            quante += 1
+            rs.MoveNext
+        Loop
+        rs.Close
+
+        Return quante
+    End Function
+
+    ' Articoli sotto la scorta minima, per l'elenco del riordino.
+    Public Function SottoScorta() As Object
+        RequireDb
+        Return mDb.OpenRecordset( _
+            "SELECT Id, Codice, Descrizione, Giacenza, ScortaMinima " & _
+            "FROM Articoli WHERE GestioneMagazzino = True AND Attivo = True " & _
+            "AND ScortaMinima > 0 AND Giacenza <= ScortaMinima " & _
+            "ORDER BY Descrizione")
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Movimenti da documenti e vendite
+    ' ------------------------------------------------------------------
+
+    ' Genera i movimenti di un documento, secondo il SegnoMagazzino del suo
+    ' tipo. Ripetibile: cancella prima quelli vecchi.
+    Public Sub MuoviDaDocumento(ByVal idDocumento As Long)
+        Dim rs As Object
+        Dim segno As Long
+        Dim valore As Variant
+        Dim dataDocumento As Date
+        Dim idSoggetto As Long
+        Dim causale As String
+        Dim numeroErrore As Long
+        Dim testoErrore As String
+
+        RequireDb
+
+        valore = mDb.ScalarValue( _
+            "SELECT t.SegnoMagazzino FROM TipiDocumento AS t " & _
+            "INNER JOIN Documenti AS d ON d.IdTipoDocumento = t.Id WHERE d.Id = ?", idDocumento)
+        If IsNull(valore) Then
+            Err.Raise 5, "Magazzino.MuoviDaDocumento", "Documento " & CStr(idDocumento) & " non trovato"
+        End If
+        segno = CLng(valore)
+
+        mDb.BeginTrans
+        On Error GoTo Annulla
+
+        mDb.Execute "DELETE FROM MovimentiMagazzino WHERE IdDocumento = ?", idDocumento
+
+        If segno <> 0 Then
+            dataDocumento = CDate(mDb.ScalarValue("SELECT DataDocumento FROM Documenti WHERE Id = ?", idDocumento))
+            idSoggetto = CLng(ZeroSeNull(mDb.ScalarValue("SELECT IdSoggetto FROM Documenti WHERE Id = ?", idDocumento)))
+            causale = CStr(ZeroStringaSeNull(mDb.ScalarValue( _
+                "SELECT t.Codice FROM TipiDocumento AS t " & _
+                "INNER JOIN Documenti AS d ON d.IdTipoDocumento = t.Id WHERE d.Id = ?", idDocumento)))
+
+            Set rs = mDb.OpenRecordset( _
+                "SELECT r.Id, r.IdArticolo, r.IdVariante, r.Quantita, r.PrezzoUnitario " & _
+                "FROM DocumentiRighe AS r INNER JOIN Articoli AS a ON r.IdArticolo = a.Id " & _
+                "WHERE r.IdDocumento = ? AND r.TipoRiga = ? AND a.GestioneMagazzino = True", _
+                idDocumento, Costanti.RIGA_ARTICOLO)
+
+            Do While Not rs.EOF
+                InserisciMovimento dataDocumento, _
+                                   CLng(rs.Fields("IdArticolo").Value), _
+                                   CLng(ZeroSeNull(rs.Fields("IdVariante").Value)), _
+                                   segno, CDbl(ZeroSeNull(rs.Fields("Quantita").Value)), _
+                                   CCur(ZeroSeNull(rs.Fields("PrezzoUnitario").Value)), _
+                                   causale, idDocumento, CLng(rs.Fields("Id").Value), 0, idSoggetto
+                rs.MoveNext
+            Loop
+            rs.Close
+        End If
+
+        mDb.CommitTrans
+        On Error GoTo 0
+        RiallineaDocumento idDocumento
+        Exit Sub
+
+Annulla:
+        numeroErrore = Err.Number
+        testoErrore = Err.Description
+        On Error GoTo 0
+        mDb.RollbackTrans
+        Err.Raise numeroErrore, "Magazzino.MuoviDaDocumento", testoErrore
+    End Sub
+
+    ' Genera i movimenti di una vendita al banco. Una vendita scarica, un
+    ' reso carica: il verso viene dal tipo di vendita.
+    Public Sub MuoviDaVendita(ByVal idVendita As Long)
+        Dim rs As Object
+        Dim tipo As String
+        Dim segno As Long
+        Dim dataVendita As Date
+        Dim numeroErrore As Long
+        Dim testoErrore As String
+
+        RequireDb
+
+        tipo = CStr(ZeroStringaSeNull(mDb.ScalarValue( _
+            "SELECT TipoVendita FROM Vendite WHERE Id = ?", idVendita)))
+        If Len(tipo) = 0 Then
+            Err.Raise 5, "Magazzino.MuoviDaVendita", "Vendita " & CStr(idVendita) & " non trovata"
+        End If
+
+        If tipo = Costanti.VENDITA_SCONTRINO Then segno = -1 Else segno = 1
+        dataVendita = CDate(mDb.ScalarValue("SELECT DataVendita FROM Vendite WHERE Id = ?", idVendita))
+
+        mDb.BeginTrans
+        On Error GoTo Annulla
+
+        mDb.Execute "DELETE FROM MovimentiMagazzino WHERE IdVendita = ?", idVendita
+
+        Set rs = mDb.OpenRecordset( _
+            "SELECT r.Id, r.IdArticolo, r.IdVariante, r.Quantita, r.PrezzoUnitario " & _
+            "FROM VenditeRighe AS r INNER JOIN Articoli AS a ON r.IdArticolo = a.Id " & _
+            "WHERE r.IdVendita = ? AND a.GestioneMagazzino = True", idVendita)
+
+        Do While Not rs.EOF
+            InserisciMovimento dataVendita, _
+                               CLng(rs.Fields("IdArticolo").Value), _
+                               CLng(ZeroSeNull(rs.Fields("IdVariante").Value)), _
+                               segno, CDbl(ZeroSeNull(rs.Fields("Quantita").Value)), _
+                               CCur(ZeroSeNull(rs.Fields("PrezzoUnitario").Value)), _
+                               "SCAVEND", 0, 0, idVendita, 0
+            rs.MoveNext
+        Loop
+        rs.Close
+
+        mDb.CommitTrans
+        On Error GoTo 0
+        RiallineaVendita idVendita
+        Exit Sub
+
+Annulla:
+        numeroErrore = Err.Number
+        testoErrore = Err.Description
+        On Error GoTo 0
+        mDb.RollbackTrans
+        Err.Raise numeroErrore, "Magazzino.MuoviDaVendita", testoErrore
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Inserisce il movimento senza toccare le giacenze: durante la
+    ' generazione da un documento si riallinea tutto in fondo, cosi' la
+    ' transazione resta corta.
+    Private Sub InserisciMovimento(ByVal quando As Date, ByVal idArticolo As Long, _
+                                   ByVal idVariante As Long, ByVal segno As Long, _
+                                   ByVal quantita As Double, ByVal prezzo As Currency, _
+                                   ByVal causale As String, ByVal idDocumento As Long, _
+                                   ByVal idRiga As Long, ByVal idVendita As Long, _
+                                   ByVal idSoggetto As Long)
+        Dim verso As Long
+        Dim assoluta As Double
+
+        ' una riga con quantita' negativa (un reso dentro una fattura)
+        ' ribalta il verso del movimento
+        verso = segno
+        assoluta = quantita
+        If assoluta < 0 Then
+            assoluta = -assoluta
+            verso = -verso
+        End If
+        If assoluta = 0 Then Exit Sub
+
+        mDb.Execute "INSERT INTO MovimentiMagazzino (DataMovimento, IdArticolo, IdVariante, " & _
+                    "Segno, Quantita, PrezzoUnitario, Causale, IdDocumento, IdRigaDocumento, " & _
+                    "IdVendita, IdSoggetto, CreatoIl, CreatoDa) " & _
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", _
+                    quando, idArticolo, NullSeZero(idVariante), verso, assoluta, prezzo, _
+                    causale, NullSeZero(idDocumento), NullSeZero(idRiga), _
+                    NullSeZero(idVendita), NullSeZero(idSoggetto), Now(), _
+                    AppConfig.UtentePerTraccia
+    End Sub
+
+    ' Riallinea le giacenze degli articoli toccati da un documento.
+    Private Sub RiallineaDocumento(ByVal idDocumento As Long)
+        Dim rs As Object
+
+        Set rs = mDb.OpenRecordset( _
+            "SELECT DISTINCT IdArticolo, IdVariante FROM MovimentiMagazzino WHERE IdDocumento = ?", _
+            idDocumento)
+        RiallineaElenco rs
+    End Sub
+
+    Private Sub RiallineaVendita(ByVal idVendita As Long)
+        Dim rs As Object
+
+        Set rs = mDb.OpenRecordset( _
+            "SELECT DISTINCT IdArticolo, IdVariante FROM MovimentiMagazzino WHERE IdVendita = ?", _
+            idVendita)
+        RiallineaElenco rs
+    End Sub
+
+    Private Sub RiallineaElenco(ByVal rs As Object)
+        Do While Not rs.EOF
+            AggiornaGiacenza CLng(rs.Fields("IdArticolo").Value), _
+                             CLng(ZeroSeNull(rs.Fields("IdVariante").Value))
+            rs.MoveNext
+        Loop
+        rs.Close
+    End Sub
+
+    Private Function NullSeZero(ByVal valore As Long) As Variant
+        If valore = 0 Then Return Null
+        Return valore
+    End Function
+
+    Private Function ZeroSeNull(ByVal valore As Variant) As Variant
+        If IsNull(valore) Then Return 0
+        Return valore
+    End Function
+
+    Private Function ZeroStringaSeNull(ByVal valore As Variant) As String
+        If IsNull(valore) Then Return ""
+        Return CStr(valore)
+    End Function
+
+    ' Un confronto su DATETIME in Access include l'ora: per prendere tutta
+    ' la giornata serve l'istante prima della mezzanotte successiva.
+    Private Function FineGiornata(ByVal giorno As Date) As Date
+        Return DateAdd("s", -1, DateAdd("d", 1, DateValue(giorno)))
+    End Function
+
+    Private Sub RequireDb()
+        If mDb Is Nothing Then
+            Err.Raise 91, "Magazzino", "Chiamare Init prima di usare il magazzino"
+        End If
+    End Sub
+
+End Class

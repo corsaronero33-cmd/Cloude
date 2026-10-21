@@ -6,9 +6,11 @@
 ' esempio: un solo avvio dice sia se il nucleo fiscale e' sano sia che
 ' numeri produce.
 '
-' Niente qui tocca l'archivio Access. Il motore di calcolo, lo scadenzario
-' e l'aritmetica monetaria non hanno bisogno di un database per funzionare,
-' ed e' per questo che si possono provare in mezzo secondo a ogni modifica.
+' Niente qui tocca l'archivio Access, e nemmeno il registratore
+' telematico. Il motore di calcolo, lo scadenzario, l'aritmetica monetaria
+' e la costruzione dell'XML della stampante fiscale non hanno bisogno di
+' niente per funzionare, ed e' per questo che si possono provare in mezzo
+' secondo a ogni modifica.
 '
 Module App
 
@@ -21,10 +23,14 @@ Module App
         MoneyTests.RunAll runner
         CalcoloDocumentoTests.RunAll runner
         CalcoloScadenzeTests.RunAll runner
+        ScontrinoTests.RunAll runner
+        RtEpsonXmlTests.RunAll runner
         runner.Report
 
         ConsoleOut.WriteLine
         FatturaDiEsempio
+        ConsoleOut.WriteLine
+        ScontrinoDiEsempio
     End Sub
 
     ' Una fattura come se ne emettono: righe scontate, una voce esclusa
@@ -106,6 +112,86 @@ Module App
         Set problemi = calc.Validazione()
         If problemi.Count = 0 Then
             ConsoleOut.WriteLine "Validazione: nessun rilievo, il documento e' emettibile."
+            Exit Sub
+        End If
+
+        ConsoleOut.WriteLine "Validazione: " & CStr(problemi.Count) & " rilievi"
+        For Each problema In problemi
+            ConsoleOut.WriteLine "  - " & CStr(problema)
+        Next problema
+    End Sub
+
+    ' Uno scontrino da negozio misto: alimentari al 4 per cento, vino al
+    ' 22, un paio di scarpe scontato, pagamento con bancomat piu' contanti.
+    ' Mostra le tre cose che una fattura non ha.
+    Private Sub ScontrinoDiEsempio()
+        Dim sc As Scontrino
+        Dim riga As RigaCalcolo
+        Dim voce As RiepilogoIva
+        Dim pagamento As PagamentoScontrino
+        Dim xml As String
+
+        Set sc = New Scontrino
+        sc.AggiungiArticolo "PANE-CAS", "Pane casereccio", 1, 3.5@, 4, 4
+        sc.AggiungiArticolo "VINO-ROS", "Vino rosso Montepulciano", 2, 6@, 22, 1
+        ' lo sconto del dieci per cento si scarica subito sul prezzo
+        ' unitario: 89,90 diventa 80,91, non 80,910
+        sc.AggiungiArticolo "SCARPA-42", "Scarpa pelle nera 42", 1, 89.9@, 22, 1, 10
+        sc.AggiungiPagamento Costanti.PAG_ELETTRONICO, "Bancomat", 90@
+        sc.PagaInContanti 10@
+        sc.Calcola
+
+        ConsoleOut.WriteHeading "Cassa - scontrino di esempio"
+
+        For Each riga In sc.Righe
+            ConsoleOut.WriteLine StringUtils.PadRight(riga.Codice, 12) & _
+                                 StringUtils.PadRight(Left$(riga.Descrizione, 30), 32) & _
+                                 StringUtils.PadLeft(Money.FormatAmount(CCur(riga.Quantita), 3), 9) & _
+                                 StringUtils.PadLeft(Money.FormatAmount(riga.PrezzoUnitario), 11) & _
+                                 StringUtils.PadLeft(Money.FormatAmount(riga.Lordo), 12)
+        Next riga
+
+        ConsoleOut.WriteLine
+        ConsoleOut.WriteLine "Riepilogo IVA"
+        For Each voce In sc.Riepilogo
+            ConsoleOut.WriteLine "  " & _
+                                 StringUtils.PadRight(DescrizioneAliquota(voce), 24) & _
+                                 StringUtils.PadLeft(Money.FormatAmount(voce.Imponibile), 12) & _
+                                 StringUtils.PadLeft(Money.FormatAmount(voce.Imposta), 12) & _
+                                 StringUtils.PadLeft(Money.FormatAmount(voce.Lordo), 12)
+        Next voce
+
+        ConsoleOut.WriteLine
+        ConsoleOut.WriteField "Totale imponibile", Money.FormatAmount(sc.TotaleImponibile)
+        ConsoleOut.WriteField "Totale imposta", Money.FormatAmount(sc.TotaleImposta)
+        ConsoleOut.WriteField "Totale scontrino", Money.FormatAmount(sc.Totale)
+        For Each pagamento In sc.Pagamenti
+            ConsoleOut.WriteField pagamento.Descrizione, Money.FormatAmount(pagamento.Importo)
+        Next pagamento
+        ConsoleOut.WriteField "Pagato", Money.FormatAmount(sc.TotalePagato)
+        ConsoleOut.WriteField "Resto", Money.FormatAmount(sc.Resto)
+
+        ConsoleOut.WriteLine
+        MostraRilieviScontrino sc
+
+        ' L'XML che andrebbe alla stampante fiscale. Non serve nessun
+        ' registratore collegato per costruirlo, ed e' il motivo per cui
+        ' RtEpsonXml e' un modulo di funzioni pure.
+        xml = RtEpsonXml.DocumentoCommerciale(sc)
+        ConsoleOut.WriteLine
+        ConsoleOut.WriteField "XML per il registratore", CStr(Len(xml)) & " caratteri"
+        ConsoleOut.WriteField "Righe di vendita", CStr(StringUtils.CountOccurrences(xml, "<printRecItem "))
+        ConsoleOut.WriteField "Totali di pagamento", CStr(StringUtils.CountOccurrences(xml, "<printRecTotal"))
+        ConsoleOut.WriteField "Separatore decimale", IIf(StringUtils.Contains(xml, ","), "VIRGOLA, errore", "punto, corretto")
+    End Sub
+
+    Private Sub MostraRilieviScontrino(ByVal sc As Scontrino)
+        Dim problemi As Collection
+        Dim problema As Variant
+
+        Set problemi = sc.Validazione()
+        If problemi.Count = 0 Then
+            ConsoleOut.WriteLine "Validazione: nessun rilievo, lo scontrino si puo' battere."
             Exit Sub
         End If
 

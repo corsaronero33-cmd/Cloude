@@ -342,11 +342,11 @@ Class Database
     ' Helper privati
     ' ------------------------------------------------------------------
 
-    Private Function BuildConnectionString(ByVal provider As String, ByVal percorso As String, _
+    Private Function BuildConnectionString(ByVal nomeProvider As String, ByVal percorso As String, _
                                            ByVal password As String) As String
         Dim parti As String
 
-        parti = "Provider=" & provider & ";"
+        parti = "Provider=" & nomeProvider & ";"
         parti = parti & "Data Source=" & percorso & ";"
         parti = parti & "Persist Security Info=False;"
         parti = parti & "Mode=Share Deny None;"

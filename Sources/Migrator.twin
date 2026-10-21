@@ -130,7 +130,7 @@ Class Migrator
                 testo = Err.Description
                 On Error GoTo 0
                 Err.Raise numero, "Migrator", _
-                          "Migrazione interrotta in " & NomeFile(percorso) & _
+                          "Migrazione interrotta in " & SoloNomeFile(percorso) & _
                           ", istruzione " & CStr(indice) & vbCrLf & vbCrLf & _
                           testo & vbCrLf & vbCrLf & CStr(istruzione)
             End If
@@ -269,7 +269,7 @@ Class Migrator
         Return contenuto
     End Function
 
-    Private Function NomeFile(ByVal percorso As String) As String
+    Private Function SoloNomeFile(ByVal percorso As String) As String
         Dim posizione As Long
 
         posizione = InStrRev(percorso, "\")

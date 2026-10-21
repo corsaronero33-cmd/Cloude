@@ -24,6 +24,7 @@ Class RigaCalcolo
     Public Sconto3 As Double
     Public ScontoImporto As Currency    ' sconto a valore, dopo quelli in percentuale
     Public IdAliquotaIva As Long
+    Public Reparto As Long              ' reparto del registratore telematico
     Public PercentualeIva As Double
     Public NaturaIva As String          ' N1..N7, vuoto se l'imposta e' dovuta
     Public RiferimentoNormativo As String
@@ -33,9 +34,21 @@ Class RigaCalcolo
     Public SoggettaCassa As Boolean
     Public Note As String
 
+    ' --- di sola stampa, il motore non li guarda -----------------------
+
+    ' Allo scontrino lo sconto si applica al prezzo unitario e si arrotonda
+    ' subito, perche' il registratore ricalcola quantita' per prezzo
+    ' unitario: se il gestionale tenesse il prezzo a quattro decimali, i due
+    ' conti divergerebbero di un centesimo, e quello che fa fede e' lo
+    ' scontrino. Questi due campi conservano il prezzo di partenza e lo
+    ' sconto dichiarato, per poterli stampare.
+    Public PrezzoListino As Currency
+    Public ScontoApplicatoPerc As Double
+
     ' --- calcolati da CalcoloDocumento.Calcola -------------------------
 
     Public PrezzoNetto As Currency      ' prezzo unitario dopo gli sconti, 4 decimali
+    Public Lordo As Currency            ' totale di riga, imposta compresa
     Public Imponibile As Currency       ' al netto anche dello sconto in piede
     Public Imposta As Currency          ' solo indicativa: in fattura vale il riepilogo
 

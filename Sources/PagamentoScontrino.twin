@@ -1,0 +1,36 @@
+'
+' PagamentoScontrino - una forma di pagamento usata in una vendita.
+'
+' Allo scontrino si paga spesso in piu' modi: trenta euro in contanti e il
+' resto col bancomat, oppure un buono pasto piu' la differenza. Una riga
+' per forma usata.
+'
+' Tipo e' una delle quattro macro-categorie di Costanti.PAG_*, che sono
+' quelle che l'Agenzia delle Entrate vuole vedere nel documento
+' commerciale e nei totali della chiusura giornaliera. Il nome leggibile
+' della forma di pagamento ("Bancomat", "Assegno", "Ticket Edenred") sta
+' in Descrizione ed e' quello che si stampa.
+'
+Class PagamentoScontrino
+
+    Public Tipo As String
+    Public Descrizione As String
+    Public Importo As Currency
+
+    ' Codice del totalizzatore del registratore. Zero significa "decidilo
+    ' tu dal Tipo": la corrispondenza fra macro-categoria e codice e' nel
+    ' driver, perche' cambia da marca a marca.
+    Public CodiceRt As Long
+
+    Private Sub Class_Initialize()
+        Tipo = Costanti.PAG_CONTANTI
+    End Sub
+
+    ' Vero se da questa forma di pagamento puo' uscire del resto. Il resto
+    ' esce solo dai contanti: un bancomat da trenta euro su una spesa da
+    ' venti non esiste.
+    Public Property Get DaResto() As Boolean
+        Return (Tipo = Costanti.PAG_CONTANTI)
+    End Property
+
+End Class

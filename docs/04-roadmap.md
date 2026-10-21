@@ -1,103 +1,151 @@
 # Roadmap
 
-Quello che c'e' oggi e' il **nucleo fiscale piu' il livello dati**. Da qui
-in avanti, nell'ordine in cui conviene procedere e con il perche'.
+Il gestionale e' rivolto a **negozi** (alimentari, ferramenta, abbigliamento,
+calzature e simili), su rete locale con cinque o sette postazioni. Quello
+che c'e' oggi e' il nucleo fiscale, il livello dati, la vendita al banco e
+il driver del registratore telematico. Manca l'interfaccia utente.
 
 ## Fatto
 
-* Schema dell'archivio, 20 tabelle, con migrazioni versionate.
-* Dati di base: aliquote e nature IVA, unita' di misura, condizioni di
-  pagamento, tipi di documento.
+**Nucleo fiscale** (nessuna dipendenza da Access, tutto coperto da test)
+
 * Aritmetica monetaria esatta e arrotondamento commerciale.
 * Motore di calcolo del documento: sconti in cascata e in piede, prezzi
   ivati con scorporo, riepilogo per aliquota e natura, bollo virtuale,
   cassa previdenziale, ritenuta d'acconto, scissione dei pagamenti.
-* Validazione del documento, separata dal calcolo.
+* Imposta ricavata per differenza sui prezzi IVA inclusa, cosi' il totale
+  torna al prezzo di scaffale. Il perche' sta in
+  [05-negozio-e-rt.md](05-negozio-e-rt.md).
+* Vendita al banco: prezzi di scaffale, pagamenti multipli per
+  macro-categoria, resto solo dai contanti, resi.
 * Scadenzario con rate, fine mese e quadratura garantita.
+* Validazione dei documenti e degli scontrini, separata dal calcolo.
+
+**Registratore telematico**
+
+* Protocollo XML Epson (FP-81II, FP-90III e derivati) in un modulo di
+  funzioni pure, con test che girano senza stampante.
+* Trasporto HTTP e registratore simulato, che scrive su file e permette di
+  sviluppare tutto il resto senza hardware.
+* Lettura della risposta con estrazione dei numeri fiscali e traduzione
+  degli errori in messaggi mostrabili a chi sta servendo un cliente.
+
+**Archivio e infrastruttura**
+
+* 38 tabelle con migrazioni versionate.
+* Varianti taglia e colore, codici a barre multipli con moltiplicatore,
+  reparti RT, casse, vendite, chiusure fiscali, prima nota, inventari.
 * Accesso ai dati con parametri, recordset scollegati, transazioni corte e
   ripetizione automatica sui conflitti di blocco.
 * Numerazione dei documenti sicura in multiutenza.
+* Magazzino: movimenti da documenti e da vendite, giacenze ricostruibili,
+  giacenza a una data, sottoscorta.
+* Prima nota con il segno nella causale e incasso automatico dalla
+  chiusura di cassa.
 * Hash delle password con sale per utente e 25.000 iterazioni.
-* Suite di test del nucleo fiscale, che gira senza archivio.
 
-## 1. Repository e maschere delle anagrafiche
+## 1. La maschera di cassa
+
+E' la prima da fare, perche' e' quella che si usa tutto il giorno e perche'
+tutto il resto del negozio le gira intorno.
+
+Serve: lettura del codice a barre che trova articolo o variante in
+`ArticoliCodici` applicando il moltiplicatore, griglia delle righe,
+totale e resto aggiornati a ogni tasto, finestra dei pagamenti, stampa sul
+registratore, salvataggio con il numero restituito, scarico di magazzino.
+
+Due cose da non sbagliare: il **fuoco deve restare sul campo del codice**
+(chi sta in cassa non usa il mouse), e la gestione del caso in cui la
+stampante non risponde.
+
+Qui si decide anche la griglia, che e' il pezzo piu' impegnativo di tutta
+l'interfaccia. Le strade sono tre: il `ListView` di Windows (nessuna
+dipendenza, compila a 32 e 64 bit, l'editing in cella va costruito), un
+controllo ActiveX tipo VSFlexGrid (pronto ma da registrare su ogni
+postazione, e problematico a 64 bit), oppure una griglia disegnata a mano
+(controllo totale, piu' lavoro). La prima e' la piu' sensata per un
+programma che deve girare su sette postazioni per dieci anni.
+
+## 2. Repository e maschere delle anagrafiche
 
 Il livello che manca fra il dominio e le maschere: una classe per entita'
-(`SoggettiRepo`, `ArticoliRepo`) che traduce fra righe di archivio e
-oggetti, applica i valori predefiniti e gestisce `Revisione` per la
-concorrenza ottimistica.
+che traduce fra righe di archivio e oggetti, applica i valori predefiniti e
+gestisce `Revisione` per la concorrenza ottimistica.
 
-Poi le maschere di clienti, fornitori e articoli: elenco con ricerca,
-scheda, salvataggio. Si parte da qui perche' sono le piu' semplici e
-servono a fissare lo stile di tutte le altre (griglia, pulsanti, gestione
-degli errori, messaggio quando un altro utente ha salvato prima).
+Poi le maschere di articoli (con la griglia delle varianti, che per un
+negozio di scarpe e' la schermata piu' usata dopo la cassa), clienti e
+fornitori.
 
-## 2. Maschera del documento
+## 3. Chiusura di cassa
 
-Il pezzo piu' impegnativo dell'interfaccia. Griglia delle righe con
-inserimento rapido da codice o da codice a barre, totali che si aggiornano
-a ogni tasto chiamando `Calcola`, lettura del prezzo dal listino del
-cliente, `Validazione` alla conferma, numerazione chiesta solo al momento
-della conferma.
+Chiusura fiscale sul registratore, lettura dei totali, riga in
+`ChiusureFiscali` con i totali per macro-categoria e per reparto, incasso
+automatico in prima nota, stampa del riepilogo giornaliero.
 
-## 3. Stampa e PDF
+Da qui esce anche il controllo che serve dal 2026: i totali dei pagamenti
+elettronici devono combaciare con quelli del POS collegato al registratore.
 
-Senza stampa il gestionale non si usa. Da valutare in questo ordine:
+## 4. Documenti fornitori e clienti
 
-* disegno diretto sull'oggetto `Printer`: nessuna dipendenza, controllo
-  totale, piu' lavoro per ogni modulo;
-* un motore di report di terze parti, che costa una licenza e una
-  dipendenza da distribuire;
-* generazione di HTML e stampa dal browser, che e' la via piu' rapida per
-  arrivare a un PDF decente.
+Carico da fornitore con aggiornamento dei prezzi di acquisto, DDT, fatture.
+Il motore di calcolo c'e' gia' tutto: serve la maschera e il repository.
+L'evasione da documento a documento ha gia' il suo campo
+(`IdDocumentoOrigine`).
 
-Serve comunque un meccanismo di **modelli di stampa** modificabili: ogni
-azienda vuole il suo logo e il suo piede.
-
-## 4. Fattura elettronica
+## 5. Fattura elettronica
 
 Il modulo che trasforma un documento nell'XML `FatturaPA`. Lo schema e il
-motore di calcolo sono gia' predisposti: `DocumentiRiepilogoIva` ha la
-forma dei blocchi `DatiRiepilogo`, le nature IVA sono in anagrafica, i
-codici `TD*` e `MP*` sono nelle tabelle di servizio, `Money.FormatInvariant`
-produce i numeri nel formato che pretende lo SDI.
+motore sono gia' predisposti: `DocumentiRiepilogoIva` ha la forma dei
+blocchi `DatiRiepilogo`, le nature IVA sono in anagrafica, i codici `TD` e
+`MP` sono nelle tabelle di servizio, `Money.FormatInvariant` produce i
+numeri nel formato che pretende lo SDI.
 
 Da fare: generazione dell'XML, nome del file con progressivo univoco,
-validazione contro lo schema XSD prima dell'invio, gestione degli stati
-(generata, inviata, consegnata, scartata) e delle notifiche.
+validazione contro lo schema XSD prima dell'invio, stati (generata,
+inviata, consegnata, scartata) e notifiche.
 
 Due dettagli che si scoprono tardi:
 
-* quando il **bollo e' addebitato** al cliente, nella fattura elettronica
-  va in `DatiBollo` e, se compare come addebito, anche come riga con natura
-  `N1`. Oggi il motore tiene il bollo fuori dal riepilogo: va deciso li'.
-* il canale di trasmissione va scelto: intermediario, oppure invio diretto
-  allo SDI, che richiede l'accreditamento e la firma.
+* quando il **bollo e' addebitato** al cliente va in `DatiBollo` e, se
+  compare come addebito, anche come riga con natura `N1`. Oggi il motore
+  tiene il bollo fuori dal riepilogo: va deciso li'.
+* il **canale di trasmissione** va scelto. Tramite intermediario (Aruba,
+  il commercialista) e' la strada normale: il gestionale deposita l'XML in
+  una cartella. L'invio diretto allo SDI richiede accreditamento e firma
+  digitale, e vale la pena solo se l'accreditamento c'e' gia'.
 
-## 5. Magazzino e scadenzario
+Per un negozio serve soprattutto la **fattura da scontrino**: il cliente
+che chiede la fattura dopo aver pagato in cassa. La tabella `Documenti` ha
+`IdVenditaOrigine` per quel collegamento.
 
-Generazione dei movimenti alla conferma dei documenti, secondo
-`TipiDocumento.SegnoMagazzino`. Ricalcolo della giacenza dai movimenti,
-inventario, sottoscorta. Scadenzario con incassi e pagamenti parziali,
-estratto conto per cliente, distinta RiBa.
+## 6. Stampa e PDF
 
-## 6. Utenti e permessi
+Senza stampa il gestionale non si usa. Da valutare in questo ordine:
+disegno diretto sull'oggetto `Printer` (nessuna dipendenza, piu' lavoro per
+modulo), un motore di report di terze parti (una licenza e una dipendenza),
+generazione di HTML e stampa dal browser (la via piu' rapida a un PDF
+decente). Serve comunque un meccanismo di modelli modificabili: ogni
+azienda vuole il suo logo.
 
-Maschera di accesso, cambio password, ruoli (`amministratore`, `vendite`,
-`magazzino`, `sololettura`) con i controlli nei punti che contano:
-modificare un documento confermato, cambiare i prezzi, vedere i costi.
-`Crypto.twin` e la tabella `Utenti` sono pronti, manca il resto.
+## 7. Inventario e utenti
+
+Maschera di inventario con conteggio su piu' giorni e piu' postazioni,
+confronto con la giacenza di sistema, rettifiche generate solo alla
+conferma. Le tabelle ci sono.
+
+Maschera di accesso, cambio password, ruoli con i controlli nei punti che
+contano: modificare una vendita stampata, cambiare i prezzi, vedere i
+costi, fare la chiusura. `Crypto.twin` e la tabella `Utenti` sono pronti.
 
 ## Cose piccole che migliorano la vita
 
-* **Scadenze fuori agosto**: molte aziende non vogliono scadenze ad agosto
-  e le spostano a settembre. Oggi `CalcoloScadenze` non lo prevede; sarebbe
+* **Altre marche di registratore**: RCH, Ditron, Custom, Olivetti. Il modo
+  di aggiungerle e' descritto in [05-negozio-e-rt.md](05-negozio-e-rt.md).
+* **Lotti e scadenze** per gli alimentari: oggi non ci sono.
+* **Scadenze fuori agosto**: molte aziende le spostano a settembre. Sarebbe
   un parametro in piu' sulla condizione di pagamento.
-* **Omaggi con rivalsa IVA**: oggi un omaggio azzera l'imponibile e resta
-  in stampa. Il caso dell'omaggio con IVA addebitata al cliente va gestito
-  a parte.
-* **Evasione dei documenti**: da DDT a fattura differita, da ordine a DDT.
-  Lo schema ha gia' `IdDocumentoOrigine`.
+* **Terzo asse di variante**, per chi ne ha bisogno.
+* **Omaggi con rivalsa IVA**: oggi un omaggio azzera l'imponibile.
 * **Registro delle attivita'**: la tabella `LogAttivita` c'e', va riempita.
 * **Avviso di manutenzione**: la tabella `Sessioni` c'e', serve il ping
   periodico e la finestra che chiede a tutti di uscire.

@@ -1,0 +1,230 @@
+'
+' Rt - il registratore telematico visto dal gestionale.
+'
+' Una classe sola, con dentro il trasporto, e un driver scelto da Tipo. Il
+' resto dell'applicazione non sa di che marca sia la stampante: chiede
+' StampaVendita e guarda l'esito.
+'
+' Perche' non un'interfaccia con una classe per marca: il pezzo che cambia
+' davvero fra una marca e l'altra e' la costruzione dell'XML o della
+' sequenza di comandi, e quello sta in un modulo di funzioni pure
+' (RtEpsonXml), che si puo' provare senza avere la stampante. Il trasporto
+' invece e' quasi sempre lo stesso: una POST HTTP oppure una scrittura su
+' porta seriale. Aggiungere una marca vuol dire aggiungere un modulo
+' RtMarcaXml e un ramo qui dentro, non riscrivere la gerarchia.
+'
+' Il tipo 'simulato' non e' un ripiego: e' il modo in cui si sviluppa il
+' resto del programma. Scrive su file lo stesso XML che manderebbe alla
+' stampante e risponde con numeri plausibili, cosi' la cassa si puo'
+' provare per intero senza hardware. La cassa precaricata in archivio nasce
+' con questo tipo.
+'
+' Quello che questa classe NON fa, di proposito: salvare la vendita in
+' archivio. Stampare e salvare sono due cose separate, e l'ordine conta.
+' Si stampa prima, perche' e' la stampa che crea il corrispettivo, e si
+' salva dopo con il numero che la stampante ha restituito. Se la stampa
+' fallisce non c'e' niente da salvare; se il salvataggio fallisce dopo una
+' stampa riuscita, il corrispettivo esiste comunque e va recuperato a mano,
+' ed e' per questo che Vendite ha la colonna StampataRt.
+'
+Class Rt
+
+    Public Tipo As String
+    Public Indirizzo As String
+    Public Porta As Long
+    Public TimeoutMs As Long
+    Public Operatore As Long
+
+    ' Cartella in cui il registratore simulato scrive. Vuota significa la
+    ' cartella dell'applicazione.
+    Public CartellaLog As String
+
+    ' Progressivi finti del registratore simulato. Ripartono da zero a ogni
+    ' avvio: non sono numeri fiscali e non devono sembrarlo.
+    Private mDocumentoSimulato As Long
+    Private mChiusuraSimulata As Long
+
+    Private Sub Class_Initialize()
+        Tipo = Costanti.RT_SIMULATO
+        Porta = 80
+        TimeoutMs = 10000
+        Operatore = 1
+    End Sub
+
+    Public Sub Configura(ByVal tipoRt As String, ByVal indirizzoRt As String, _
+                         ByVal portaRt As Long, ByVal timeout As Long)
+        Tipo = LCase$(Trim$(tipoRt))
+        Indirizzo = Trim$(indirizzoRt)
+        If portaRt > 0 Then Porta = portaRt
+        If timeout > 0 Then TimeoutMs = timeout
+    End Sub
+
+    Public Property Get Simulato() As Boolean
+        Return (LCase$(Tipo) = Costanti.RT_SIMULATO)
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Comandi
+    ' ------------------------------------------------------------------
+
+    ' Emette il documento commerciale. La vendita deve essere gia' stata
+    ' calcolata e validata: questa classe non ricontrolla i conti, stampa
+    ' quello che le viene dato.
+    Public Function StampaVendita(ByVal vendita As Scontrino) As RtEsito
+        Return Invia(RtEpsonXml.DocumentoCommerciale(vendita, Operatore), "scontrino")
+    End Function
+
+    Public Function ChiusuraFiscale() As RtEsito
+        Return Invia(RtEpsonXml.ChiusuraFiscale(Operatore), "chiusura")
+    End Function
+
+    Public Function LetturaX() As RtEsito
+        Return Invia(RtEpsonXml.LetturaX(Operatore), "letturax")
+    End Function
+
+    Public Function Stato() As RtEsito
+        Return Invia(RtEpsonXml.InterrogazioneStato(), "stato")
+    End Function
+
+    ' Sblocca una stampa rimasta a meta'. Non annulla un documento gia'
+    ' chiuso: per quello serve un documento di reso.
+    Public Function AnnullaInCorso() As RtEsito
+        Return Invia(RtEpsonXml.AnnullaScontrinoInCorso(Operatore), "annullo")
+    End Function
+
+    ' Vero se la stampante risponde. Da chiamare all'apertura della cassa,
+    ' non prima di ogni scontrino: una interrogazione in piu' per ogni
+    ' cliente si sente.
+    Public Function Raggiungibile() As Boolean
+        Dim esito As RtEsito
+
+        If Simulato Then Return True
+        Set esito = Stato()
+        Return esito.Riuscito
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Trasporto
+    ' ------------------------------------------------------------------
+
+    Private Function Invia(ByVal xml As String, ByVal operazione As String) As RtEsito
+        Dim esito As RtEsito
+
+        Select Case LCase$(Trim$(Tipo))
+            Case Costanti.RT_EPSON
+                Return InviaHttp(xml)
+            Case Costanti.RT_SIMULATO
+                Return InviaSimulato(xml, operazione)
+        End Select
+
+        Set esito = New RtEsito
+        esito.XmlRichiesta = xml
+        Return esito.ComeErrore("DRIVER_SCONOSCIUTO", _
+                                "Tipo di registratore non gestito: " & Tipo)
+    End Function
+
+    Private Function InviaHttp(ByVal xml As String) As RtEsito
+        Dim http As Object
+        Dim esito As RtEsito
+        Dim risposta As String
+        Dim statoHttp As Long
+        Dim testoErrore As String
+
+        If Len(Indirizzo) = 0 Then
+            Set esito = New RtEsito
+            esito.XmlRichiesta = xml
+            Return esito.ComeErrore("DEVICE_NOT_FOUND", _
+                                    "Indirizzo del registratore non configurato")
+        End If
+
+        On Error GoTo Fallito
+
+        Set http = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+        ' risoluzione, connessione, invio, attesa della risposta
+        http.setTimeouts 5000, 5000, TimeoutMs, TimeoutMs
+        http.Open "POST", RtEpsonXml.Url(Indirizzo, Porta, TimeoutMs), False
+        http.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
+        http.send xml
+        statoHttp = http.Status
+        risposta = http.responseText
+        Set http = Nothing
+
+        On Error GoTo 0
+
+        If statoHttp <> 200 Then
+            Set esito = New RtEsito
+            esito.XmlRichiesta = xml
+            esito.XmlRisposta = risposta
+            Return esito.ComeErrore("HTTP" & CStr(statoHttp), _
+                                    "Il registratore ha risposto HTTP " & CStr(statoHttp))
+        End If
+
+        Set esito = RtEpsonXml.LeggiEsito(risposta)
+        esito.XmlRichiesta = xml
+        Return esito
+
+Fallito:
+        ' il testo dell'errore si prende subito: creare un oggetto dopo
+        ' potrebbe azzerare Err
+        testoErrore = Err.Description
+        On Error GoTo 0
+        Set esito = New RtEsito
+        esito.XmlRichiesta = xml
+        Return esito.ComeErrore("DEVICE_NOT_FOUND", _
+                                "Registratore non raggiungibile su " & Indirizzo & _
+                                ". " & testoErrore)
+    End Function
+
+    ' Registratore simulato: scrive su file quello che avrebbe stampato e
+    ' risponde con numeri plausibili.
+    Private Function InviaSimulato(ByVal xml As String, ByVal operazione As String) As RtEsito
+        Dim esito As RtEsito
+
+        Set esito = New RtEsito
+        esito.XmlRichiesta = xml
+        esito.Riuscito = True
+        esito.StatoStampante = "simulato"
+        esito.DataOraDocumento = Format$(Now(), "dd/mm/yyyy hh:nn:ss")
+
+        Select Case operazione
+            Case "scontrino"
+                mDocumentoSimulato += 1
+                esito.NumeroDocumento = Format$(mDocumentoSimulato, "0000")
+                esito.NumeroChiusura = Format$(mChiusuraSimulata + 1, "0000")
+            Case "chiusura"
+                mChiusuraSimulata += 1
+                esito.NumeroChiusura = Format$(mChiusuraSimulata, "0000")
+                mDocumentoSimulato = 0
+        End Select
+
+        ScriviSuFile operazione, xml, esito
+        Return esito
+    End Function
+
+    ' La scrittura del registro non deve mai far fallire una vendita: se la
+    ' cartella non e' scrivibile si perde la traccia, non lo scontrino.
+    Private Sub ScriviSuFile(ByVal operazione As String, ByVal xml As String, _
+                             ByVal esito As RtEsito)
+        Dim percorso As String
+        Dim numero As Integer
+
+        On Error Resume Next
+
+        percorso = CartellaLog
+        If Len(percorso) = 0 Then percorso = AppConfig.BaseFolder
+        If Right$(percorso, 1) <> "\" Then percorso = percorso & "\"
+        percorso = percorso & "rt-" & Format$(Now(), "yyyymmdd") & ".log"
+
+        numero = FreeFile
+        Open percorso For Append As #numero
+        Print #numero, String$(70, "-")
+        Print #numero, Format$(Now(), "dd/mm/yyyy hh:nn:ss") & "  " & operazione & _
+                       "  documento " & esito.NumeroDocumento
+        Print #numero, xml
+        Close #numero
+
+        Err.Clear
+        On Error GoTo 0
+    End Sub
+
+End Class

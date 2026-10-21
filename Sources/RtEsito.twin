@@ -1,0 +1,54 @@
+'
+' RtEsito - risposta del registratore telematico a un comando.
+'
+' NumeroDocumento e NumeroChiusura sono i riferimenti fiscali: sono loro
+' che vanno salvati in archivio, non l'Id della tabella Vendite. Se un
+' domani l'Agenzia delle Entrate chiede conto di un corrispettivo, il
+' numero del documento commerciale e il numero della chiusura sono le due
+' coordinate con cui lo si ritrova.
+'
+' XmlRichiesta e XmlRisposta si conservano in LogRt: quando la stampante
+' risponde male, averle sotto gli occhi vale piu' di qualunque ipotesi.
+'
+Class RtEsito
+
+    Public Riuscito As Boolean
+    Public Codice As String
+    Public Messaggio As String
+    Public StatoStampante As String
+
+    Public NumeroDocumento As String
+    Public NumeroChiusura As String
+    Public DataOraDocumento As String
+    Public TotaleDocumento As Currency
+
+    Public XmlRichiesta As String
+    Public XmlRisposta As String
+
+    ' Scorciatoie per costruire un esito in una riga. I parametri non si
+    ' chiamano come i campi perche' in VB i nomi non distinguono le
+    ' maiuscole e il parametro coprirebbe il campo.
+    Public Function ComeErrore(ByVal codiceEsito As String, ByVal testoEsito As String) As RtEsito
+        Riuscito = False
+        Codice = codiceEsito
+        Messaggio = testoEsito
+        Return Me
+    End Function
+
+    Public Function ComeSuccesso() As RtEsito
+        Riuscito = True
+        Return Me
+    End Function
+
+    Public Function Descrizione() As String
+        If Riuscito Then
+            If Len(NumeroDocumento) > 0 Then
+                Return "Documento " & NumeroDocumento & " emesso"
+            End If
+            Return "Comando eseguito"
+        End If
+        If Len(Codice) > 0 Then Return "Errore " & Codice & ": " & Messaggio
+        Return "Errore: " & Messaggio
+    End Function
+
+End Class

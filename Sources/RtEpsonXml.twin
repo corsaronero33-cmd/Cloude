@@ -1,0 +1,343 @@
+'
+' RtEpsonXml - costruzione e lettura dell'XML dei registratori Epson.
+'
+' Modulo di funzioni pure: nessuna connessione, nessuna dipendenza. Il
+' trasporto lo fa la classe Rt. La separazione serve a poter provare il
+' protocollo senza avere la stampante sul tavolo, che e' la condizione
+' normale mentre si scrive il programma.
+'
+' Il dialogo e' XML su HTTP verso
+'
+'     http://<indirizzo>/cgi-bin/fpmate.cgi?devid=local_printer&timeout=<ms>
+'
+' con corpo SOAP e Content-Type text/xml. Vale per i modelli RT recenti
+' (FP-81II, FP-90III e derivati) con firmware che espone fpmate.
+'
+' ATTENZIONE, e vale la pena leggerlo prima di collegare la stampante vera.
+' I nomi dei comandi e la struttura sono stabili, ma tre dettagli cambiano
+' fra modelli e versioni di firmware e vanno confrontati con il manuale
+' della macchina in uso:
+'
+'   1. i codici paymentType di printRecTotal. Quelli qui sotto seguono la
+'      guida Epson (0 contanti, 2 elettronico, 3 ticket, 5 non riscosso),
+'      ma la guida stessa avverte che il significato del 2 e' stato
+'      reinterpretato;
+'   2. adjustmentType di printRecItemAdjustment;
+'   3. la lunghezza massima delle descrizioni, che qui e' 38 caratteri.
+'
+' Sono tutti e tre raccolti nelle costanti in testa al modulo, cosi' si
+' correggono in un punto solo.
+'
+' Un errore da non fare, perche' e' il piu' comune nelle integrazioni:
+' unitPrice e' il prezzo UNITARIO, non il totale della riga. La stampante
+' moltiplica da sola per la quantita'. Mandarci il totale di riga produce
+' scontrini giusti solo quando la quantita' e' uno.
+'
+Module RtEpsonXml
+
+    ' --- valori da confrontare con il manuale del modello ---------------
+
+    Public Const PAGAMENTO_CONTANTI As Long = 0
+    Public Const PAGAMENTO_ELETTRONICO As Long = 2
+    Public Const PAGAMENTO_TICKET As Long = 3
+    Public Const PAGAMENTO_NON_RISCOSSO As Long = 5
+
+    ' Sconto a valore su una singola riga.
+    Public Const RETTIFICA_SCONTO_RIGA As Long = 0
+
+    Public Const LUNGHEZZA_DESCRIZIONE As Long = 38
+
+    ' --- costanti di protocollo -----------------------------------------
+
+    Private Const PERCORSO_CGI As String = "/cgi-bin/fpmate.cgi"
+    Private Const DEVICE_ID As String = "local_printer"
+
+    ' ------------------------------------------------------------------
+    ' Indirizzo
+    ' ------------------------------------------------------------------
+
+    Public Function Url(ByVal indirizzo As String, ByVal porta As Long, _
+                        ByVal timeoutMs As Long) As String
+        Dim host As String
+
+        host = Trim$(indirizzo)
+        If porta > 0 And porta <> 80 Then host = host & ":" & CStr(porta)
+        Return "http://" & host & PERCORSO_CGI & _
+               "?devid=" & DEVICE_ID & "&timeout=" & CStr(timeoutMs)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Documento commerciale
+    ' ------------------------------------------------------------------
+
+    ' XML del documento commerciale di una vendita. Lo scontrino deve
+    ' essere gia' stato calcolato.
+    '
+    ' Il nome non e' Scontrino di proposito: in VB i nomi non distinguono
+    ' le maiuscole, e una funzione chiamata Scontrino coprirebbe la classe
+    ' Scontrino, cioe' il tipo del suo stesso parametro.
+    Public Function DocumentoCommerciale(ByVal vendita As Scontrino, _
+                                         Optional ByVal operatore As Long = 1) As String
+        Dim xml As String
+        Dim riga As RigaCalcolo
+        Dim pagamento As PagamentoScontrino
+        Dim op As String
+
+        op = CStr(operatore)
+
+        xml = IntestazioneSoap()
+        xml = xml & "<printerFiscalReceipt>"
+        xml = xml & "<beginFiscalReceipt operator=""" & op & """ />"
+
+        For Each riga In vendita.Righe
+            If riga.Conteggiata Then
+                xml = xml & RigaArticolo(riga, op)
+            ElseIf riga.TipoRiga = Costanti.RIGA_DESCRIZIONE Then
+                xml = xml & "<printRecMessage operator=""" & op & """ messageType=""4"" " & _
+                            "message=""" & Testo(riga.Descrizione) & """ />"
+            End If
+        Next riga
+
+        xml = xml & "<printRecSubtotal operator=""" & op & """ option=""0"" />"
+
+        For Each pagamento In vendita.Pagamenti
+            xml = xml & "<printRecTotal operator=""" & op & """ " & _
+                        "description=""" & Testo(pagamento.Descrizione) & """ " & _
+                        "payment=""" & Money.FormatInvariant(pagamento.Importo) & """ " & _
+                        "paymentType=""" & CStr(CodicePagamento(pagamento)) & """ " & _
+                        "index=""1"" justification=""1"" />"
+        Next pagamento
+
+        xml = xml & "<endFiscalReceipt operator=""" & op & """ />"
+        xml = xml & "</printerFiscalReceipt>"
+        xml = xml & ChiusuraSoap()
+        Return xml
+    End Function
+
+    ' Una riga di vendita. Lo sconto in percentuale e' gia' dentro il
+    ' prezzo unitario (vedere l'intestazione di Scontrino), quindi qui
+    ' resta solo l'eventuale sconto a valore.
+    Private Function RigaArticolo(ByVal riga As RigaCalcolo, ByVal op As String) As String
+        Dim xml As String
+
+        xml = "<printRecItem operator=""" & op & """ " & _
+              "description=""" & Testo(riga.Descrizione) & """ " & _
+              "quantity=""" & Money.FormatInvariant(CCur(riga.Quantita), 3) & """ " & _
+              "unitPrice=""" & Money.FormatInvariant(riga.PrezzoUnitario) & """ " & _
+              "department=""" & CStr(riga.Reparto) & """ " & _
+              "justification=""1"" />"
+
+        If riga.ScontoImporto <> 0 Then
+            xml = xml & "<printRecItemAdjustment operator=""" & op & """ " & _
+                        "description=""Sconto"" " & _
+                        "adjustmentType=""" & CStr(RETTIFICA_SCONTO_RIGA) & """ " & _
+                        "amount=""" & Money.FormatInvariant(riga.ScontoImporto) & """ " & _
+                        "department=""" & CStr(riga.Reparto) & """ " & _
+                        "justification=""1"" />"
+        End If
+
+        Return xml
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Report
+    ' ------------------------------------------------------------------
+
+    ' Chiusura fiscale giornaliera, la cosiddetta Z.
+    Public Function ChiusuraFiscale(Optional ByVal operatore As Long = 1) As String
+        Return IntestazioneSoap() & _
+               "<printerFiscalReport>" & _
+               "<printZReport operator=""" & CStr(operatore) & """ />" & _
+               "</printerFiscalReport>" & _
+               ChiusuraSoap()
+    End Function
+
+    ' Lettura di controllo, che non azzera i totali.
+    Public Function LetturaX(Optional ByVal operatore As Long = 1) As String
+        Return IntestazioneSoap() & _
+               "<printerFiscalReport>" & _
+               "<printXReport operator=""" & CStr(operatore) & """ />" & _
+               "</printerFiscalReport>" & _
+               ChiusuraSoap()
+    End Function
+
+    Public Function InterrogazioneStato() As String
+        Return IntestazioneSoap() & _
+               "<printerCommand>" & _
+               "<queryPrinterStatus statusType=""1"" />" & _
+               "</printerCommand>" & _
+               ChiusuraSoap()
+    End Function
+
+    ' Annullo dello scontrino in corso, per uscire da una stampa rimasta a
+    ' meta'. Non annulla un documento gia' chiuso: per quello serve un
+    ' documento di reso.
+    Public Function AnnullaScontrinoInCorso(Optional ByVal operatore As Long = 1) As String
+        Return IntestazioneSoap() & _
+               "<printerFiscalReceipt>" & _
+               "<printRecVoid operator=""" & CStr(operatore) & """ />" & _
+               "</printerFiscalReceipt>" & _
+               ChiusuraSoap()
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Lettura della risposta
+    ' ------------------------------------------------------------------
+
+    ' Interpreta la risposta della stampante. L'estrazione e' fatta a mano
+    ' invece che con un parser XML: la risposta e' generata da una
+    ' macchina, ha una forma fissa e nota, e cosi' il modulo non dipende da
+    ' MSXML e si puo' provare con una risposta campione.
+    Public Function LeggiEsito(ByVal xmlRisposta As String) As RtEsito
+        Dim esito As RtEsito
+        Dim successo As String
+
+        Set esito = New RtEsito
+        esito.XmlRisposta = xmlRisposta
+
+        If Len(Trim$(xmlRisposta)) = 0 Then
+            Return esito.ComeErrore("", "Nessuna risposta dal registratore")
+        End If
+
+        successo = LCase$(Attributo(xmlRisposta, "response", "success"))
+        esito.Codice = Attributo(xmlRisposta, "response", "code")
+        esito.StatoStampante = Attributo(xmlRisposta, "response", "status")
+
+        esito.NumeroDocumento = Elemento(xmlRisposta, "fiscalReceiptNumber")
+        esito.DataOraDocumento = Trim$(Elemento(xmlRisposta, "fiscalReceiptDate") & " " & _
+                                       Elemento(xmlRisposta, "fiscalReceiptTime"))
+        esito.NumeroChiusura = Elemento(xmlRisposta, "zRepNumber")
+        esito.TotaleDocumento = Money.ParseAmount(Elemento(xmlRisposta, "fiscalReceiptAmount"))
+
+        If successo = "true" Or successo = "1" Then
+            esito.Riuscito = True
+            Return esito
+        End If
+
+        esito.Riuscito = False
+        esito.Messaggio = DescrizioneErrore(esito.Codice)
+        Return esito
+    End Function
+
+    ' I codici di errore veri stanno nel manuale e sono molti. Qui ci sono
+    ' quelli che capitano in cassa tutti i giorni, tradotti in qualcosa che
+    ' si possa mostrare a chi sta servendo un cliente.
+    Public Function DescrizioneErrore(ByVal codice As String) As String
+        Select Case Trim$(codice)
+            Case ""
+                Return "Il registratore ha rifiutato il comando"
+            Case "EPTR_REC_EMPTY"
+                Return "Carta esaurita nel registratore"
+            Case "EPTR_COVER_OPEN"
+                Return "Coperchio del registratore aperto"
+            Case "EPTR_REC_CUTTER"
+                Return "Taglierina bloccata"
+            Case "EPTR_AUTOMATICAL"
+                Return "Il registratore ha un errore interno: spegnerlo e riaccenderlo"
+            Case "EPTR_BUSY"
+                Return "Il registratore e' occupato"
+            Case "DEVICE_NOT_FOUND"
+                Return "Registratore non raggiungibile"
+            Case "TIMEOUT"
+                Return "Il registratore non ha risposto in tempo"
+            Case "FPMATE_CMD_NOT_RECOGNIZED"
+                Return "Comando non riconosciuto dal registratore"
+        End Select
+        Return "Errore del registratore: " & codice
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function IntestazioneSoap() As String
+        Return "<?xml version=""1.0"" encoding=""utf-8""?>" & _
+               "<s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"">" & _
+               "<s:Body>"
+    End Function
+
+    Private Function ChiusuraSoap() As String
+        Return "</s:Body></s:Envelope>"
+    End Function
+
+    ' Macro-categoria di pagamento verso il totalizzatore della stampante.
+    ' Un CodiceRt valorizzato sulla forma di pagamento vince: serve per i
+    ' negozi che hanno totalizzatori configurati a modo loro.
+    Public Function CodicePagamento(ByVal pagamento As PagamentoScontrino) As Long
+        If pagamento.CodiceRt > 0 Then Return pagamento.CodiceRt
+
+        Select Case pagamento.Tipo
+            Case Costanti.PAG_CONTANTI
+                Return PAGAMENTO_CONTANTI
+            Case Costanti.PAG_ELETTRONICO
+                Return PAGAMENTO_ELETTRONICO
+            Case Costanti.PAG_BUONOPASTO
+                Return PAGAMENTO_TICKET
+            Case Costanti.PAG_NONRISCOSSO
+                Return PAGAMENTO_NON_RISCOSSO
+        End Select
+        Return PAGAMENTO_CONTANTI
+    End Function
+
+    ' Testo pronto per un attributo XML: accorciato alla lunghezza che la
+    ' stampante accetta e con i caratteri speciali protetti. Senza la
+    ' protezione, un articolo chiamato "Bulloni 6x40 & dadi" romperebbe
+    ' l'XML e lo scontrino non uscirebbe.
+    Public Function Testo(ByVal valore As String) As String
+        Dim risultato As String
+
+        risultato = StringUtils.CollapseWhitespace(valore)
+        If Len(risultato) > LUNGHEZZA_DESCRIZIONE Then
+            risultato = Left$(risultato, LUNGHEZZA_DESCRIZIONE)
+        End If
+
+        risultato = Replace$(risultato, "&", "&amp;")
+        risultato = Replace$(risultato, "<", "&lt;")
+        risultato = Replace$(risultato, ">", "&gt;")
+        risultato = Replace$(risultato, """", "&quot;")
+        risultato = Replace$(risultato, "'", "&apos;")
+        Return risultato
+    End Function
+
+    ' Valore di un attributo del primo elemento con quel nome.
+    Private Function Attributo(ByVal xml As String, ByVal nomeElemento As String, _
+                               ByVal nomeAttributo As String) As String
+        Dim inizioElemento As Long
+        Dim fineElemento As Long
+        Dim porzione As String
+        Dim cerca As String
+        Dim inizio As Long
+        Dim fine As Long
+
+        inizioElemento = InStr(1, xml, "<" & nomeElemento, vbTextCompare)
+        If inizioElemento = 0 Then Return ""
+        fineElemento = InStr(inizioElemento, xml, ">")
+        If fineElemento = 0 Then Return ""
+
+        porzione = Mid$(xml, inizioElemento, fineElemento - inizioElemento + 1)
+        cerca = nomeAttributo & "="""
+        inizio = InStr(1, porzione, cerca, vbTextCompare)
+        If inizio = 0 Then Return ""
+
+        inizio = inizio + Len(cerca)
+        fine = InStr(inizio, porzione, """")
+        If fine = 0 Then Return ""
+        Return Mid$(porzione, inizio, fine - inizio)
+    End Function
+
+    ' Contenuto testuale del primo elemento con quel nome.
+    Private Function Elemento(ByVal xml As String, ByVal nome As String) As String
+        Dim apertura As Long
+        Dim inizio As Long
+        Dim fine As Long
+
+        apertura = InStr(1, xml, "<" & nome, vbTextCompare)
+        If apertura = 0 Then Return ""
+        inizio = InStr(apertura, xml, ">")
+        If inizio = 0 Then Return ""
+        fine = InStr(inizio, xml, "</" & nome, vbTextCompare)
+        If fine = 0 Then Return ""
+        Return Trim$(Mid$(xml, inizio + 1, fine - inizio - 1))
+    End Function
+
+End Module

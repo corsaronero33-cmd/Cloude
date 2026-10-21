@@ -1,0 +1,210 @@
+'
+' RtEpsonXmlTests - suite di test del protocollo del registratore.
+'
+' Gira senza stampante: RtEpsonXml e' fatto di funzioni pure, e questa e'
+' esattamente la ragione per cui e' stato separato dal trasporto. Si
+' controlla che l'XML uscente contenga quello che deve e che la lettura
+' della risposta estragga i numeri fiscali da una risposta campione.
+'
+' Il test piu' importante e' quello sul prezzo unitario. L'errore di
+' mandare al registratore il totale della riga invece del prezzo unitario
+' e' il piu' comune nelle integrazioni con le stampanti fiscali, e produce
+' scontrini corretti solo quando la quantita' e' uno: passa i collaudi e
+' sbaglia in produzione.
+'
+Module RtEpsonXmlTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestIndirizzo runner
+        TestTesto runner
+        TestCodiciPagamento runner
+        TestDocumentoCommerciale runner
+        TestReport runner
+        TestLetturaRisposta runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+
+    Private Sub TestIndirizzo(ByVal runner As TestRunner)
+        runner.BeginTest "La porta 80 non compare nell'indirizzo"
+        runner.AreEqual "http://192.168.1.50/cgi-bin/fpmate.cgi?devid=local_printer&timeout=10000", _
+                        RtEpsonXml.Url("192.168.1.50", 80, 10000)
+
+        runner.BeginTest "Una porta diversa compare nell'indirizzo"
+        runner.AreEqual "http://192.168.1.50:8080/cgi-bin/fpmate.cgi?devid=local_printer&timeout=5000", _
+                        RtEpsonXml.Url("192.168.1.50", 8080, 5000)
+    End Sub
+
+    Private Sub TestTesto(ByVal runner As TestRunner)
+        runner.BeginTest "I caratteri speciali vengono protetti"
+        ' senza protezione un articolo cosi' romperebbe l'XML e lo
+        ' scontrino non uscirebbe
+        runner.AreEqual "Bulloni 6x40 &amp; dadi", RtEpsonXml.Testo("Bulloni 6x40 & dadi")
+        runner.AreEqual "Virgolette &quot;doppie&quot;", RtEpsonXml.Testo("Virgolette ""doppie""")
+        runner.AreEqual "Misura &lt;5 mm&gt;", RtEpsonXml.Testo("Misura <5 mm>")
+
+        runner.BeginTest "La descrizione viene accorciata a 38 caratteri"
+        runner.AreEqual String$(38, "A"), RtEpsonXml.Testo(String$(60, "A"))
+
+        runner.BeginTest "Gli spazi multipli si riducono a uno"
+        runner.AreEqual "spazi multipli", RtEpsonXml.Testo("  spazi    multipli  ")
+    End Sub
+
+    Private Sub TestCodiciPagamento(ByVal runner As TestRunner)
+        runner.BeginTest "Ogni macro-categoria va sul suo totalizzatore"
+        runner.AreEqual 0, RtEpsonXml.CodicePagamento(Pagamento(Costanti.PAG_CONTANTI, 0))
+        runner.AreEqual 2, RtEpsonXml.CodicePagamento(Pagamento(Costanti.PAG_ELETTRONICO, 0))
+        runner.AreEqual 3, RtEpsonXml.CodicePagamento(Pagamento(Costanti.PAG_BUONOPASTO, 0))
+        runner.AreEqual 5, RtEpsonXml.CodicePagamento(Pagamento(Costanti.PAG_NONRISCOSSO, 0))
+
+        runner.BeginTest "Un codice indicato a mano vince sulla categoria"
+        runner.AreEqual 7, RtEpsonXml.CodicePagamento(Pagamento(Costanti.PAG_CONTANTI, 7))
+    End Sub
+
+    Private Sub TestDocumentoCommerciale(ByVal runner As TestRunner)
+        Dim sc As Scontrino
+        Dim xml As String
+
+        Set sc = New Scontrino
+        sc.AggiungiArticolo "PANE", "Pane casereccio", 1, 3.5@, 4, 4
+        sc.AggiungiArticolo "VINO", "Vino rosso", 2, 6@, 22, 1
+        sc.PagaInContanti 20@
+        sc.Calcola
+        xml = RtEpsonXml.DocumentoCommerciale(sc)
+
+        runner.BeginTest "Lo scontrino si apre e si chiude"
+        runner.IsTrue StringUtils.Contains(xml, "<printerFiscalReceipt>")
+        runner.IsTrue StringUtils.Contains(xml, "<beginFiscalReceipt operator=""1"" />")
+        runner.IsTrue StringUtils.Contains(xml, "<printRecSubtotal operator=""1"" option=""0"" />")
+        runner.IsTrue StringUtils.Contains(xml, "<endFiscalReceipt operator=""1"" />")
+
+        runner.BeginTest "unitPrice e' il prezzo unitario, non il totale di riga"
+        ' due bottiglie da 6 euro: 6.00, non 12.00. E' l'errore piu' comune
+        ' nelle integrazioni con le stampanti fiscali.
+        runner.IsTrue StringUtils.Contains(xml, "unitPrice=""6.00""")
+        runner.IsFalse StringUtils.Contains(xml, "unitPrice=""12.00""")
+        runner.IsTrue StringUtils.Contains(xml, "quantity=""2.000""")
+
+        runner.BeginTest "Ogni riga va sul suo reparto"
+        runner.IsTrue StringUtils.Contains(xml, "unitPrice=""3.50""")
+        runner.IsTrue StringUtils.Contains(xml, "department=""4""")
+        runner.IsTrue StringUtils.Contains(xml, "department=""1""")
+
+        runner.BeginTest "Il pagamento arriva con il suo codice"
+        runner.IsTrue StringUtils.Contains(xml, "description=""Contanti""")
+        runner.IsTrue StringUtils.Contains(xml, "payment=""20.00""")
+        runner.IsTrue StringUtils.Contains(xml, "paymentType=""0""")
+
+        runner.BeginTest "Nessuna virgola decimale nell'XML"
+        ' una virgola al posto del punto fa rifiutare il comando, e
+        ' succederebbe solo sulle macchine con impostazioni italiane:
+        ' il tipo di errore che non si vede mai in sviluppo
+        runner.IsFalse StringUtils.Contains(xml, ",")
+
+        Set sc = New Scontrino
+        sc.AggiungiArticolo "A", "Articolo", 1, 50@, 22, 1
+        sc.ScontaRiga 1, 5@
+        sc.PagaInContanti 45@
+        sc.Calcola
+        xml = RtEpsonXml.DocumentoCommerciale(sc)
+
+        runner.BeginTest "Lo sconto a valore diventa una rettifica di riga"
+        runner.IsTrue StringUtils.Contains(xml, "<printRecItemAdjustment")
+        runner.IsTrue StringUtils.Contains(xml, "amount=""5.00""")
+
+        Set sc = New Scontrino
+        sc.AggiungiArticolo "A", "Articolo", 1, 10@, 22, 1
+        sc.AggiungiPagamento Costanti.PAG_ELETTRONICO, "Bancomat", 6@
+        sc.PagaInContanti 4@
+        sc.Calcola
+        xml = RtEpsonXml.DocumentoCommerciale(sc)
+
+        runner.BeginTest "Due pagamenti fanno due printRecTotal"
+        runner.AreEqual 2, StringUtils.CountOccurrences(xml, "<printRecTotal")
+        runner.IsTrue StringUtils.Contains(xml, "paymentType=""2""")
+        runner.IsTrue StringUtils.Contains(xml, "paymentType=""0""")
+    End Sub
+
+    Private Sub TestReport(ByVal runner As TestRunner)
+        runner.BeginTest "La chiusura fiscale e' una Z"
+        runner.IsTrue StringUtils.Contains(RtEpsonXml.ChiusuraFiscale(1), "<printZReport operator=""1"" />")
+
+        runner.BeginTest "La lettura di controllo e' una X"
+        runner.IsTrue StringUtils.Contains(RtEpsonXml.LetturaX(1), "<printXReport operator=""1"" />")
+
+        runner.BeginTest "L'interrogazione di stato non stampa niente"
+        runner.IsTrue StringUtils.Contains(RtEpsonXml.InterrogazioneStato(), "<queryPrinterStatus")
+
+        runner.BeginTest "Ogni comando esce in una busta SOAP"
+        runner.IsTrue StringUtils.StartsWith(RtEpsonXml.ChiusuraFiscale(1), "<?xml version=""1.0""")
+        runner.IsTrue StringUtils.EndsWith(RtEpsonXml.ChiusuraFiscale(1), "</s:Body></s:Envelope>")
+    End Sub
+
+    Private Sub TestLetturaRisposta(ByVal runner As TestRunner)
+        Dim esito As RtEsito
+
+        Set esito = RtEpsonXml.LeggiEsito(RispostaRiuscita())
+
+        runner.BeginTest "Da una risposta buona si estraggono i numeri fiscali"
+        runner.IsTrue esito.Riuscito
+        runner.AreEqual "0123", esito.NumeroDocumento
+        runner.AreEqual "0045", esito.NumeroChiusura
+        runner.AreEqual "18/03/2026 10:45", esito.DataOraDocumento
+        runner.AreEqual 15.5@, esito.TotaleDocumento
+        runner.AreEqual "2", esito.StatoStampante
+
+        Set esito = RtEpsonXml.LeggiEsito(RispostaFallita())
+
+        runner.BeginTest "Un errore diventa un messaggio leggibile"
+        runner.IsFalse esito.Riuscito
+        runner.AreEqual "EPTR_REC_EMPTY", esito.Codice
+        runner.AreEqual "Carta esaurita nel registratore", esito.Messaggio
+
+        Set esito = RtEpsonXml.LeggiEsito("")
+
+        runner.BeginTest "Nessuna risposta non e' un successo"
+        runner.IsFalse esito.Riuscito
+        runner.AreEqual "Nessuna risposta dal registratore", esito.Messaggio
+
+        runner.BeginTest "Un codice sconosciuto non resta muto"
+        runner.IsTrue StringUtils.Contains(RtEpsonXml.DescrizioneErrore("EPTR_XYZ"), "EPTR_XYZ")
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper
+    ' ------------------------------------------------------------------
+
+    Private Function Pagamento(ByVal tipo As String, ByVal codiceRt As Long) As PagamentoScontrino
+        Dim risultato As PagamentoScontrino
+
+        Set risultato = New PagamentoScontrino
+        risultato.Tipo = tipo
+        risultato.CodiceRt = codiceRt
+        Return risultato
+    End Function
+
+    Private Function RispostaRiuscita() As String
+        Return "<?xml version=""1.0"" encoding=""utf-8""?>" & _
+               "<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"">" & _
+               "<soapenv:Body>" & _
+               "<response success=""true"" code="""" status=""2"">" & _
+               "<addInfo>" & _
+               "<fiscalReceiptNumber>0123</fiscalReceiptNumber>" & _
+               "<fiscalReceiptDate>18/03/2026</fiscalReceiptDate>" & _
+               "<fiscalReceiptTime>10:45</fiscalReceiptTime>" & _
+               "<fiscalReceiptAmount>15.50</fiscalReceiptAmount>" & _
+               "<zRepNumber>0045</zRepNumber>" & _
+               "</addInfo>" & _
+               "</response>" & _
+               "</soapenv:Body></soapenv:Envelope>"
+    End Function
+
+    Private Function RispostaFallita() As String
+        Return "<?xml version=""1.0"" encoding=""utf-8""?>" & _
+               "<soapenv:Envelope xmlns:soapenv=""http://schemas.xmlsoap.org/soap/envelope/"">" & _
+               "<soapenv:Body>" & _
+               "<response success=""false"" code=""EPTR_REC_EMPTY"" status=""3""></response>" & _
+               "</soapenv:Body></soapenv:Envelope>"
+    End Function
+
+End Module

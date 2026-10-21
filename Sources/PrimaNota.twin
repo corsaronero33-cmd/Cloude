@@ -1,0 +1,220 @@
+'
+' PrimaNota - cassa e banca, volutamente semplice.
+'
+' Un movimento, un conto, una causale, un importo. Non e' contabilita' in
+' partita doppia e non vuole esserlo: serve a sapere quanto c'e' in cassa e
+' perche'. Chi ha bisogno del bilancio ha il commercialista.
+'
+' Due scelte che evitano la meta' degli errori di registrazione:
+'
+'   Il segno sta nella causale, non nella testa di chi registra. Si digita
+'   sempre un importo positivo e si scegle "Pagamento fornitore" oppure
+'   "Incasso vendite": il verso lo decide la causale. Cosi' non esiste il
+'   caso dell'uscita registrata in entrata.
+'
+'   Ogni riga automatica porta il riferimento a quello che l'ha generata
+'   (la chiusura di cassa, il documento, la scadenza). Da qui si capisce se
+'   un incasso e' gia' stato registrato, che e' la domanda da cui nascono i
+'   doppioni.
+'
+Class PrimaNota
+
+    Private mDb As Database
+
+    Public Sub Init(ByVal db As Database)
+        Set mDb = db
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Registrazione
+    ' ------------------------------------------------------------------
+
+    ' Registra un movimento. L'importo va sempre positivo: il verso lo da'
+    ' la causale. Restituisce l'Id della registrazione.
+    Public Function Registra(ByVal dataRegistrazione As Date, ByVal idConto As Long, _
+                             ByVal idCausale As Long, ByVal importo As Currency, _
+                             ByVal descrizione As String, _
+                             Optional ByVal idSoggetto As Long = 0, _
+                             Optional ByVal idDocumento As Long = 0, _
+                             Optional ByVal idVendita As Long = 0, _
+                             Optional ByVal idChiusura As Long = 0, _
+                             Optional ByVal idScadenza As Long = 0, _
+                             Optional ByVal numeroDocumentoEsterno As String = "", _
+                             Optional ByVal note As String = "") As Long
+        Dim segno As Long
+        Dim valore As Variant
+
+        RequireDb
+
+        If importo <= 0 Then
+            Err.Raise 5, "PrimaNota.Registra", _
+                      "L'importo va registrato positivo: il verso lo da' la causale"
+        End If
+        If Len(Trim$(descrizione)) = 0 Then
+            Err.Raise 5, "PrimaNota.Registra", "La descrizione e' obbligatoria"
+        End If
+
+        valore = mDb.ScalarValue("SELECT Segno FROM CausaliPrimaNota WHERE Id = ?", idCausale)
+        If IsNull(valore) Then
+            Err.Raise 5, "PrimaNota.Registra", "Causale " & CStr(idCausale) & " non trovata"
+        End If
+        segno = CLng(valore)
+
+        mDb.Execute "INSERT INTO PrimaNota (DataRegistrazione, IdConto, IdCausale, Segno, " & _
+                    "Importo, Descrizione, IdSoggetto, IdDocumento, IdVendita, IdChiusura, " & _
+                    "IdScadenza, NumeroDocumentoEsterno, Note, CreatoIl, CreatoDa) " & _
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", _
+                    dataRegistrazione, idConto, idCausale, segno, importo, Trim$(descrizione), _
+                    NullSeZero(idSoggetto), NullSeZero(idDocumento), NullSeZero(idVendita), _
+                    NullSeZero(idChiusura), NullSeZero(idScadenza), numeroDocumentoEsterno, _
+                    note, Now(), AppConfig.UtentePerTraccia
+
+        Return mDb.LastAutoNumber()
+    End Function
+
+    ' Registra in prima nota l'incasso in contanti di una chiusura di cassa.
+    ' Solo i contanti: il bancomat arriva sul conto in banca per altra
+    ' strada, e i buoni pasto non sono denaro in cassa.
+    '
+    ' Se la chiusura e' gia' stata registrata non fa niente e restituisce
+    ' zero: la funzione si puo' richiamare senza paura di doppioni.
+    Public Function RegistraIncassoChiusura(ByVal idChiusura As Long, _
+                                            ByVal idConto As Long) As Long
+        Dim giaFatta As Variant
+        Dim contanti As Currency
+        Dim dataChiusura As Date
+        Dim numero As Variant
+        Dim idCausaleIncasso As Long
+
+        RequireDb
+
+        giaFatta = mDb.ScalarValue( _
+            "SELECT COUNT(*) FROM PrimaNota WHERE IdChiusura = ?", idChiusura)
+        If Not IsNull(giaFatta) Then
+            If CLng(giaFatta) > 0 Then Return 0
+        End If
+
+        contanti = CCur(ZeroSeNull(mDb.ScalarValue( _
+            "SELECT TotaleContanti FROM ChiusureFiscali WHERE Id = ?", idChiusura)))
+        If contanti = 0 Then Return 0
+
+        dataChiusura = CDate(mDb.ScalarValue( _
+            "SELECT DataChiusura FROM ChiusureFiscali WHERE Id = ?", idChiusura))
+        numero = mDb.ScalarValue( _
+            "SELECT NumeroChiusura FROM ChiusureFiscali WHERE Id = ?", idChiusura)
+        idCausaleIncasso = IdCausaleDaCodice("INCVEND")
+
+        Return Registra(dataChiusura, idConto, idCausaleIncasso, contanti, _
+                        "Incasso contanti chiusura " & CStr(ZeroSeNull(numero)), _
+                        0, 0, 0, idChiusura)
+    End Function
+
+    Public Sub Elimina(ByVal idRegistrazione As Long)
+        RequireDb
+        mDb.Execute "DELETE FROM PrimaNota WHERE Id = ?", idRegistrazione
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Saldi
+    ' ------------------------------------------------------------------
+
+    ' Saldo di un conto: saldo iniziale piu' la somma dei movimenti con il
+    ' loro segno. Senza data e' quello attuale, con una data e' quello di
+    ' fine giornata a quella data.
+    Public Function Saldo(ByVal idConto As Long, Optional ByVal alla As Variant) As Currency
+        Dim iniziale As Variant
+        Dim sommaMovimenti As Variant
+
+        RequireDb
+        iniziale = mDb.ScalarValue("SELECT SaldoIniziale FROM ContiCassa WHERE Id = ?", idConto)
+
+        If IsMissing(alla) Then
+            sommaMovimenti = mDb.ScalarValue( _
+                "SELECT SUM(Segno * Importo) FROM PrimaNota WHERE IdConto = ?", idConto)
+        Else
+            sommaMovimenti = mDb.ScalarValue( _
+                "SELECT SUM(Segno * Importo) FROM PrimaNota " & _
+                "WHERE IdConto = ? AND DataRegistrazione <= ?", _
+                idConto, FineGiornata(CDate(alla)))
+        End If
+
+        Return Money.Amount(Money.Dec(ZeroSeNull(iniziale)) + Money.Dec(ZeroSeNull(sommaMovimenti)))
+    End Function
+
+    ' Totale delle entrate o delle uscite in un periodo. Il segno si passa
+    ' come 1 o -1.
+    Public Function TotalePeriodo(ByVal idConto As Long, ByVal dal As Date, ByVal al As Date, _
+                                  ByVal segno As Long) As Currency
+        Dim valore As Variant
+
+        RequireDb
+        valore = mDb.ScalarValue( _
+            "SELECT SUM(Importo) FROM PrimaNota " & _
+            "WHERE IdConto = ? AND Segno = ? AND DataRegistrazione >= ? AND DataRegistrazione <= ?", _
+            idConto, segno, DateValue(dal), FineGiornata(al))
+        Return Money.Amount(ZeroSeNull(valore))
+    End Function
+
+    ' Movimenti di un conto in un periodo, dal piu' vecchio al piu'
+    ' recente: e' l'ordine in cui si legge un estratto conto.
+    Public Function MovimentiConto(ByVal idConto As Long, ByVal dal As Date, ByVal al As Date) As Object
+        RequireDb
+        Return mDb.OpenRecordset( _
+            "SELECT p.Id, p.DataRegistrazione, c.Codice AS CodiceCausale, " & _
+            "c.Descrizione AS Causale, p.Segno, p.Importo, p.Descrizione, " & _
+            "p.NumeroDocumentoEsterno " & _
+            "FROM PrimaNota AS p INNER JOIN CausaliPrimaNota AS c ON p.IdCausale = c.Id " & _
+            "WHERE p.IdConto = ? AND p.DataRegistrazione >= ? AND p.DataRegistrazione <= ? " & _
+            "ORDER BY p.DataRegistrazione, p.Id", _
+            idConto, DateValue(dal), FineGiornata(al))
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper
+    ' ------------------------------------------------------------------
+
+    Public Function IdCausaleDaCodice(ByVal codice As String) As Long
+        Dim valore As Variant
+
+        RequireDb
+        valore = mDb.ScalarValue("SELECT Id FROM CausaliPrimaNota WHERE Codice = ?", codice)
+        If IsNull(valore) Then
+            Err.Raise 5, "PrimaNota.IdCausaleDaCodice", "Causale " & codice & " non presente in archivio"
+        End If
+        Return CLng(valore)
+    End Function
+
+    Public Function IdContoDaCodice(ByVal codice As String) As Long
+        Dim valore As Variant
+
+        RequireDb
+        valore = mDb.ScalarValue("SELECT Id FROM ContiCassa WHERE Codice = ?", codice)
+        If IsNull(valore) Then
+            Err.Raise 5, "PrimaNota.IdContoDaCodice", "Conto " & codice & " non presente in archivio"
+        End If
+        Return CLng(valore)
+    End Function
+
+    Private Function NullSeZero(ByVal valore As Long) As Variant
+        If valore = 0 Then Return Null
+        Return valore
+    End Function
+
+    Private Function ZeroSeNull(ByVal valore As Variant) As Variant
+        If IsNull(valore) Then Return 0
+        Return valore
+    End Function
+
+    ' Un confronto su DATETIME in Access include l'ora: per prendere tutta
+    ' la giornata serve l'istante prima della mezzanotte successiva.
+    Private Function FineGiornata(ByVal giorno As Date) As Date
+        Return DateAdd("s", -1, DateAdd("d", 1, DateValue(giorno)))
+    End Function
+
+    Private Sub RequireDb()
+        If mDb Is Nothing Then
+            Err.Raise 91, "PrimaNota", "Chiamare Init prima di usare la prima nota"
+        End If
+    End Sub
+
+End Class

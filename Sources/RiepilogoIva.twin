@@ -12,6 +12,13 @@ Class RiepilogoIva
     Public NaturaIva As String
     Public Imponibile As Currency
     Public Imposta As Currency
+
+    ' Totale comprensivo di imposta. Nei documenti a prezzi netti e' la
+    ' somma di imponibile e imposta e non aggiunge niente; nei documenti a
+    ' prezzi ivati e' il dato di partenza, ed e' da qui che si ricava
+    ' l'imposta per differenza. Il perche' e' spiegato in
+    ' CalcoloDocumento.CalcolaImposte.
+    Public Lordo As Currency
     Public Esigibilita As String
     Public RiferimentoNormativo As String
     Public ConcorreAlBollo As Boolean
