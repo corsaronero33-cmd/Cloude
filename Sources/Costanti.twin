@@ -1,0 +1,36 @@
+'
+' Costanti - valori di dominio condivisi.
+'
+' Sono stringhe e non Enum perche' vanno in archivio cosi' come sono: una
+' colonna TEXT(1) con 'A' si legge anche da una query di Access, un 3 no.
+'
+Module Costanti
+
+    ' DocumentiRighe.TipoRiga
+    Public Const RIGA_ARTICOLO As String = "A"      ' riga con quantita' e prezzo
+    Public Const RIGA_DESCRIZIONE As String = "D"   ' testo libero, non conteggiata
+    Public Const RIGA_SCONTO As String = "S"        ' sconto o maggiorazione a valore
+    Public Const RIGA_TOTALE As String = "T"        ' totale parziale di sola stampa
+
+    ' Documenti.Stato
+    Public Const STATO_BOZZA As String = "bozza"
+    Public Const STATO_CONFERMATO As String = "confermato"
+    Public Const STATO_ANNULLATO As String = "annullato"
+
+    ' Soggetti.Tipo
+    Public Const SOGGETTO_CLIENTE As String = "C"
+    Public Const SOGGETTO_FORNITORE As String = "F"
+    Public Const SOGGETTO_ENTRAMBI As String = "E"
+
+    ' DocumentiRiepilogoIva.Esigibilita, come la chiama la fattura elettronica
+    Public Const ESIGIBILITA_IMMEDIATA As String = "I"
+    Public Const ESIGIBILITA_DIFFERITA As String = "D"
+    Public Const ESIGIBILITA_SCISSIONE As String = "S"
+
+    ' Utenti.Ruolo
+    Public Const RUOLO_AMMINISTRATORE As String = "amministratore"
+    Public Const RUOLO_VENDITE As String = "vendite"
+    Public Const RUOLO_MAGAZZINO As String = "magazzino"
+    Public Const RUOLO_LETTURA As String = "sololettura"
+
+End Module

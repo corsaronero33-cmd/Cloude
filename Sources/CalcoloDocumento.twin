@@ -1,0 +1,536 @@
+'
+' CalcoloDocumento - totali, riepilogo IVA, bollo, cassa e ritenuta.
+'
+' E' il cuore fiscale del gestionale e non tocca ne' l'archivio ne'
+' l'interfaccia: gli si danno righe e impostazioni, risponde con i totali.
+' Per questo e' interamente coperto dai test, che girano senza Access.
+'
+' Uso tipico:
+'
+'     Dim calc As CalcoloDocumento
+'     Set calc = New CalcoloDocumento
+'     calc.AggiungiArticolo "ART1", "Tastiera", 2, 45@, 22
+'     calc.Calcola
+'     Debug.Print Money.FormatAmount(calc.TotaleDocumento)
+'
+' Due metodi con due caratteri diversi:
+'
+'   Calcola     non si lamenta mai dei dati. Viene chiamato a ogni tasto
+'               premuto nella finestra del documento, quindi deve
+'               sopportare righe appena nate e campi ancora vuoti.
+'   Validazione elenca tutto quello che non va. Si chiama prima di
+'               confermare o di trasmettere, dove invece essere severi
+'               conviene.
+'
+' Le impostazioni sono campi pubblici: si scrivono, poi si chiama Calcola.
+' Leggere un totale senza aver chiamato Calcola solleva un errore; leggerlo
+' dopo aver cambiato un'impostazione senza richiamare Calcola restituisce
+' il valore vecchio, quindi l'ordine conta.
+'
+' Ordine dei conti, che non e' arbitrario:
+'
+'   1. imponibile di ogni riga: sconti in cascata sul prezzo unitario non
+'      arrotondato, poi quantita', poi arrotondamento a 2 decimali;
+'   2. sconto in piede ripartito riga per riga, non sottratto in fondo:
+'      altrimenti il riepilogo IVA non torna con la somma delle righe;
+'   3. cassa previdenziale sulle righe che la prevedono;
+'   4. spese di trasporto, incasso e imballo;
+'   5. riepilogo per coppia aliquota piu' natura, imposta arrotondata una
+'      volta sola sul totale del rigo e non riga per riga;
+'   6. bollo, ritenuta, totali.
+'
+Class CalcoloDocumento
+
+    ' --- impostazioni del documento ------------------------------------
+
+    Public PrezziIvati As Boolean           ' i prezzi delle righe sono ivati
+    Public ScontoPiedePerc As Double
+    Public SpeseTrasporto As Currency
+    Public SpeseIncasso As Currency
+    Public SpeseImballo As Currency
+    Public PercentualeIvaSpese As Double
+    Public NaturaIvaSpese As String
+    Public CassaPrevidenzialePerc As Double
+    Public PercentualeIvaCassa As Double
+    Public NaturaIvaCassa As String
+    Public CassaSoggettaRitenuta As Boolean
+    Public RitenutaPerc As Double
+    Public RitenutaBasePerc As Double       ' quota di imponibile su cui si applica
+    Public BolloAutomatico As Boolean
+    Public BolloAddebitato As Boolean       ' addebitato al cliente o a carico nostro
+    Public BolloSoglia As Currency
+    Public BolloImporto As Currency
+    Public SplitPayment As Boolean          ' scissione dei pagamenti, art. 17-ter
+
+    ' --- stato ---------------------------------------------------------
+
+    Private mRighe As Collection
+    Private mRiepilogo As Collection
+    Private mTotaleMerce As Currency
+    Private mTotaleSconti As Currency
+    Private mTotaleImponibile As Currency
+    Private mTotaleImposta As Currency
+    Private mImpostaSospesa As Currency
+    Private mBollo As Currency
+    Private mCassaPrevidenziale As Currency
+    Private mBaseRitenuta As Currency
+    Private mRitenuta As Currency
+    Private mTotaleDocumento As Currency
+    Private mTotaleDaPagare As Currency
+    Private mCalcolato As Boolean
+
+    Private Sub Class_Initialize()
+        Set mRighe = New Collection
+        Set mRiepilogo = New Collection
+        RitenutaBasePerc = 100
+        CassaSoggettaRitenuta = True
+        BolloAutomatico = True
+        BolloSoglia = Money.BOLLO_SOGLIA
+        BolloImporto = Money.BOLLO_IMPORTO
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Righe
+    ' ------------------------------------------------------------------
+
+    ' Crea una riga vuota, la aggancia al documento e la restituisce da
+    ' riempire. La riga nasce con TipoRiga articolo e quantita' 1.
+    Public Function AggiungiRiga() As RigaCalcolo
+        Dim riga As RigaCalcolo
+
+        Set riga = New RigaCalcolo
+        mRighe.Add riga
+        mCalcolato = False
+        Return riga
+    End Function
+
+    ' Scorciatoia per il caso normale e per i test.
+    Public Function AggiungiArticolo(ByVal codice As String, ByVal descrizione As String, _
+                                     ByVal quantita As Double, ByVal prezzo As Currency, _
+                                     ByVal percentualeIva As Double, _
+                                     Optional ByVal natura As String = "") As RigaCalcolo
+        Dim riga As RigaCalcolo
+
+        Set riga = AggiungiRiga()
+        riga.Codice = codice
+        riga.Descrizione = descrizione
+        riga.Quantita = quantita
+        riga.PrezzoUnitario = prezzo
+        riga.PercentualeIva = percentualeIva
+        riga.NaturaIva = natura
+        Return riga
+    End Function
+
+    ' Riga di solo testo, che non entra nei totali.
+    Public Function AggiungiDescrizione(ByVal descrizione As String) As RigaCalcolo
+        Dim riga As RigaCalcolo
+
+        Set riga = AggiungiRiga()
+        riga.TipoRiga = Costanti.RIGA_DESCRIZIONE
+        riga.Descrizione = descrizione
+        riga.Quantita = 0
+        Return riga
+    End Function
+
+    Public Sub Svuota()
+        Set mRighe = New Collection
+        Set mRiepilogo = New Collection
+        mCalcolato = False
+    End Sub
+
+    Public Property Get Righe() As Collection
+        Return mRighe
+    End Property
+
+    Public Property Get NumeroRighe() As Long
+        Return mRighe.Count
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Calcolo
+    ' ------------------------------------------------------------------
+
+    Public Sub Calcola()
+        CalcolaRighe
+        RipartisciScontoPiede
+        CostruisciRiepilogo
+        CalcolaImposte
+        CalcolaBollo
+        CalcolaRitenuta
+        ChiudiTotali
+        mCalcolato = True
+    End Sub
+
+    ' Passo 1: imponibile di riga. Gli sconti si applicano al prezzo
+    ' unitario non arrotondato e solo il totale di riga viene arrotondato:
+    ' arrotondare prima il prezzo scontato perde centesimi sulle quantita'
+    ' grandi.
+    Private Sub CalcolaRighe()
+        Dim riga As RigaCalcolo
+        Dim prezzoScontato As Variant
+        Dim lordo As Variant
+        Dim merce As Variant
+        Dim sconti As Variant
+
+        merce = CDec(0)
+        sconti = CDec(0)
+
+        For Each riga In mRighe
+            riga.PrezzoNetto = 0
+            riga.Imponibile = 0
+            riga.Imposta = 0
+
+            If riga.Conteggiata Then
+                prezzoScontato = Money.ApplyDiscounts(riga.PrezzoUnitario, _
+                                                      riga.Sconto1, riga.Sconto2, riga.Sconto3)
+                riga.PrezzoNetto = CCur(Money.RoundHalfUp(prezzoScontato, 4))
+
+                lordo = Money.Dec(riga.Quantita) * Money.Dec(riga.PrezzoUnitario)
+                merce = merce + Money.Round2(lordo)
+                sconti = sconti + Money.Round2(lordo - Money.Dec(riga.Quantita) * prezzoScontato) _
+                                + Money.Dec(riga.ScontoImporto)
+
+                lordo = Money.Dec(riga.Quantita) * prezzoScontato - Money.Dec(riga.ScontoImporto)
+                If riga.Omaggio Then lordo = CDec(0)
+
+                If PrezziIvati Then
+                    riga.Imponibile = Money.Amount(Money.NetOfVat(lordo, riga.PercentualeIva))
+                Else
+                    riga.Imponibile = Money.Amount(lordo)
+                End If
+            End If
+        Next riga
+
+        mTotaleMerce = Money.Amount(merce)
+        mTotaleSconti = Money.Amount(sconti)
+    End Sub
+
+    ' Passo 2: lo sconto in piede si scarica sulle righe. Cosi' la somma
+    ' degli imponibili di riga e il riepilogo IVA restano la stessa cosa,
+    ' che e' quello che si controlla quando una fattura viene contestata.
+    Private Sub RipartisciScontoPiede()
+        Dim riga As RigaCalcolo
+
+        If ScontoPiedePerc = 0 Then Exit Sub
+
+        For Each riga In mRighe
+            If riga.Conteggiata Then
+                riga.Imponibile = Money.Amount(Money.ApplyDiscounts(riga.Imponibile, ScontoPiedePerc))
+            End If
+        Next riga
+    End Sub
+
+    ' Passi 3 e 4: righe, cassa previdenziale, spese.
+    Private Sub CostruisciRiepilogo()
+        Dim riga As RigaCalcolo
+        Dim baseCassa As Variant
+        Dim totaleSpese As Currency
+
+        Set mRiepilogo = New Collection
+        mCassaPrevidenziale = 0
+
+        For Each riga In mRighe
+            If riga.Conteggiata Then
+                Accumula riga.PercentualeIva, riga.NaturaIva, riga.Imponibile, _
+                         riga.RilevantePerBollo, riga.RiferimentoNormativo
+            End If
+        Next riga
+
+        If CassaPrevidenzialePerc <> 0 Then
+            baseCassa = CDec(0)
+            For Each riga In mRighe
+                If riga.Conteggiata And riga.SoggettaCassa Then
+                    baseCassa = baseCassa + Money.Dec(riga.Imponibile)
+                End If
+            Next riga
+            mCassaPrevidenziale = Money.Amount(Money.PercentOf(baseCassa, CassaPrevidenzialePerc))
+            If mCassaPrevidenziale <> 0 Then
+                Accumula PercentualeIvaCassa, NaturaIvaCassa, mCassaPrevidenziale, _
+                         (PercentualeIvaCassa = 0 And Len(NaturaIvaCassa) > 0), ""
+            End If
+        End If
+
+        totaleSpese = Money.Amount(Money.Dec(SpeseTrasporto) + Money.Dec(SpeseIncasso) + _
+                                   Money.Dec(SpeseImballo))
+        If totaleSpese <> 0 Then
+            Accumula PercentualeIvaSpese, NaturaIvaSpese, totaleSpese, _
+                     (PercentualeIvaSpese = 0 And Len(NaturaIvaSpese) > 0), ""
+        End If
+    End Sub
+
+    ' Passo 5: imposta per rigo di riepilogo. Arrotondare una volta sul
+    ' totale del rigo, e non riga per riga, e' la regola che fa tornare il
+    ' riepilogo con l'imposta richiesta dallo SDI.
+    Private Sub CalcolaImposte()
+        Dim voce As RiepilogoIva
+        Dim imponibile As Variant
+        Dim imposta As Variant
+        Dim sospesa As Variant
+        Dim riga As RigaCalcolo
+
+        imponibile = CDec(0)
+        imposta = CDec(0)
+        sospesa = CDec(0)
+
+        For Each voce In mRiepilogo
+            voce.Imposta = Money.Amount(Money.VatOn(voce.Imponibile, voce.PercentualeIva))
+            If SplitPayment And voce.PercentualeIva > 0 Then
+                voce.Esigibilita = Costanti.ESIGIBILITA_SCISSIONE
+                sospesa = sospesa + Money.Dec(voce.Imposta)
+            Else
+                voce.Esigibilita = Costanti.ESIGIBILITA_IMMEDIATA
+            End If
+            imponibile = imponibile + Money.Dec(voce.Imponibile)
+            imposta = imposta + Money.Dec(voce.Imposta)
+        Next voce
+
+        mTotaleImponibile = Money.Amount(imponibile)
+        mTotaleImposta = Money.Amount(imposta)
+        mImpostaSospesa = Money.Amount(sospesa)
+
+        ' imposta indicativa di riga, per la stampa di controllo
+        For Each riga In mRighe
+            If riga.Conteggiata Then
+                riga.Imposta = Money.Amount(Money.VatOn(riga.Imponibile, riga.PercentualeIva))
+            End If
+        Next riga
+    End Sub
+
+    ' Bollo virtuale da 2 euro: scatta quando le operazioni senza imposta
+    ' superano i 77,47 euro. Se addebitato finisce nel totale, altrimenti
+    ' resta solo un dato da riportare nel documento.
+    Private Sub CalcolaBollo()
+        Dim voce As RiepilogoIva
+        Dim baseBollo As Variant
+
+        mBollo = 0
+        If Not BolloAutomatico Then Exit Sub
+
+        baseBollo = CDec(0)
+        For Each voce In mRiepilogo
+            If voce.ConcorreAlBollo Then baseBollo = baseBollo + Money.Dec(voce.Imponibile)
+        Next voce
+
+        If baseBollo > Money.Dec(BolloSoglia) Then mBollo = BolloImporto
+    End Sub
+
+    ' Ritenuta d'acconto: aliquota applicata a una quota dell'imponibile
+    ' delle righe che la prevedono. Per i professionisti la cassa
+    ' previdenziale entra nella base, da qui il flag.
+    Private Sub CalcolaRitenuta()
+        Dim riga As RigaCalcolo
+        Dim imponibile As Variant
+
+        mBaseRitenuta = 0
+        mRitenuta = 0
+        If RitenutaPerc = 0 Then Exit Sub
+
+        imponibile = CDec(0)
+        For Each riga In mRighe
+            If riga.Conteggiata And riga.SoggettaRitenuta Then
+                imponibile = imponibile + Money.Dec(riga.Imponibile)
+            End If
+        Next riga
+        If CassaSoggettaRitenuta Then imponibile = imponibile + Money.Dec(mCassaPrevidenziale)
+
+        mBaseRitenuta = Money.Amount(Money.PercentOf(imponibile, RitenutaBasePerc))
+        mRitenuta = Money.Amount(Money.PercentOf(mBaseRitenuta, RitenutaPerc))
+    End Sub
+
+    Private Sub ChiudiTotali()
+        Dim totale As Variant
+
+        totale = Money.Dec(mTotaleImponibile) + Money.Dec(mTotaleImposta)
+        If BolloAddebitato Then totale = totale + Money.Dec(mBollo)
+        mTotaleDocumento = Money.Amount(totale)
+
+        ' La ritenuta la versa il cliente, l'IVA in scissione la versa lo
+        ' Stato: nessuna delle due arriva sul conto di chi emette.
+        totale = totale - Money.Dec(mRitenuta) - Money.Dec(mImpostaSospesa)
+        mTotaleDaPagare = Money.Amount(totale)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Risultati
+    ' ------------------------------------------------------------------
+
+    ' Riepilogo per aliquota, nell'ordine in cui le aliquote compaiono nel
+    ' documento. La collezione e' indicizzata anche per chiave.
+    Public Property Get Riepilogo() As Collection
+        PretendiCalcolo
+        Return mRiepilogo
+    End Property
+
+    ' Totale della merce ai prezzi di listino, prima di qualunque sconto.
+    Public Property Get TotaleMerce() As Currency
+        PretendiCalcolo
+        Return mTotaleMerce
+    End Property
+
+    Public Property Get TotaleSconti() As Currency
+        PretendiCalcolo
+        Return mTotaleSconti
+    End Property
+
+    Public Property Get TotaleImponibile() As Currency
+        PretendiCalcolo
+        Return mTotaleImponibile
+    End Property
+
+    Public Property Get TotaleImposta() As Currency
+        PretendiCalcolo
+        Return mTotaleImposta
+    End Property
+
+    ' Quota di IVA che il cliente versa direttamente all'erario.
+    Public Property Get ImpostaSospesa() As Currency
+        PretendiCalcolo
+        Return mImpostaSospesa
+    End Property
+
+    Public Property Get Bollo() As Currency
+        PretendiCalcolo
+        Return mBollo
+    End Property
+
+    Public Property Get CassaPrevidenziale() As Currency
+        PretendiCalcolo
+        Return mCassaPrevidenziale
+    End Property
+
+    Public Property Get BaseRitenuta() As Currency
+        PretendiCalcolo
+        Return mBaseRitenuta
+    End Property
+
+    Public Property Get Ritenuta() As Currency
+        PretendiCalcolo
+        Return mRitenuta
+    End Property
+
+    ' Totale del documento, quello stampato in fondo alla fattura.
+    Public Property Get TotaleDocumento() As Currency
+        PretendiCalcolo
+        Return mTotaleDocumento
+    End Property
+
+    ' Quanto il cliente deve davvero versare: e' questo l'importo che
+    ' finisce nelle scadenze.
+    Public Property Get TotaleDaPagare() As Currency
+        PretendiCalcolo
+        Return mTotaleDaPagare
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Validazione
+    ' ------------------------------------------------------------------
+
+    ' Elenco dei problemi, vuoto se il documento e' emettibile. Da chiamare
+    ' prima di confermare o di generare l'XML, non durante la digitazione.
+    Public Function Validazione() As Collection
+        Dim problemi As Collection
+        Dim riga As RigaCalcolo
+        Dim posizione As Long
+        Dim conteggiate As Long
+        Dim prefisso As String
+
+        Set problemi = New Collection
+        posizione = 0
+        conteggiate = 0
+
+        For Each riga In mRighe
+            posizione += 1
+            prefisso = "Riga " & CStr(posizione) & ": "
+
+            If Len(Trim$(riga.Descrizione)) = 0 Then
+                problemi.Add prefisso & "la descrizione e' obbligatoria"
+            End If
+
+            If riga.Conteggiata Then
+                conteggiate += 1
+                If riga.Quantita = 0 Then
+                    problemi.Add prefisso & "la quantita' non puo' essere zero"
+                End If
+                ControllaAliquota problemi, prefisso, riga.PercentualeIva, riga.NaturaIva
+            End If
+        Next riga
+
+        If conteggiate = 0 Then
+            problemi.Add "Il documento non ha righe da conteggiare"
+        End If
+
+        If SpeseTrasporto <> 0 Or SpeseIncasso <> 0 Or SpeseImballo <> 0 Then
+            ControllaAliquota problemi, "Spese: ", PercentualeIvaSpese, NaturaIvaSpese
+        End If
+
+        If CassaPrevidenzialePerc <> 0 Then
+            ControllaAliquota problemi, "Cassa previdenziale: ", PercentualeIvaCassa, NaturaIvaCassa
+        End If
+
+        If RitenutaPerc <> 0 And RitenutaBasePerc = 0 Then
+            problemi.Add "Ritenuta: la base imponibile e' allo zero per cento"
+        End If
+
+        Return problemi
+    End Function
+
+    ' Un'operazione senza imposta deve dire perche', e un'operazione con
+    ' imposta non deve dirlo: lo SDI scarta entrambi i casi sbagliati.
+    Private Sub ControllaAliquota(ByVal problemi As Collection, ByVal prefisso As String, _
+                                  ByVal percentuale As Double, ByVal natura As String)
+        If percentuale = 0 And Len(Trim$(natura)) = 0 Then
+            problemi.Add prefisso & "aliquota zero senza natura di esclusione (N1..N7)"
+        ElseIf percentuale > 0 And Len(Trim$(natura)) > 0 Then
+            problemi.Add prefisso & "la natura " & natura & " non va con un'aliquota del " & _
+                         Money.FormatAmount(CCur(percentuale)) & " per cento"
+        ElseIf percentuale < 0 Then
+            problemi.Add prefisso & "l'aliquota non puo' essere negativa"
+        End If
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Accumula un imponibile sul rigo di riepilogo della sua coppia
+    ' aliquota piu' natura, creandolo se non c'e' ancora.
+    Private Sub Accumula(ByVal percentuale As Double, ByVal natura As String, _
+                         ByVal imponibile As Currency, ByVal concorreAlBollo As Boolean, _
+                         ByVal riferimento As String)
+        Dim candidata As RiepilogoIva
+        Dim voce As RiepilogoIva
+
+        Set candidata = New RiepilogoIva
+        candidata.PercentualeIva = percentuale
+        candidata.NaturaIva = UCase$(Trim$(natura))
+        candidata.RiferimentoNormativo = riferimento
+        candidata.ConcorreAlBollo = concorreAlBollo
+
+        Set voce = TrovaVoce(candidata.Chiave)
+        If voce Is Nothing Then
+            Set voce = candidata
+            mRiepilogo.Add voce, voce.Chiave
+        End If
+
+        voce.Imponibile = voce.Imponibile + imponibile
+        If concorreAlBollo Then voce.ConcorreAlBollo = True
+        If Len(voce.RiferimentoNormativo) = 0 Then voce.RiferimentoNormativo = riferimento
+    End Sub
+
+    Private Function TrovaVoce(ByVal chiave As String) As RiepilogoIva
+        Dim voce As RiepilogoIva
+
+        On Error Resume Next
+        Set voce = mRiepilogo.Item(chiave)
+        On Error GoTo 0
+        Return voce
+    End Function
+
+    Private Sub PretendiCalcolo()
+        If Not mCalcolato Then
+            Err.Raise 5, "CalcoloDocumento", _
+                      "Chiamare Calcola prima di leggere i totali"
+        End If
+    End Sub
+
+End Class

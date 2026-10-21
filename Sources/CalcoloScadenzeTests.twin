@@ -1,0 +1,146 @@
+'
+' CalcoloScadenzeTests - suite di test per lo scadenzario.
+'
+' Le date si confrontano con DateSerial e non con stringhe: il formato di
+' una data in testo dipende dalle impostazioni della postazione.
+'
+Module CalcoloScadenzeTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestFineDelMese runner
+        TestRataUnica runner
+        TestFineMese runner
+        TestRateMultiple runner
+        TestRipartizione runner
+        TestNoteDiCredito runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+
+    Private Sub TestFineDelMese(ByVal runner As TestRunner)
+        runner.BeginTest "FineDelMese trova l'ultimo giorno"
+        runner.AreEqual DateSerial(2026, 2, 28), CalcoloScadenze.FineDelMese(DateSerial(2026, 2, 10))
+        runner.AreEqual DateSerial(2026, 12, 31), CalcoloScadenze.FineDelMese(DateSerial(2026, 12, 5))
+        runner.AreEqual DateSerial(2026, 4, 30), CalcoloScadenze.FineDelMese(DateSerial(2026, 4, 30))
+
+        runner.BeginTest "FineDelMese conosce gli anni bisestili"
+        runner.AreEqual DateSerial(2024, 2, 29), CalcoloScadenze.FineDelMese(DateSerial(2024, 2, 10))
+    End Sub
+
+    Private Sub TestRataUnica(ByVal runner As TestRunner)
+        Dim rate As Collection
+        Dim prima As Scadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 15), 1220@, 1, 30, 30, False, 0, "MP05")
+        Set prima = rate.Item(1)
+
+        runner.BeginTest "Bonifico a 30 giorni data fattura"
+        runner.AreEqual 1, rate.Count
+        runner.AreEqual DateSerial(2026, 2, 14), prima.DataScadenza
+        runner.AreEqual 1220@, prima.Importo
+        runner.AreEqual 1, prima.NumeroRata
+        runner.AreEqual "MP05", prima.ModalitaPagamento
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 15), 500@, 1, 0, 30, False, 0)
+        Set prima = rate.Item(1)
+
+        runner.BeginTest "Il pagamento a vista scade il giorno del documento"
+        runner.AreEqual DateSerial(2026, 1, 15), prima.DataScadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 15), 500@, 0, 30, 30, False, 0)
+
+        runner.BeginTest "Zero rate vale come rata unica"
+        runner.AreEqual 1, rate.Count
+    End Sub
+
+    Private Sub TestFineMese(ByVal runner As TestRunner)
+        Dim rate As Collection
+        Dim prima As Scadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 15), 1000@, 1, 30, 30, True, 0)
+        Set prima = rate.Item(1)
+
+        runner.BeginTest "30 giorni fine mese porta al 28 febbraio"
+        ' 15 gennaio piu' 30 giorni e' il 14 febbraio, fine mese e' il 28
+        runner.AreEqual DateSerial(2026, 2, 28), prima.DataScadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 15), 1000@, 1, 30, 0, True, 10)
+        Set prima = rate.Item(1)
+
+        runner.BeginTest "30 giorni fine mese piu' 10 porta al 10 marzo"
+        runner.AreEqual DateSerial(2026, 3, 10), prima.DataScadenza
+    End Sub
+
+    Private Sub TestRateMultiple(ByVal runner As TestRunner)
+        Dim rate As Collection
+        Dim prima As Scadenza
+        Dim seconda As Scadenza
+        Dim terza As Scadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 3, 10), 300@, 3, 30, 30, False, 0)
+        Set prima = rate.Item(1)
+        Set seconda = rate.Item(2)
+        Set terza = rate.Item(3)
+
+        runner.BeginTest "Tre rate a 30, 60 e 90 giorni"
+        runner.AreEqual 3, rate.Count
+        runner.AreEqual DateSerial(2026, 4, 9), prima.DataScadenza
+        runner.AreEqual DateSerial(2026, 5, 9), seconda.DataScadenza
+        runner.AreEqual DateSerial(2026, 6, 8), terza.DataScadenza
+        runner.AreEqual 100@, prima.Importo
+        runner.AreEqual 100@, seconda.Importo
+        runner.AreEqual 100@, terza.Importo
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 15), 1000@, 2, 60, 30, True, 0)
+        Set prima = rate.Item(1)
+        Set seconda = rate.Item(2)
+
+        runner.BeginTest "Due rate a 60 e 90 giorni fine mese"
+        runner.AreEqual DateSerial(2026, 3, 31), prima.DataScadenza
+        runner.AreEqual DateSerial(2026, 4, 30), seconda.DataScadenza
+
+        runner.BeginTest "Le rate sono numerate in ordine"
+        runner.AreEqual 1, prima.NumeroRata
+        runner.AreEqual 2, seconda.NumeroRata
+    End Sub
+
+    Private Sub TestRipartizione(ByVal runner As TestRunner)
+        Dim rate As Collection
+        Dim prima As Scadenza
+        Dim seconda As Scadenza
+        Dim terza As Scadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 1), 100@, 3, 30, 30, False, 0)
+        Set prima = rate.Item(1)
+        Set seconda = rate.Item(2)
+        Set terza = rate.Item(3)
+
+        runner.BeginTest "Il resto di arrotondamento va sull'ultima rata"
+        runner.AreEqual 33.33@, prima.Importo
+        runner.AreEqual 33.33@, seconda.Importo
+        runner.AreEqual 33.34@, terza.Importo
+
+        runner.BeginTest "La somma delle rate e' sempre l'importo di partenza"
+        runner.AreEqual 100@, CalcoloScadenze.TotaleRate(rate)
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 1, 1), 1268.8@, 7, 30, 30, False, 0)
+
+        runner.BeginTest "La quadratura regge anche su sette rate"
+        runner.AreEqual 7, rate.Count
+        runner.AreEqual 1268.8@, CalcoloScadenze.TotaleRate(rate)
+    End Sub
+
+    Private Sub TestNoteDiCredito(ByVal runner As TestRunner)
+        Dim rate As Collection
+        Dim prima As Scadenza
+
+        Set rate = CalcoloScadenze.Genera(DateSerial(2026, 5, 20), -244@, 2, 30, 30, False, 0)
+        Set prima = rate.Item(1)
+
+        runner.BeginTest "Un importo negativo si ripartisce come gli altri"
+        runner.AreEqual 2, rate.Count
+        runner.AreEqual -122@, prima.Importo
+        runner.AreEqual -244@, CalcoloScadenze.TotaleRate(rate)
+    End Sub
+
+End Module

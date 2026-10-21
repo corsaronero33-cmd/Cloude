@@ -1,0 +1,58 @@
+'
+' AdoConst - costanti di ADO per l'uso in late binding.
+'
+' Il livello dati usa CreateObject invece di un riferimento alla libreria
+' ADO: cosi' il progetto compila e gira su qualunque postazione senza
+' dipendere dalla versione di msado installata, che fra Windows 10 e 11 e
+' fra le varie patch cambia piu' spesso di quanto faccia comodo.
+'
+' I nomi non hanno il prefisso "ad" di proposito. Se un domani si aggiunge
+' il riferimento ad ADO per avere il completamento automatico, questi nomi
+' non vanno in conflitto con quelli della libreria.
+'
+Module AdoConst
+
+    ' CursorTypeEnum
+    Public Const OpenForwardOnly As Long = 0
+    Public Const OpenKeyset As Long = 1
+    Public Const OpenDynamic As Long = 2
+    Public Const OpenStatic As Long = 3
+
+    ' LockTypeEnum
+    Public Const LockReadOnly As Long = 1
+    Public Const LockPessimistic As Long = 2
+    Public Const LockOptimistic As Long = 3
+    Public Const LockBatchOptimistic As Long = 4
+
+    ' CursorLocationEnum
+    Public Const UseServer As Long = 2
+    Public Const UseClient As Long = 3
+
+    ' CommandTypeEnum
+    Public Const CmdText As Long = 1
+    Public Const CmdTable As Long = 2
+
+    ' ObjectStateEnum
+    Public Const StateClosed As Long = 0
+    Public Const StateOpen As Long = 1
+
+    ' ParameterDirectionEnum
+    Public Const ParamInput As Long = 1
+
+    ' ExecuteOptionEnum
+    Public Const ExecuteNoRecords As Long = &H80&
+
+    ' DataTypeEnum, solo i tipi che l'archivio usa davvero
+    Public Const TypeSmallInt As Long = 2
+    Public Const TypeInteger As Long = 3
+    Public Const TypeDouble As Long = 5
+    Public Const TypeCurrency As Long = 6
+    Public Const TypeDate As Long = 7
+    Public Const TypeBoolean As Long = 11
+    Public Const TypeVarWChar As Long = 202
+    Public Const TypeLongVarWChar As Long = 203
+
+    ' SchemaEnum
+    Public Const SchemaTables As Long = 20
+
+End Module

@@ -1,0 +1,207 @@
+'
+' AppConfig - impostazioni della postazione, in un file INI accanto all'EXE.
+'
+' Il percorso dell'archivio cambia da installazione a installazione e deve
+' poterlo correggere chi installa, senza ricompilare e senza toccare il
+' registro di sistema. Un file di testo accanto all'eseguibile e' la forma
+' piu' semplice da spiegare al telefono.
+'
+'     [Archivio]
+'     Percorso=\\SERVER\Gestionale\Dati\Gestionale.accdb
+'     Password=
+'     CartellaSql=
+'
+'     [Postazione]
+'     Nome=UFFICIO1
+'
+' Il percorso dell'archivio va scritto in forma UNC e non come lettera di
+' unita' mappata: le lettere cambiano da postazione a postazione e una X:
+' che su un computer non esiste produce un errore che sembra un guasto.
+'
+Module AppConfig
+
+    Private Declare PtrSafe Function GetPrivateProfileStringW Lib "kernel32" ( _
+        ByVal lpAppName As LongPtr, _
+        ByVal lpKeyName As LongPtr, _
+        ByVal lpDefault As LongPtr, _
+        ByVal lpReturnedString As LongPtr, _
+        ByVal nSize As Long, _
+        ByVal lpFileName As LongPtr) As Long
+
+    Private Declare PtrSafe Function WritePrivateProfileStringW Lib "kernel32" ( _
+        ByVal lpAppName As LongPtr, _
+        ByVal lpKeyName As LongPtr, _
+        ByVal lpString As LongPtr, _
+        ByVal lpFileName As LongPtr) As Long
+
+    Private Declare PtrSafe Function GetModuleFileNameW Lib "kernel32" ( _
+        ByVal hModule As LongPtr, _
+        ByVal lpFilename As LongPtr, _
+        ByVal nSize As Long) As Long
+
+    Private Declare PtrSafe Function GetComputerNameW Lib "kernel32" ( _
+        ByVal lpBuffer As LongPtr, _
+        ByRef nSize As Long) As Long
+
+    Private Declare PtrSafe Function GetUserNameW Lib "advapi32" ( _
+        ByVal lpBuffer As LongPtr, _
+        ByRef pcbBuffer As Long) As Long
+
+    Private Const NOME_FILE_INI As String = "Gestionale.ini"
+    Private Const SEZIONE_ARCHIVIO As String = "Archivio"
+    Private Const SEZIONE_POSTAZIONE As String = "Postazione"
+
+    Private mBaseFolder As String
+
+    ' Utente dell'applicazione collegato in questo momento. Lo scrive la
+    ' maschera di accesso e lo leggono le colonne di traccia dei documenti.
+    Public UtenteCorrente As String
+
+    ' ------------------------------------------------------------------
+    ' Cartelle
+    ' ------------------------------------------------------------------
+
+    ' Dentro l'IDE l'eseguibile in esecuzione e' quello di twinBASIC, non il
+    ' gestionale, quindi la cartella va forzata a mano durante lo sviluppo.
+    ' In ordine vincono: la cartella impostata qui, la variabile d'ambiente
+    ' GESTIONALE_HOME, la cartella del modulo in esecuzione.
+    Public Sub SetBaseFolder(ByVal cartella As String)
+        mBaseFolder = AddBackslash(cartella)
+    End Sub
+
+    Public Property Get BaseFolder() As String
+        Dim daAmbiente As String
+
+        If Len(mBaseFolder) > 0 Then Return mBaseFolder
+
+        daAmbiente = Environ$("GESTIONALE_HOME")
+        If Len(daAmbiente) > 0 Then Return AddBackslash(daAmbiente)
+
+        Return AddBackslash(CartellaModulo())
+    End Property
+
+    Public Property Get IniPath() As String
+        Return BaseFolder & NOME_FILE_INI
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Valori dell'archivio
+    ' ------------------------------------------------------------------
+
+    Public Property Get DatabasePath() As String
+        Return ReadValue(SEZIONE_ARCHIVIO, "Percorso", "")
+    End Property
+
+    Public Property Let DatabasePath(ByVal value As String)
+        WriteValue SEZIONE_ARCHIVIO, "Percorso", value
+    End Property
+
+    Public Property Get DatabasePassword() As String
+        Return ReadValue(SEZIONE_ARCHIVIO, "Password", "")
+    End Property
+
+    ' Cartella dei file di migrazione. Se non e' indicata si cerca sotto la
+    ' cartella dell'applicazione.
+    Public Property Get SqlFolder() As String
+        Dim valore As String
+
+        valore = ReadValue(SEZIONE_ARCHIVIO, "CartellaSql", "")
+        If Len(valore) > 0 Then Return AddBackslash(valore)
+        Return BaseFolder & "Database\sql\"
+    End Property
+
+    ' Nome con cui la postazione compare nel registro delle attivita'.
+    ' Senza impostazione vale il nome del computer.
+    Public Property Get NomePostazione() As String
+        Dim valore As String
+
+        valore = ReadValue(SEZIONE_POSTAZIONE, "Nome", "")
+        If Len(valore) > 0 Then Return valore
+        Return ComputerName()
+    End Property
+
+    ' Utente da scrivere nelle colonne di traccia: quello collegato
+    ' all'applicazione, oppure quello di Windows finche' non c'e' un
+    ' accesso vero.
+    Public Property Get UtentePerTraccia() As String
+        If Len(UtenteCorrente) > 0 Then Return UtenteCorrente
+        Return WindowsUser()
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Lettura e scrittura generiche
+    ' ------------------------------------------------------------------
+
+    Public Function ReadValue(ByVal sezione As String, ByVal chiave As String, _
+                              Optional ByVal predefinito As String = "") As String
+        Dim buffer As String
+        Dim quanti As Long
+
+        buffer = String$(1024, vbNullChar)
+        quanti = GetPrivateProfileStringW(StrPtr(sezione), StrPtr(chiave), StrPtr(predefinito), _
+                                          StrPtr(buffer), 1024, StrPtr(IniPath))
+        If quanti <= 0 Then Return predefinito
+        Return Left$(buffer, quanti)
+    End Function
+
+    Public Sub WriteValue(ByVal sezione As String, ByVal chiave As String, ByVal valore As String)
+        If WritePrivateProfileStringW(StrPtr(sezione), StrPtr(chiave), StrPtr(valore), _
+                                      StrPtr(IniPath)) = 0 Then
+            Err.Raise vbObjectError + 1301, "AppConfig.WriteValue", _
+                      "Impossibile scrivere " & IniPath & _
+                      ". Verificare i permessi sulla cartella dell'applicazione."
+        End If
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Informazioni sulla postazione
+    ' ------------------------------------------------------------------
+
+    Public Function ComputerName() As String
+        Dim buffer As String
+        Dim dimensione As Long
+
+        dimensione = 256
+        buffer = String$(dimensione, vbNullChar)
+        If GetComputerNameW(StrPtr(buffer), dimensione) = 0 Then Return ""
+        Return Left$(buffer, dimensione)
+    End Function
+
+    Public Function WindowsUser() As String
+        Dim buffer As String
+        Dim dimensione As Long
+
+        dimensione = 256
+        buffer = String$(dimensione, vbNullChar)
+        If GetUserNameW(StrPtr(buffer), dimensione) = 0 Then Return ""
+        ' GetUserName conta anche lo zero terminatore
+        If dimensione > 0 Then dimensione -= 1
+        Return Left$(buffer, dimensione)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function CartellaModulo() As String
+        Dim buffer As String
+        Dim quanti As Long
+        Dim posizione As Long
+
+        buffer = String$(1024, vbNullChar)
+        quanti = GetModuleFileNameW(0, StrPtr(buffer), 1024)
+        If quanti <= 0 Then Return CurDir$()
+
+        buffer = Left$(buffer, quanti)
+        posizione = InStrRev(buffer, "\")
+        If posizione = 0 Then Return CurDir$()
+        Return Left$(buffer, posizione - 1)
+    End Function
+
+    Private Function AddBackslash(ByVal cartella As String) As String
+        If Len(cartella) = 0 Then Return ""
+        If Right$(cartella, 1) = "\" Then Return cartella
+        Return cartella & "\"
+    End Function
+
+End Module

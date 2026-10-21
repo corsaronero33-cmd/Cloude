@@ -1,0 +1,174 @@
+'
+' Numeratore - assegna il numero progressivo ai documenti.
+'
+' E' il punto piu' delicato di tutto il gestionale in rete. Il progressivo
+' delle fatture deve essere continuo e senza buchi, e due postazioni che
+' emettono nello stesso momento non devono prendere lo stesso numero.
+'
+' La strada sbagliata, che si vede spesso, e'
+'
+'     SELECT MAX(Numero) + 1 FROM Documenti WHERE ...
+'
+' perche' fra la lettura e l'inserimento c'e' tempo perche' un altro faccia
+' la stessa lettura. Qui invece si usa una tabella di contatori e un solo
+' comando che legge e scrive insieme:
+'
+'     UPDATE Numeratori SET UltimoNumero = UltimoNumero + 1 WHERE ...
+'
+' L'UPDATE prende il blocco sulla riga del contatore e lo tiene per tutta
+' la transazione, quindi il secondo che arriva aspetta e poi legge il
+' valore nuovo. L'indice unico su tipo, serie e anno chiude l'ultima
+' fessura: se due postazioni provano a creare lo stesso contatore nello
+' stesso istante, una delle due prende un errore di chiave duplicata e
+' questa classe riprova.
+'
+' Il numero va chiesto quando il documento viene confermato, non quando
+' viene aperta la maschera: un numero chiesto e poi abbandonato e' un buco
+' nella numerazione, e i buchi nelle fatture vanno spiegati.
+'
+Class Numeratore
+
+    Private Const TENTATIVI As Long = 6
+
+    Private mDb As Database
+
+    Public Sub Init(ByVal db As Database)
+        Set mDb = db
+    End Sub
+
+    ' Prossimo numero disponibile, gia' riservato: la riga del contatore e'
+    ' aggiornata quando questa funzione torna.
+    Public Function Prossimo(ByVal idTipoDocumento As Long, ByVal serie As String, _
+                             ByVal anno As Long) As Long
+        Dim tentativo As Long
+        Dim numero As Long
+
+        RequireDb
+        serie = Trim$(serie)
+
+        For tentativo = 1 To TENTATIVI
+            If TentaProssimo(idTipoDocumento, serie, anno, numero) Then Return numero
+            WinApi.Attendi 40 * tentativo
+        Next tentativo
+
+        Err.Raise vbObjectError + 1101, "Numeratore.Prossimo", _
+                  "Non e' stato possibile assegnare il numero del documento dopo " & _
+                  CStr(TENTATIVI) & " tentativi. Un'altra postazione sta emettendo " & _
+                  "in questo momento: riprovare fra qualche secondo."
+    End Function
+
+    ' Ultimo numero assegnato, senza riservare niente. Serve per mostrare
+    ' "il prossimo sara' il 124" in una maschera, dove il numero vero lo si
+    ' prende solo alla conferma.
+    Public Function UltimoUsato(ByVal idTipoDocumento As Long, ByVal serie As String, _
+                                ByVal anno As Long) As Long
+        Dim valore As Variant
+
+        RequireDb
+        valore = mDb.ScalarValue("SELECT UltimoNumero FROM Numeratori " & _
+                                 "WHERE IdTipoDocumento = ? AND Serie = ? AND Anno = ?", _
+                                 idTipoDocumento, Trim$(serie), anno)
+        If IsNull(valore) Then Return 0
+        Return CLng(valore)
+    End Function
+
+    ' Riporta indietro il contatore. Si usa in un caso solo: il documento
+    ' aveva preso il numero e il salvataggio e' andato male, e nessun altro
+    ' ha ancora numerato. Se nel frattempo il contatore e' andato avanti,
+    ' non tocca niente e restituisce False, perche' spostare indietro un
+    ' progressivo gia' usato da un altro sarebbe peggio del buco.
+    Public Function RilasciaSeUltimo(ByVal idTipoDocumento As Long, ByVal serie As String, _
+                                     ByVal anno As Long, ByVal numero As Long) As Boolean
+        Dim interessate As Long
+
+        RequireDb
+        interessate = mDb.Execute("UPDATE Numeratori SET UltimoNumero = UltimoNumero - 1 " & _
+                                  "WHERE IdTipoDocumento = ? AND Serie = ? AND Anno = ? " & _
+                                  "AND UltimoNumero = ?", _
+                                  idTipoDocumento, Trim$(serie), anno, numero)
+        Return (interessate > 0)
+    End Function
+
+    ' Numero come va stampato: "124" senza serie, "124/A" con serie.
+    Public Function NumeroCompleto(ByVal numero As Long, ByVal serie As String, _
+                                   Optional ByVal anno As Long = 0) As String
+        Dim risultato As String
+
+        risultato = CStr(numero)
+        If Len(Trim$(serie)) > 0 Then risultato = risultato & "/" & Trim$(serie)
+        If anno > 0 Then risultato = risultato & "/" & Format$(anno, "0000")
+        Return risultato
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Un singolo tentativo. True se il numero e' stato assegnato, False se
+    ' vale la pena riprovare. Gli errori che non si risolvono riprovando
+    ' vengono rilanciati, perche' nascondere una tabella mancante dietro
+    ' sei tentativi non aiuta nessuno.
+    Private Function TentaProssimo(ByVal idTipoDocumento As Long, ByVal serie As String, _
+                                   ByVal anno As Long, ByRef numero As Long) As Boolean
+        Dim interessate As Long
+        Dim numeroErrore As Long
+        Dim testoErrore As String
+
+        On Error GoTo Fallito
+
+        mDb.BeginTrans
+
+        interessate = mDb.Execute("UPDATE Numeratori SET UltimoNumero = UltimoNumero + 1 " & _
+                                  "WHERE IdTipoDocumento = ? AND Serie = ? AND Anno = ?", _
+                                  idTipoDocumento, serie, anno)
+
+        If interessate = 0 Then
+            ' primo documento di questo tipo, serie e anno
+            mDb.Execute "INSERT INTO Numeratori (IdTipoDocumento, Serie, Anno, UltimoNumero) " & _
+                        "VALUES (?, ?, ?, 1)", idTipoDocumento, serie, anno
+            numero = 1
+        Else
+            numero = CLng(mDb.ScalarValue("SELECT UltimoNumero FROM Numeratori " & _
+                                          "WHERE IdTipoDocumento = ? AND Serie = ? AND Anno = ?", _
+                                          idTipoDocumento, serie, anno))
+        End If
+
+        mDb.CommitTrans
+        Return True
+
+Fallito:
+        numeroErrore = Err.Number
+        testoErrore = Err.Description
+        On Error GoTo 0
+        mDb.RollbackTrans
+
+        If RiprovabileDopo(numeroErrore, testoErrore) Then Return False
+        Err.Raise numeroErrore, "Numeratore", testoErrore
+    End Function
+
+    ' Chiave duplicata e conflitti di scrittura: due postazioni in corsa.
+    ' I blocchi veri li ha gia' riprovati Database.Execute.
+    Private Function RiprovabileDopo(ByVal numero As Long, ByVal testo As String) As Boolean
+        Dim minuscolo As String
+
+        Select Case numero
+            Case 3022, 3186, 3187, 3188, 3197, 3218, 3260
+                Return True
+        End Select
+
+        minuscolo = LCase$(testo)
+        If InStr(minuscolo, "duplicat") > 0 Then Return True
+        If InStr(minuscolo, "locked") > 0 Then Return True
+        If InStr(minuscolo, "bloccat") > 0 Then Return True
+        If InStr(minuscolo, "conflict") > 0 Then Return True
+        If InStr(minuscolo, "conflitto") > 0 Then Return True
+        Return False
+    End Function
+
+    Private Sub RequireDb()
+        If mDb Is Nothing Then
+            Err.Raise 91, "Numeratore", "Chiamare Init prima di usare il numeratore"
+        End If
+    End Sub
+
+End Class

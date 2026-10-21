@@ -1,0 +1,64 @@
+'
+' RigaCalcolo - una riga di documento in ingresso al motore di calcolo.
+'
+' Oggetto di soli dati, senza logica: la logica sta tutta in
+' CalcoloDocumento. I campi fino a RiferimentoNormativo li riempie il
+' chiamante, i tre in fondo li scrive Calcola.
+'
+' Gli importi sono Currency, quantita' e percentuali Double: la ragione e'
+' spiegata nell'intestazione di Money.
+'
+Class RigaCalcolo
+
+    ' --- in ingresso ---------------------------------------------------
+
+    Public TipoRiga As String           ' una delle costanti RIGA_*
+    Public IdArticolo As Long
+    Public Codice As String
+    Public Descrizione As String
+    Public UnitaMisura As String
+    Public Quantita As Double
+    Public PrezzoUnitario As Currency   ' ivato se il documento ha PrezziIvati
+    Public Sconto1 As Double
+    Public Sconto2 As Double
+    Public Sconto3 As Double
+    Public ScontoImporto As Currency    ' sconto a valore, dopo quelli in percentuale
+    Public IdAliquotaIva As Long
+    Public PercentualeIva As Double
+    Public NaturaIva As String          ' N1..N7, vuoto se l'imposta e' dovuta
+    Public RiferimentoNormativo As String
+    Public ConcorreAlBollo As Boolean
+    Public Omaggio As Boolean           ' azzera l'imponibile, resta in stampa
+    Public SoggettaRitenuta As Boolean
+    Public SoggettaCassa As Boolean
+    Public Note As String
+
+    ' --- calcolati da CalcoloDocumento.Calcola -------------------------
+
+    Public PrezzoNetto As Currency      ' prezzo unitario dopo gli sconti, 4 decimali
+    Public Imponibile As Currency       ' al netto anche dello sconto in piede
+    Public Imposta As Currency          ' solo indicativa: in fattura vale il riepilogo
+
+    Private Sub Class_Initialize()
+        TipoRiga = Costanti.RIGA_ARTICOLO
+        Quantita = 1
+        SoggettaRitenuta = True
+        SoggettaCassa = True
+    End Sub
+
+    ' Vero se la riga partecipa ai totali. Le righe descrittive e i totali
+    ' parziali servono solo alla stampa.
+    Public Property Get Conteggiata() As Boolean
+        Return (TipoRiga = Costanti.RIGA_ARTICOLO)
+    End Property
+
+    ' Vero se la riga e' un'operazione senza imposta che concorre alla
+    ' soglia del bollo. Il controllo sulla natura e' una rete di sicurezza:
+    ' funziona anche se chi ha caricato l'aliquota ha scordato la spunta.
+    Public Property Get RilevantePerBollo() As Boolean
+        If Not Conteggiata Then Return False
+        If ConcorreAlBollo Then Return True
+        Return (PercentualeIva = 0 And Len(NaturaIva) > 0)
+    End Property
+
+End Class

@@ -1,0 +1,224 @@
+'
+' Money - aritmetica monetaria esatta e arrotondamento commerciale.
+'
+' Il punto di partenza e' che Double non va bene per i soldi: 0.1 non esiste
+' in binario e Round() di VB arrotonda al pari (2.5 -> 2), mentre la prassi
+' commerciale italiana arrotonda per eccesso lo 0.5 (2.5 -> 3). Una fattura
+' che sbaglia un centesimo e' una fattura da rifare.
+'
+' Quindi:
+'
+'   * gli importi entrano come Currency, che e' un intero scalato a 4
+'     decimali, quindi esatto;
+'   * i conti intermedi girano su Variant/Decimal (28 cifre), dove 22/100
+'     fa esattamente 0.22;
+'   * l'arrotondamento e' half away from zero, a 2 decimali salvo diverso
+'     argomento;
+'   * quantita' e percentuali restano Double, dove l'errore non ha effetti
+'     sul risultato arrotondato.
+'
+' Tutte le conversioni passano da Dec: se un domani Decimal dovesse dare
+' problemi, c'e' un solo punto da cambiare.
+'
+Module Money
+
+    ' Valori di riferimento del bollo virtuale sulle fatture senza IVA.
+    ' Stanno anche nella tabella Parametri, qui servono come predefiniti
+    ' quando il motore di calcolo viene usato senza archivio.
+    Public Const BOLLO_SOGLIA As Currency = 77.47@
+    Public Const BOLLO_IMPORTO As Currency = 2@
+
+    ' ------------------------------------------------------------------
+    ' Conversione
+    ' ------------------------------------------------------------------
+
+    ' Porta qualunque valore numerico su Decimal. Null, Empty e stringa
+    ' vuota diventano zero: nei documenti un campo non compilato vale zero,
+    ' non e' un errore.
+    Public Function Dec(ByVal value As Variant) As Variant
+        If IsNull(value) Then Return CDec(0)
+        If IsEmpty(value) Then Return CDec(0)
+        If VarType(value) = vbString Then
+            If Len(Trim$(CStr(value))) = 0 Then Return CDec(0)
+        End If
+        Return CDec(value)
+    End Function
+
+    ' Chiude un calcolo restituendo un importo: arrotondato a 2 decimali e
+    ' convertito in Currency, il tipo con cui l'importo va in archivio.
+    Public Function Amount(ByVal value As Variant) As Currency
+        Return CCur(RoundHalfUp(value, 2))
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Arrotondamento
+    ' ------------------------------------------------------------------
+
+    ' Arrotondamento commerciale: lo 0.5 va sempre lontano dallo zero.
+    ' 0.125 -> 0.13 e -0.125 -> -0.13, dove Round() di VB darebbe 0.12.
+    Public Function RoundHalfUp(ByVal value As Variant, Optional ByVal decimals As Long = 2) As Variant
+        Dim factor As Variant
+        Dim scaled As Variant
+
+        If decimals < 0 Or decimals > 20 Then
+            Err.Raise 5, "Money.RoundHalfUp", "decimals deve stare fra 0 e 20"
+        End If
+
+        factor = PowerOfTen(decimals)
+        scaled = Dec(value) * factor
+        If scaled < 0 Then
+            scaled = -Int(-scaled + CDec(0.5))
+        Else
+            scaled = Int(scaled + CDec(0.5))
+        End If
+        Return scaled / factor
+    End Function
+
+    Public Function Round2(ByVal value As Variant) As Variant
+        Return RoundHalfUp(value, 2)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Sconti e IVA
+    ' ------------------------------------------------------------------
+
+    ' Applica fino a tre sconti in cascata, come si legge sui listini:
+    ' "10+5" su 100 fa 85.50, non 85. Una percentuale negativa e' una
+    ' maggiorazione e funziona per la stessa strada.
+    Public Function ApplyDiscounts(ByVal gross As Variant, _
+                                   Optional ByVal percent1 As Double = 0, _
+                                   Optional ByVal percent2 As Double = 0, _
+                                   Optional ByVal percent3 As Double = 0) As Variant
+        Dim result As Variant
+
+        result = Dec(gross)
+        result = ApplyOneDiscount(result, percent1)
+        result = ApplyOneDiscount(result, percent2)
+        result = ApplyOneDiscount(result, percent3)
+        Return result
+    End Function
+
+    ' Scorporo: dall'importo comprensivo di IVA all'imponibile.
+    ' 12.20 al 22% torna esattamente 10.00.
+    Public Function NetOfVat(ByVal grossIncludingVat As Variant, ByVal vatPercent As Double) As Variant
+        If vatPercent = 0 Then Return Dec(grossIncludingVat)
+        Return Dec(grossIncludingVat) * CDec(100) / (CDec(100) + Dec(vatPercent))
+    End Function
+
+    ' Imposta su un imponibile. Non arrotonda: lo fa il chiamante, che sa
+    ' se sta calcolando una riga o un rigo di riepilogo.
+    Public Function VatOn(ByVal taxableAmount As Variant, ByVal vatPercent As Double) As Variant
+        If vatPercent = 0 Then Return CDec(0)
+        Return Dec(taxableAmount) * Dec(vatPercent) / CDec(100)
+    End Function
+
+    ' Percentuale generica, usata per sconto in piede, cassa previdenziale
+    ' e base della ritenuta.
+    Public Function PercentOf(ByVal baseAmount As Variant, ByVal percent As Double) As Variant
+        If percent = 0 Then Return CDec(0)
+        Return Dec(baseAmount) * Dec(percent) / CDec(100)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Testo
+    ' ------------------------------------------------------------------
+
+    ' Importo per la stampa e per lo schermo: separatori secondo le
+    ' impostazioni di Windows, quindi 1.234,56 su una macchina italiana.
+    Public Function FormatAmount(ByVal value As Variant, Optional ByVal decimals As Long = 2) As String
+        Dim pattern As String
+
+        pattern = "#,##0"
+        If decimals > 0 Then pattern = pattern & "." & String$(decimals, "0")
+        Return Format$(CDbl(RoundHalfUp(value, decimals)), pattern)
+    End Function
+
+    ' Importo per i file: punto come separatore decimale, numero di decimali
+    ' fisso, nessun separatore di migliaia, indipendente dalle impostazioni
+    ' della postazione. E' la forma che pretende l'XML della fattura
+    ' elettronica, dove un 1.234,56 fa scartare il file.
+    Public Function FormatInvariant(ByVal value As Variant, Optional ByVal decimals As Long = 2) As String
+        Dim scaled As Variant
+        Dim negative As Boolean
+        Dim digits As String
+        Dim sign As String
+
+        scaled = RoundHalfUp(value, decimals) * PowerOfTen(decimals)
+        negative = (scaled < 0)
+        If negative Then scaled = -scaled
+
+        ' scaled e' intero, e CStr di un Decimal intero non mette separatori
+        digits = CStr(Int(scaled))
+        If Len(digits) <= decimals Then
+            digits = String$(decimals - Len(digits) + 1, "0") & digits
+        End If
+
+        If negative Then sign = "-"
+        If decimals = 0 Then Return sign & digits
+        Return sign & Left$(digits, Len(digits) - decimals) & "." & Right$(digits, decimals)
+    End Function
+
+    ' Legge un importo digitato da un utente accettando sia la virgola sia
+    ' il punto, piu' eventuali separatori di migliaia e il simbolo di euro.
+    ' Vince l'ultimo separatore trovato: "1.234,56" e "1,234.56" danno
+    ' entrambi 1234.56.
+    Public Function ParseAmount(ByVal text As String) As Currency
+        Dim cleaned As String
+        Dim i As Long
+        Dim ch As String
+        Dim lastSeparator As Long
+        Dim integerPart As String
+        Dim decimalPart As String
+
+        cleaned = ""
+        lastSeparator = 0
+        For i = 1 To Len(text)
+            ch = Mid$(text, i, 1)
+            If ch Like "#" Then
+                cleaned = cleaned & ch
+            ElseIf ch = "," Or ch = "." Then
+                cleaned = cleaned & "."
+                lastSeparator = Len(cleaned)
+            ElseIf ch = "-" And Len(cleaned) = 0 Then
+                cleaned = "-"
+            End If
+        Next i
+
+        If lastSeparator = 0 Then
+            If Len(cleaned) = 0 Or cleaned = "-" Then Return 0
+            Return CCur(Val(cleaned))
+        End If
+
+        integerPart = Replace$(Left$(cleaned, lastSeparator - 1), ".", "")
+        decimalPart = Replace$(Mid$(cleaned, lastSeparator + 1), ".", "")
+        If Len(integerPart) = 0 Or integerPart = "-" Then integerPart = integerPart & "0"
+        If Len(decimalPart) = 0 Then decimalPart = "0"
+
+        ' Val legge sempre il punto come separatore decimale, qualunque sia
+        ' la lingua di Windows
+        Return CCur(Val(integerPart & "." & decimalPart))
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Potenza di dieci costruita per moltiplicazioni successive, cosi' resta
+    ' dentro Decimal: 10 ^ n in VB passa per Double.
+    Private Function PowerOfTen(ByVal exponent As Long) As Variant
+        Dim result As Variant
+        Dim i As Long
+
+        result = CDec(1)
+        For i = 1 To exponent
+            result = result * CDec(10)
+        Next i
+        Return result
+    End Function
+
+    Private Function ApplyOneDiscount(ByVal value As Variant, ByVal percent As Double) As Variant
+        If percent = 0 Then Return value
+        Return value * (CDec(100) - Dec(percent)) / CDec(100)
+    End Function
+
+End Module

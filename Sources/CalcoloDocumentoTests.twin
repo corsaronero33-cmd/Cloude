@@ -1,0 +1,428 @@
+'
+' CalcoloDocumentoTests - suite di test per il motore di calcolo.
+'
+' Ogni test e' un caso che in una fattura vera si e' visto almeno una
+' volta. Due in particolare valgono piu' degli altri:
+'
+'   "L'imposta si arrotonda sul riepilogo, non riga per riga": e' la regola
+'   che fa quadrare il riepilogo IVA con quello che si aspetta lo SDI, e si
+'   sbaglia facilmente perche' il risultato differisce di un centesimo.
+'
+'   "Lo sconto in piede si scarica sulle righe": se si sottrae in fondo, la
+'   somma delle righe non torna piu' con il riepilogo e la differenza salta
+'   fuori quando il cliente contesta la fattura.
+'
+Module CalcoloDocumentoTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestRigaSemplice runner
+        TestSconti runner
+        TestPrezziIvati runner
+        TestAliquoteMultiple runner
+        TestArrotondamentoRiepilogo runner
+        TestScontoPiede runner
+        TestSpese runner
+        TestCassaPrevidenziale runner
+        TestRitenuta runner
+        TestBollo runner
+        TestSplitPayment runner
+        TestRigheParticolari runner
+        TestValidazione runner
+        TestContratto runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+
+    Private Sub TestRigaSemplice(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "T1", "Tastiera", 3, 10@, 22
+        calc.Calcola
+
+        runner.BeginTest "Tre pezzi da dieci euro al 22 per cento"
+        runner.AreEqual 30@, calc.TotaleImponibile
+        runner.AreEqual 6.6@, calc.TotaleImposta
+        runner.AreEqual 36.6@, calc.TotaleDocumento
+        runner.AreEqual 36.6@, calc.TotaleDaPagare
+        runner.AreEqual 1, calc.Riepilogo.Count
+    End Sub
+
+    Private Sub TestSconti(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+
+        Set calc = New CalcoloDocumento
+        Set riga = calc.AggiungiArticolo("A1", "Monitor", 2, 100@, 22)
+        riga.Sconto1 = 10
+        riga.Sconto2 = 5
+        calc.Calcola
+
+        runner.BeginTest "Gli sconti di riga vanno in cascata"
+        runner.AreEqual 85.5@, riga.PrezzoNetto
+        runner.AreEqual 171@, calc.TotaleImponibile
+        runner.AreEqual 37.62@, calc.TotaleImposta
+        runner.AreEqual 208.62@, calc.TotaleDocumento
+
+        runner.BeginTest "Merce e sconti sono riportati a parte"
+        runner.AreEqual 200@, calc.TotaleMerce
+        runner.AreEqual 29@, calc.TotaleSconti
+
+        Set calc = New CalcoloDocumento
+        Set riga = calc.AggiungiArticolo("A1", "Monitor", 1, 100@, 22)
+        riga.ScontoImporto = 15@
+        calc.Calcola
+
+        runner.BeginTest "Lo sconto a valore si sottrae dal totale di riga"
+        runner.AreEqual 85@, calc.TotaleImponibile
+    End Sub
+
+    Private Sub TestPrezziIvati(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.PrezziIvati = True
+        calc.AggiungiArticolo "A1", "Articolo al pubblico", 1, 12.2@, 22
+        calc.Calcola
+
+        runner.BeginTest "Con i prezzi ivati si scorpora l'imponibile"
+        runner.AreEqual 10@, calc.TotaleImponibile
+        runner.AreEqual 2.2@, calc.TotaleImposta
+        runner.AreEqual 12.2@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.PrezziIvati = True
+        calc.AggiungiArticolo "A1", "Dieci pezzi", 10, 12.2@, 22
+        calc.Calcola
+
+        runner.BeginTest "Lo scorporo regge anche sulle quantita'"
+        runner.AreEqual 100@, calc.TotaleImponibile
+        runner.AreEqual 122@, calc.TotaleDocumento
+    End Sub
+
+    Private Sub TestAliquoteMultiple(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Al 22", 1, 100@, 22
+        calc.AggiungiArticolo "A2", "Al 10", 1, 50@, 10
+        calc.AggiungiArticolo "A3", "Ancora al 22", 1, 100@, 22
+        calc.Calcola
+
+        runner.BeginTest "Il riepilogo raggruppa per aliquota"
+        runner.AreEqual 2, calc.Riepilogo.Count
+        runner.AreEqual 250@, calc.TotaleImponibile
+        runner.AreEqual 49@, calc.TotaleImposta
+        runner.AreEqual 299@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Esente art. 10", 1, 100@, 0, "N4"
+        calc.AggiungiArticolo "A2", "Escluso art. 15", 1, 100@, 0, "N1"
+        calc.Calcola
+
+        runner.BeginTest "Due nature diverse allo zero per cento restano distinte"
+        runner.AreEqual 2, calc.Riepilogo.Count
+        runner.AreEqual 200@, calc.TotaleImponibile
+        runner.AreEqual 0@, calc.TotaleImposta
+    End Sub
+
+    Private Sub TestArrotondamentoRiepilogo(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Minuteria", 1, 0.33@, 22
+        calc.AggiungiArticolo "A2", "Minuteria", 1, 0.33@, 22
+        calc.AggiungiArticolo "A3", "Minuteria", 1, 0.33@, 22
+        calc.Calcola
+
+        runner.BeginTest "L'imposta si arrotonda sul riepilogo, non riga per riga"
+        ' 0.99 al 22 per cento fa 0.2178, che arrotondato e' 0.22.
+        ' Arrotondando le tre righe una per una si otterrebbe 0.21.
+        runner.AreEqual 0.99@, calc.TotaleImponibile
+        runner.AreEqual 0.22@, calc.TotaleImposta
+        runner.AreEqual 1.21@, calc.TotaleDocumento
+    End Sub
+
+    Private Sub TestScontoPiede(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+
+        Set calc = New CalcoloDocumento
+        calc.ScontoPiedePerc = 10
+        Set riga = calc.AggiungiArticolo("A1", "Articolo", 1, 100@, 22)
+        calc.Calcola
+
+        runner.BeginTest "Lo sconto in piede si scarica sulle righe"
+        runner.AreEqual 90@, riga.Imponibile
+        runner.AreEqual 90@, calc.TotaleImponibile
+        runner.AreEqual 19.8@, calc.TotaleImposta
+        runner.AreEqual 109.8@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.ScontoPiedePerc = 10
+        calc.AggiungiArticolo "A1", "Al 22", 1, 100@, 22
+        calc.AggiungiArticolo "A2", "Al 10", 1, 100@, 10
+        calc.Calcola
+
+        runner.BeginTest "Lo sconto in piede tiene separate le aliquote"
+        runner.AreEqual 180@, calc.TotaleImponibile
+        runner.AreEqual 28.8@, calc.TotaleImposta
+    End Sub
+
+    Private Sub TestSpese(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 1, 100@, 22
+        calc.SpeseIncasso = 3@
+        calc.PercentualeIvaSpese = 22
+        calc.Calcola
+
+        runner.BeginTest "Le spese entrano nell'imponibile della loro aliquota"
+        runner.AreEqual 1, calc.Riepilogo.Count
+        runner.AreEqual 103@, calc.TotaleImponibile
+        runner.AreEqual 22.66@, calc.TotaleImposta
+        runner.AreEqual 125.66@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 1, 100@, 22
+        calc.SpeseTrasporto = 10@
+        calc.SpeseImballo = 5@
+        calc.PercentualeIvaSpese = 10
+        calc.Calcola
+
+        runner.BeginTest "Spese con aliquota propria fanno un rigo a parte"
+        runner.AreEqual 2, calc.Riepilogo.Count
+        runner.AreEqual 115@, calc.TotaleImponibile
+        runner.AreEqual 23.5@, calc.TotaleImposta
+    End Sub
+
+    Private Sub TestCassaPrevidenziale(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "P1", "Prestazione professionale", 1, 1000@, 22
+        calc.CassaPrevidenzialePerc = 4
+        calc.PercentualeIvaCassa = 22
+        calc.Calcola
+
+        runner.BeginTest "La cassa previdenziale e' imponibile come la prestazione"
+        runner.AreEqual 40@, calc.CassaPrevidenziale
+        runner.AreEqual 1, calc.Riepilogo.Count
+        runner.AreEqual 1040@, calc.TotaleImponibile
+        runner.AreEqual 228.8@, calc.TotaleImposta
+        runner.AreEqual 1268.8@, calc.TotaleDocumento
+    End Sub
+
+    Private Sub TestRitenuta(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "P1", "Prestazione professionale", 1, 1000@, 22
+        calc.RitenutaPerc = 20
+        calc.Calcola
+
+        runner.BeginTest "La ritenuta non cambia il totale, cambia quanto si incassa"
+        runner.AreEqual 1000@, calc.BaseRitenuta
+        runner.AreEqual 200@, calc.Ritenuta
+        runner.AreEqual 1220@, calc.TotaleDocumento
+        runner.AreEqual 1020@, calc.TotaleDaPagare
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "P1", "Provvigione agente", 1, 1000@, 22
+        calc.RitenutaPerc = 23
+        calc.RitenutaBasePerc = 50
+        calc.Calcola
+
+        runner.BeginTest "La ritenuta dell'agente si applica a meta' imponibile"
+        runner.AreEqual 500@, calc.BaseRitenuta
+        runner.AreEqual 115@, calc.Ritenuta
+        runner.AreEqual 1105@, calc.TotaleDaPagare
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "P1", "Prestazione", 1, 1000@, 22
+        calc.CassaPrevidenzialePerc = 4
+        calc.PercentualeIvaCassa = 22
+        calc.RitenutaPerc = 20
+        calc.CassaSoggettaRitenuta = True
+        calc.Calcola
+
+        runner.BeginTest "Con il flag attivo la cassa entra nella base della ritenuta"
+        runner.AreEqual 1040@, calc.BaseRitenuta
+        runner.AreEqual 208@, calc.Ritenuta
+    End Sub
+
+    Private Sub TestBollo(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Operazione non soggetta", 1, 100@, 0, "N2.2"
+        calc.BolloAddebitato = True
+        calc.Calcola
+
+        runner.BeginTest "Oltre la soglia il bollo scatta e se addebitato entra nel totale"
+        runner.AreEqual 2@, calc.Bollo
+        runner.AreEqual 100@, calc.TotaleImponibile
+        runner.AreEqual 0@, calc.TotaleImposta
+        runner.AreEqual 102@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Operazione non soggetta", 1, 100@, 0, "N2.2"
+        calc.BolloAddebitato = False
+        calc.Calcola
+
+        runner.BeginTest "Il bollo non addebitato resta fuori dal totale"
+        runner.AreEqual 2@, calc.Bollo
+        runner.AreEqual 100@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Operazione non soggetta", 1, 50@, 0, "N2.2"
+        calc.Calcola
+
+        runner.BeginTest "Sotto i 77.47 euro il bollo non si applica"
+        runner.AreEqual 0@, calc.Bollo
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo con IVA", 1, 1000@, 22
+        calc.Calcola
+
+        runner.BeginTest "Il bollo guarda solo le operazioni senza imposta"
+        runner.AreEqual 0@, calc.Bollo
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Operazione non soggetta", 1, 100@, 0, "N2.2"
+        calc.BolloAutomatico = False
+        calc.Calcola
+
+        runner.BeginTest "Il calcolo automatico del bollo si puo' spegnere"
+        runner.AreEqual 0@, calc.Bollo
+    End Sub
+
+    Private Sub TestSplitPayment(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+        Dim voce As RiepilogoIva
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Fornitura a ente pubblico", 1, 100@, 22
+        calc.SplitPayment = True
+        calc.Calcola
+        Set voce = calc.Riepilogo.Item(1)
+
+        runner.BeginTest "Con la scissione dei pagamenti l'IVA non si incassa"
+        runner.AreEqual 100@, calc.TotaleImponibile
+        runner.AreEqual 22@, calc.TotaleImposta
+        runner.AreEqual 22@, calc.ImpostaSospesa
+        runner.AreEqual 122@, calc.TotaleDocumento
+        runner.AreEqual 100@, calc.TotaleDaPagare
+        runner.AreEqual "S", voce.Esigibilita
+    End Sub
+
+    Private Sub TestRigheParticolari(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo venduto", 1, 100@, 22
+        Set riga = calc.AggiungiArticolo("A2", "Articolo in omaggio", 1, 50@, 22)
+        riga.Omaggio = True
+        calc.Calcola
+
+        runner.BeginTest "Un omaggio resta in stampa ma non nell'imponibile"
+        runner.AreEqual 0@, riga.Imponibile
+        runner.AreEqual 100@, calc.TotaleImponibile
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 1, 100@, 22
+        calc.AggiungiDescrizione "Consegna entro il mese"
+        calc.Calcola
+
+        runner.BeginTest "Una riga descrittiva non entra nei conti"
+        runner.AreEqual 2, calc.NumeroRighe
+        runner.AreEqual 1, calc.Riepilogo.Count
+        runner.AreEqual 100@, calc.TotaleImponibile
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Reso merce", -2, 50@, 22
+        calc.Calcola
+
+        runner.BeginTest "Una quantita' negativa funziona per le note di credito"
+        runner.AreEqual -100@, calc.TotaleImponibile
+        runner.AreEqual -22@, calc.TotaleImposta
+        runner.AreEqual -122@, calc.TotaleDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.Calcola
+
+        runner.BeginTest "Un documento vuoto fa zero e non errore"
+        runner.AreEqual 0@, calc.TotaleImponibile
+        runner.AreEqual 0@, calc.TotaleDocumento
+        runner.AreEqual 0, calc.Riepilogo.Count
+    End Sub
+
+    Private Sub TestValidazione(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo regolare", 1, 100@, 22
+        calc.Calcola
+
+        runner.BeginTest "Un documento in ordine non ha rilievi"
+        runner.AreEqual 0, QuantiRilievi(calc)
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "", 1, 10@, 0
+        runner.BeginTest "Descrizione vuota e aliquota zero senza natura sono due rilievi"
+        runner.AreEqual 2, QuantiRilievi(calc)
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 1, 10@, 22, "N4"
+        runner.BeginTest "Una natura con imposta dovuta e' un rilievo"
+        runner.AreEqual 1, QuantiRilievi(calc)
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 0, 10@, 22
+        runner.BeginTest "La quantita' a zero e' un rilievo"
+        runner.AreEqual 1, QuantiRilievi(calc)
+
+        Set calc = New CalcoloDocumento
+        runner.BeginTest "Un documento senza righe non e' emettibile"
+        runner.AreEqual 1, QuantiRilievi(calc)
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 1, 100@, 22
+        calc.SpeseIncasso = 3@
+        runner.BeginTest "Spese senza aliquota valida sono un rilievo"
+        runner.AreEqual 1, QuantiRilievi(calc)
+    End Sub
+
+    Private Sub TestContratto(ByVal runner As TestRunner)
+        Dim calc As CalcoloDocumento
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "A1", "Articolo", 1, 100@, 22
+
+        runner.BeginTest "Leggere un totale senza avere calcolato e' un errore"
+        runner.RaisedError 5, ErroreDaTotale(calc)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper
+    ' ------------------------------------------------------------------
+
+    Private Function ErroreDaTotale(ByVal calc As CalcoloDocumento) As Long
+        Dim totale As Currency
+
+        On Error Resume Next
+        Err.Clear
+        totale = calc.TotaleDocumento
+        Return Err.Number
+    End Function
+
+    Private Function QuantiRilievi(ByVal calc As CalcoloDocumento) As Long
+        Dim problemi As Collection
+
+        Set problemi = calc.Validazione()
+        Return problemi.Count
+    End Function
+
+End Module

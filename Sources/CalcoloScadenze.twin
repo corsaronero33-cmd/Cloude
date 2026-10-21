@@ -1,0 +1,100 @@
+'
+' CalcoloScadenze - dalle condizioni di pagamento alle rate.
+'
+' Modulo puro, senza archivio: prende i parametri che stanno nella tabella
+' Pagamenti e restituisce una collezione di Scadenza. Anche questo e'
+' coperto dai test, perche' una scadenza sbagliata si scopre tardi, quando
+' il cliente non paga o la banca rifiuta la distinta.
+'
+' Convenzioni, quelle di uso commerciale in Italia:
+'
+'   "30 giorni data fattura"  -> data piu' 30 giorni
+'   "30 giorni fine mese"     -> data piu' 30 giorni, poi ultimo del mese
+'   "60/90 giorni fine mese"  -> due rate, a 60 e a 90 giorni, ognuna
+'                                portata a fine mese
+'
+' La somma delle rate e' sempre esattamente l'importo di partenza: la
+' differenza di arrotondamento va sull'ultima rata.
+'
+Module CalcoloScadenze
+
+    ' Genera le rate di un documento. numeroRate minore di uno viene
+    ' trattato come rata unica.
+    Public Function Genera(ByVal dataDocumento As Date, ByVal importo As Currency, _
+                           ByVal numeroRate As Long, _
+                           Optional ByVal giorniPrimaRata As Long = 0, _
+                           Optional ByVal intervalloGiorni As Long = 30, _
+                           Optional ByVal fineMese As Boolean = False, _
+                           Optional ByVal giorniDopoFineMese As Long = 0, _
+                           Optional ByVal modalitaPagamento As String = "") As Collection
+        Dim rate As Collection
+        Dim scadenza As Scadenza
+        Dim rataPiena As Currency
+        Dim i As Long
+
+        Set rate = New Collection
+        If numeroRate < 1 Then numeroRate = 1
+
+        rataPiena = Money.Amount(Money.Dec(importo) / Money.Dec(numeroRate))
+
+        For i = 1 To numeroRate
+            Set scadenza = New Scadenza
+            scadenza.NumeroRata = i
+            scadenza.ModalitaPagamento = modalitaPagamento
+            scadenza.DataScadenza = DataRata(dataDocumento, i, giorniPrimaRata, _
+                                             intervalloGiorni, fineMese, giorniDopoFineMese)
+
+            If i < numeroRate Then
+                scadenza.Importo = rataPiena
+            Else
+                ' l'ultima rata assorbe la differenza di arrotondamento
+                scadenza.Importo = Money.Amount(Money.Dec(importo) - _
+                                                Money.Dec(rataPiena) * Money.Dec(numeroRate - 1))
+            End If
+
+            rate.Add scadenza
+        Next i
+
+        Return rate
+    End Function
+
+    ' Data di una singola rata.
+    Public Function DataRata(ByVal dataDocumento As Date, ByVal numeroRata As Long, _
+                             ByVal giorniPrimaRata As Long, ByVal intervalloGiorni As Long, _
+                             ByVal fineMese As Boolean, ByVal giorniDopoFineMese As Long) As Date
+        Dim risultato As Date
+
+        If numeroRata < 1 Then numeroRata = 1
+        risultato = DateAdd("d", giorniPrimaRata + (numeroRata - 1) * intervalloGiorni, dataDocumento)
+
+        If fineMese Then
+            risultato = FineDelMese(risultato)
+            If giorniDopoFineMese <> 0 Then
+                risultato = DateAdd("d", giorniDopoFineMese, risultato)
+            End If
+        End If
+
+        Return risultato
+    End Function
+
+    ' Ultimo giorno del mese di una data. Il giorno zero del mese
+    ' successivo e' l'ultimo del mese corrente, e DateSerial regge il mese
+    ' tredici passando all'anno dopo.
+    Public Function FineDelMese(ByVal value As Date) As Date
+        Return DateSerial(Year(value), Month(value) + 1, 0)
+    End Function
+
+    ' Somma degli importi di una collezione di rate. Serve ai test e al
+    ' controllo di quadratura prima di salvare.
+    Public Function TotaleRate(ByVal rate As Collection) As Currency
+        Dim scadenza As Scadenza
+        Dim totale As Variant
+
+        totale = CDec(0)
+        For Each scadenza In rate
+            totale = totale + Money.Dec(scadenza.Importo)
+        Next scadenza
+        Return Money.Amount(totale)
+    End Function
+
+End Module

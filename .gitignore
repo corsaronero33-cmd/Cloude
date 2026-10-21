@@ -18,3 +18,18 @@ build/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Archivio Access: i dati non stanno nel controllo di versione, e il file
+# di lock e' effimero per definizione
+*.accdb
+*.laccdb
+*.mdb
+*.ldb
+
+# Impostazioni della singola postazione: il percorso dell'archivio cambia
+# da installazione a installazione
+Gestionale.ini
+
+# XML della fattura elettronica e stampe generate
+Fatture/
+Stampe/

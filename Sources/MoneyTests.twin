@@ -1,0 +1,141 @@
+'
+' MoneyTests - suite di test per il modulo Money.
+'
+' I confronti sono fra Currency e Currency, mai fra testo e numero:
+' CStr di un numero usa il separatore decimale della postazione, e un test
+' che passa in Italia e fallisce in Irlanda non e' un test. Dove il
+' risultato e' testo si confronta con FormatInvariant, che per definizione
+' non dipende dalle impostazioni locali.
+'
+Module MoneyTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestArrotondamento runner
+        TestFormatoInvariante runner
+        TestSconti runner
+        TestIva runner
+        TestLetturaImporti runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+
+    Private Sub TestArrotondamento(ByVal runner As TestRunner)
+        runner.BeginTest "Lo 0.5 va lontano dallo zero, non al pari"
+        ' Round() di VB darebbe 0.12 e 2 invece di 0.13 e 3
+        runner.AreEqual 0.13@, Money.Amount(0.125@)
+        runner.AreEqual -0.13@, Money.Amount(-0.125@)
+        runner.AreEqual 3@, CCur(Money.RoundHalfUp(2.5@, 0))
+        runner.AreEqual -3@, CCur(Money.RoundHalfUp(-2.5@, 0))
+
+        runner.BeginTest "Il caso classico 1.005 arrotonda a 1.01"
+        runner.AreEqual 1.01@, Money.Amount(1.005@)
+
+        runner.BeginTest "Sotto la meta' si arrotonda per difetto"
+        runner.AreEqual 2.34@, Money.Amount(2.344@)
+        runner.AreEqual 2.35@, Money.Amount(2.345@)
+        runner.AreEqual 2.35@, Money.Amount(2.346@)
+
+        runner.BeginTest "Zero resta zero"
+        runner.AreEqual 0@, Money.Amount(0@)
+
+        runner.BeginTest "Dec regge Null, Empty e stringa vuota"
+        runner.AreEqual 0@, Money.Amount(Money.Dec(Null))
+        runner.AreEqual 0@, Money.Amount(Money.Dec(Empty))
+        runner.AreEqual 0@, Money.Amount(Money.Dec(""))
+
+        runner.BeginTest "Un numero di decimali assurdo e' un errore"
+        runner.RaisedError 5, ErroreDaRound(1@, -1)
+        runner.RaisedError 5, ErroreDaRound(1@, 21)
+    End Sub
+
+    Private Sub TestFormatoInvariante(ByVal runner As TestRunner)
+        runner.BeginTest "FormatInvariant usa sempre il punto"
+        runner.AreEqual "1234.50", Money.FormatInvariant(1234.5@)
+        runner.AreEqual "22.00", Money.FormatInvariant(22@)
+        runner.AreEqual "-1234.57", Money.FormatInvariant(-1234.567@)
+
+        runner.BeginTest "I decimali ci sono anche quando sono zero"
+        runner.AreEqual "0.00", Money.FormatInvariant(0@)
+        runner.AreEqual "0.07", Money.FormatInvariant(0.07@)
+        runner.AreEqual "-0.50", Money.FormatInvariant(-0.5@)
+
+        runner.BeginTest "Zero decimali non lascia il punto in fondo"
+        runner.AreEqual "1235", Money.FormatInvariant(1234.5@, 0)
+        runner.AreEqual "0", Money.FormatInvariant(0@, 0)
+
+        runner.BeginTest "Le aliquote si scrivono con due decimali"
+        runner.AreEqual "22.00", Money.FormatInvariant(CCur(22), 2)
+        runner.AreEqual "4.00", Money.FormatInvariant(CCur(4), 2)
+    End Sub
+
+    Private Sub TestSconti(ByVal runner As TestRunner)
+        runner.BeginTest "Gli sconti si applicano in cascata"
+        ' "10+5" su 100 fa 85.50, non 85
+        runner.AreEqual 85.5@, Money.Amount(Money.ApplyDiscounts(100@, 10, 5))
+        runner.AreEqual 81.225@, CCur(Money.RoundHalfUp(Money.ApplyDiscounts(100@, 10, 5, 5), 4))
+
+        runner.BeginTest "Uno sconto a zero non cambia niente"
+        runner.AreEqual 100@, Money.Amount(Money.ApplyDiscounts(100@))
+        runner.AreEqual 100@, Money.Amount(Money.ApplyDiscounts(100@, 0, 0, 0))
+
+        runner.BeginTest "Una percentuale negativa e' una maggiorazione"
+        runner.AreEqual 110@, Money.Amount(Money.ApplyDiscounts(100@, -10))
+
+        runner.BeginTest "Uno sconto del cento per cento azzera"
+        runner.AreEqual 0@, Money.Amount(Money.ApplyDiscounts(100@, 100))
+    End Sub
+
+    Private Sub TestIva(ByVal runner As TestRunner)
+        runner.BeginTest "Lo scorporo torna all'imponibile esatto"
+        runner.AreEqual 10@, Money.Amount(Money.NetOfVat(12.2@, 22))
+        runner.AreEqual 100@, Money.Amount(Money.NetOfVat(122@, 22))
+        runner.AreEqual 100@, Money.Amount(Money.NetOfVat(110@, 10))
+
+        runner.BeginTest "Senza IVA lo scorporo non fa niente"
+        runner.AreEqual 50@, Money.Amount(Money.NetOfVat(50@, 0))
+
+        runner.BeginTest "L'imposta si calcola sull'imponibile"
+        runner.AreEqual 22@, Money.Amount(Money.VatOn(100@, 22))
+        runner.AreEqual 7.33@, Money.Amount(Money.VatOn(33.33@, 22))
+        runner.AreEqual 0@, Money.Amount(Money.VatOn(100@, 0))
+
+        runner.BeginTest "PercentOf serve a cassa, ritenuta e sconto in piede"
+        runner.AreEqual 40@, Money.Amount(Money.PercentOf(1000@, 4))
+        runner.AreEqual 200@, Money.Amount(Money.PercentOf(1000@, 20))
+        runner.AreEqual 0@, Money.Amount(Money.PercentOf(1000@, 0))
+    End Sub
+
+    Private Sub TestLetturaImporti(ByVal runner As TestRunner)
+        runner.BeginTest "ParseAmount accetta la virgola e il punto"
+        runner.AreEqual 1234.56@, Money.ParseAmount("1.234,56")
+        runner.AreEqual 1234.56@, Money.ParseAmount("1,234.56")
+        runner.AreEqual 12.5@, Money.ParseAmount("12,50")
+        runner.AreEqual 12.5@, Money.ParseAmount("12.50")
+
+        runner.BeginTest "ParseAmount regge il simbolo di valuta e gli spazi"
+        runner.AreEqual 1000@, Money.ParseAmount("1.000,00")
+        runner.AreEqual 1000@, Money.ParseAmount("EUR 1 000,00")
+
+        runner.BeginTest "Un numero senza separatori resta intero"
+        runner.AreEqual 1500@, Money.ParseAmount("1500")
+
+        runner.BeginTest "Il segno meno davanti viene conservato"
+        runner.AreEqual -45.3@, Money.ParseAmount("-45,30")
+
+        runner.BeginTest "Un testo senza cifre vale zero"
+        runner.AreEqual 0@, Money.ParseAmount("")
+        runner.AreEqual 0@, Money.ParseAmount("abc")
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper: cattura il numero di errore invece di lasciarlo propagare
+    ' ------------------------------------------------------------------
+
+    Private Function ErroreDaRound(ByVal valore As Currency, ByVal decimali As Long) As Long
+        On Error Resume Next
+        Err.Clear
+        Money.RoundHalfUp valore, decimali
+        Return Err.Number
+    End Function
+
+End Module

@@ -1,0 +1,479 @@
+'
+' Database - accesso all'archivio Access, pensato per la rete locale.
+'
+' Access su cartella condivisa con cinque o sette postazioni regge bene, ma
+' solo rispettando poche regole. Sono tutte dentro questa classe, cosi' il
+' resto dell'applicazione non ha modo di violarle:
+'
+'  1. una sola connessione per postazione, aperta all'avvio e chiusa
+'     all'uscita. Aprire e chiudere a ogni query obbliga il motore a
+'     rileggere il file di lock ogni volta, ed e' la prima causa di
+'     lentezza di un gestionale Access in rete.
+'
+'  2. blocco a livello di record e non di pagina
+'     (Jet OLEDB:Database Locking Mode=1). Con il blocco di pagina due
+'     utenti che modificano due clienti diversi si aspettano a vicenda
+'     solo perche' le righe stanno vicine nel file.
+'
+'  3. i recordset di lettura nascono lato client e vengono scollegati
+'     subito (OpenRecordset). Una griglia che resta agganciata a un
+'     cursore server tiene un blocco aperto per tutto il tempo in cui
+'     l'utente guarda l'elenco, magari fino a domani mattina.
+'
+'  4. query sempre con parametri, mai con valori concatenati. Non e' solo
+'     per le injection: una data concatenata dipende dalle impostazioni
+'     locali della postazione, e il 03/04 di una diventa il 04/03
+'     dell'altra.
+'
+'  5. transazioni corte e ripetizione automatica sui conflitti di blocco.
+'     Una transazione aperta mentre l'utente compila una maschera blocca
+'     gli altri: si apre quando si salva e si chiude subito.
+'
+' Serve il motore di database di Access (ACE) installato, della stessa
+' architettura dell'eseguibile: un EXE a 64 bit non parla con un ACE a 32
+' bit. Vedere docs/03-access-in-rete.md.
+'
+Class Database
+
+    ' Provider provati in ordine. ACE 16 c'e' con Office 2016 e successivi
+    ' e con il runtime scaricabile, ACE 12 con le versioni piu' vecchie.
+    Private Const PROVIDERS As String = "Microsoft.ACE.OLEDB.16.0|Microsoft.ACE.OLEDB.12.0"
+
+    Private mConn As Object
+    Private mPath As String
+    Private mProvider As String
+    Private mPassword As String
+    Private mInTransaction As Boolean
+
+    ' Quante volte riprovare un'operazione respinta per blocco, e di quanto
+    ' crescere l'attesa fra un tentativo e il successivo.
+    Public RetryCount As Long
+    Public RetryDelayMs As Long
+
+    Private Sub Class_Initialize()
+        RetryCount = 5
+        RetryDelayMs = 60
+    End Sub
+
+    Private Sub Class_Terminate()
+        CloseDatabase
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Apertura e chiusura
+    ' ------------------------------------------------------------------
+
+    ' Apre l'archivio provando i provider disponibili. Restituisce False se
+    ' nessuno risponde, cosi' il chiamante puo' mostrare un messaggio
+    ' decente invece di una finestra di errore COM.
+    Public Function OpenDatabase(ByVal percorso As String, _
+                                 Optional ByVal password As String = "") As Boolean
+        Dim elenco() As String
+        Dim i As Long
+        Dim ultimoErrore As String
+
+        CloseDatabase
+        If Len(Trim$(percorso)) = 0 Then
+            Err.Raise 5, "Database.OpenDatabase", "Percorso dell'archivio non indicato"
+        End If
+
+        mPath = percorso
+        mPassword = password
+        elenco = Split(PROVIDERS, "|")
+
+        For i = LBound(elenco) To UBound(elenco)
+            On Error Resume Next
+            Set mConn = CreateObject("ADODB.Connection")
+            mConn.ConnectionString = BuildConnectionString(elenco(i), percorso, password)
+            mConn.Open
+            If Err.Number = 0 Then
+                On Error GoTo 0
+                mProvider = elenco(i)
+                Return True
+            End If
+            ultimoErrore = Err.Description
+            Err.Clear
+            Set mConn = Nothing
+            On Error GoTo 0
+        Next i
+
+        mPath = ""
+        If Len(ultimoErrore) = 0 Then ultimoErrore = "nessun provider ACE disponibile"
+        Err.Raise vbObjectError + 1001, "Database.OpenDatabase", _
+                  "Impossibile aprire l'archivio" & vbCrLf & percorso & vbCrLf & vbCrLf & _
+                  ultimoErrore & vbCrLf & vbCrLf & _
+                  "Verificare che il motore di database di Access sia installato " & _
+                  "nella stessa architettura dell'applicazione."
+    End Function
+
+    Public Sub CloseDatabase()
+        If mConn Is Nothing Then Exit Sub
+
+        If mInTransaction Then RollbackTrans
+        On Error Resume Next
+        If mConn.State <> AdoConst.StateClosed Then mConn.Close
+        On Error GoTo 0
+        Set mConn = Nothing
+        mInTransaction = False
+    End Sub
+
+    Public Property Get IsOpen() As Boolean
+        If mConn Is Nothing Then Return False
+        Return (mConn.State = AdoConst.StateOpen)
+    End Property
+
+    Public Property Get Path() As String
+        Return mPath
+    End Property
+
+    Public Property Get Provider() As String
+        Return mProvider
+    End Property
+
+    ' Connessione nuda, per i casi che questa classe non copre. Usarla il
+    ' meno possibile: tutto quello che passa da qui aggira le regole
+    ' dell'intestazione.
+    Public Property Get Connection() As Object
+        Return mConn
+    End Property
+
+    ' Crea un archivio vuoto. Non apre la connessione: dopo serve
+    ' OpenDatabase, e poi Migrator per creare le tabelle.
+    Public Function CreateDatabase(ByVal percorso As String, _
+                                   Optional ByVal password As String = "") As Boolean
+        Dim catalogo As Object
+        Dim elenco() As String
+        Dim i As Long
+        Dim ultimoErrore As String
+
+        If Len(Dir$(percorso)) > 0 Then
+            Err.Raise vbObjectError + 1002, "Database.CreateDatabase", _
+                      "Esiste gia' un file in " & percorso
+        End If
+
+        elenco = Split(PROVIDERS, "|")
+        For i = LBound(elenco) To UBound(elenco)
+            On Error Resume Next
+            Set catalogo = CreateObject("ADOX.Catalog")
+            catalogo.Create BuildConnectionString(elenco(i), percorso, password)
+            If Err.Number = 0 Then
+                On Error GoTo 0
+                Set catalogo = Nothing
+                Return True
+            End If
+            ultimoErrore = Err.Description
+            Err.Clear
+            Set catalogo = Nothing
+            On Error GoTo 0
+        Next i
+
+        Err.Raise vbObjectError + 1003, "Database.CreateDatabase", _
+                  "Impossibile creare l'archivio" & vbCrLf & percorso & vbCrLf & vbCrLf & ultimoErrore
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Lettura
+    ' ------------------------------------------------------------------
+
+    ' Recordset di sola lettura e scollegato dalla connessione: i dati sono
+    ' in memoria sulla postazione e sull'archivio non resta nessun blocco.
+    ' E' la forma da usare per gli elenchi, le griglie e le stampe.
+    Public Function OpenRecordset(ByVal sql As String, ParamArray args() As Variant) As Object
+        Return OpenRecordsetWith(sql, args)
+    End Function
+
+    Public Function OpenRecordsetWith(ByVal sql As String, ByRef args() As Variant) As Object
+        Dim cmd As Object
+        Dim rs As Object
+
+        Set cmd = BuildCommand(sql, args)
+        Set rs = CreateObject("ADODB.Recordset")
+        rs.CursorLocation = AdoConst.UseClient
+        rs.Open cmd, , AdoConst.OpenStatic, AdoConst.LockReadOnly
+
+        ' Scollegamento: da qui in poi il recordset vive da solo
+        Set rs.ActiveConnection = Nothing
+        Set cmd = Nothing
+        Return rs
+    End Function
+
+    ' Recordset che resta agganciato alla connessione. Serve nei pochi casi
+    ' in cui si scorre un insieme grande senza portarselo tutto in memoria.
+    ' Da chiudere appena finito.
+    Public Function OpenLiveRecordset(ByVal sql As String, ParamArray args() As Variant) As Object
+        Dim cmd As Object
+        Dim rs As Object
+
+        Set cmd = BuildCommand(sql, args)
+        Set rs = CreateObject("ADODB.Recordset")
+        rs.CursorLocation = AdoConst.UseServer
+        rs.Open cmd, , AdoConst.OpenForwardOnly, AdoConst.LockReadOnly
+        Return rs
+    End Function
+
+    ' Primo campo della prima riga, Null se non ci sono righe.
+    Public Function ScalarValue(ByVal sql As String, ParamArray args() As Variant) As Variant
+        Return ScalarValueWith(sql, args)
+    End Function
+
+    Public Function ScalarValueWith(ByVal sql As String, ByRef args() As Variant) As Variant
+        Dim rs As Object
+        Dim risultato As Variant
+
+        Set rs = OpenRecordsetWith(sql, args)
+        If rs.EOF Then
+            risultato = Null
+        Else
+            risultato = rs.Fields(0).Value
+        End If
+        rs.Close
+        Return risultato
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Scrittura
+    ' ------------------------------------------------------------------
+
+    ' Esegue un comando e restituisce il numero di righe interessate.
+    ' Riprova da sola sui conflitti di blocco, che in rete capitano e non
+    ' sono errori: sono due postazioni che hanno chiesto la stessa cosa
+    ' nello stesso istante.
+    Public Function Execute(ByVal sql As String, ParamArray args() As Variant) As Long
+        Return ExecuteWith(sql, args)
+    End Function
+
+    Public Function ExecuteWith(ByVal sql As String, ByRef args() As Variant) As Long
+        Dim cmd As Object
+        Dim interessate As Long
+        Dim tentativo As Long
+        Dim numero As Long
+        Dim testo As String
+
+        For tentativo = 1 To RetryCount + 1
+            interessate = 0
+            On Error Resume Next
+            Set cmd = BuildCommand(sql, args)
+            cmd.Execute interessate, , AdoConst.ExecuteNoRecords
+            numero = Err.Number
+            testo = Err.Description
+            On Error GoTo 0
+
+            Set cmd = Nothing
+            If numero = 0 Then Return interessate
+            If Not IsLockError(numero, testo) Then Exit For
+            If tentativo > RetryCount Then Exit For
+
+            ' attesa crescente: se la prima volta erano in due, la seconda
+            ' conviene lasciare un po' piu' di spazio
+            WinApi.Attendi RetryDelayMs * tentativo
+        Next tentativo
+
+        Err.Raise numero, "Database.Execute", testo & vbCrLf & vbCrLf & "SQL: " & sql
+    End Function
+
+    ' Valore del contatore appena generato da un INSERT. Va letto sulla
+    ' stessa connessione e subito dopo l'inserimento.
+    Public Function LastAutoNumber() As Long
+        Dim rs As Object
+        Dim valore As Variant
+
+        RequireConnection
+        Set rs = CreateObject("ADODB.Recordset")
+        rs.Open "SELECT @@IDENTITY", mConn, AdoConst.OpenStatic, AdoConst.LockReadOnly
+        valore = rs.Fields(0).Value
+        rs.Close
+        Set rs = Nothing
+
+        If IsNull(valore) Then Return 0
+        Return CLng(valore)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Transazioni
+    ' ------------------------------------------------------------------
+
+    Public Sub BeginTrans()
+        RequireConnection
+        If mInTransaction Then
+            Err.Raise vbObjectError + 1004, "Database.BeginTrans", _
+                      "Transazione gia' aperta: questa classe non annida le transazioni"
+        End If
+        mConn.BeginTrans
+        mInTransaction = True
+    End Sub
+
+    Public Sub CommitTrans()
+        If Not mInTransaction Then Exit Sub
+        mConn.CommitTrans
+        mInTransaction = False
+    End Sub
+
+    ' Non solleva errori: viene chiamata dai gestori di errore, dove un
+    ' secondo errore nasconderebbe il primo.
+    Public Sub RollbackTrans()
+        If Not mInTransaction Then Exit Sub
+        On Error Resume Next
+        mConn.RollbackTrans
+        On Error GoTo 0
+        mInTransaction = False
+    End Sub
+
+    Public Property Get InTransaction() As Boolean
+        Return mInTransaction
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Interrogazioni sullo schema
+    ' ------------------------------------------------------------------
+
+    Public Function TableExists(ByVal nomeTabella As String) As Boolean
+        Dim esiste As Boolean
+
+        RequireConnection
+        On Error Resume Next
+        mConn.Execute "SELECT COUNT(*) FROM [" & nomeTabella & "]", , AdoConst.CmdText
+        esiste = (Err.Number = 0)
+        Err.Clear
+        On Error GoTo 0
+        Return esiste
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function BuildConnectionString(ByVal provider As String, ByVal percorso As String, _
+                                           ByVal password As String) As String
+        Dim parti As String
+
+        parti = "Provider=" & provider & ";"
+        parti = parti & "Data Source=" & percorso & ";"
+        parti = parti & "Persist Security Info=False;"
+        parti = parti & "Mode=Share Deny None;"
+        ' blocco a livello di record: vedere il punto 2 dell'intestazione.
+        ' Vale per tutte le postazioni, decide la prima che apre il file.
+        parti = parti & "Jet OLEDB:Database Locking Mode=1;"
+        If Len(password) > 0 Then
+            parti = parti & "Jet OLEDB:Database Password=" & password & ";"
+        End If
+        Return parti
+    End Function
+
+    ' Costruisce il comando con i parametri posizionali. Nell'SQL i
+    ' segnaposto sono punti di domanda, nell'ordine in cui compaiono.
+    Private Function BuildCommand(ByVal sql As String, ByRef args() As Variant) As Object
+        Dim cmd As Object
+        Dim i As Long
+
+        RequireConnection
+        Set cmd = CreateObject("ADODB.Command")
+        Set cmd.ActiveConnection = mConn
+        cmd.CommandType = AdoConst.CmdText
+        cmd.CommandText = sql
+
+        If ArrayCount(args) > 0 Then
+            For i = LBound(args) To UBound(args)
+                cmd.Parameters.Append MakeParameter(cmd, "p" & CStr(i), args(i))
+            Next i
+        End If
+
+        Return cmd
+    End Function
+
+    ' Tipo del parametro dedotto dal tipo del valore. Gli importi arrivano
+    ' come Currency e restano Currency: convertirli in Double qui
+    ' vanificherebbe tutto il lavoro di Money.
+    Private Function MakeParameter(ByVal cmd As Object, ByVal nome As String, _
+                                   ByVal valore As Variant) As Object
+        Dim tipo As Long
+        Dim dimensione As Long
+        Dim testo As String
+
+        Select Case VarType(valore)
+            Case vbString
+                testo = CStr(valore)
+                dimensione = Len(testo)
+                If dimensione = 0 Then dimensione = 1
+                If dimensione > 255 Then
+                    tipo = AdoConst.TypeLongVarWChar
+                Else
+                    tipo = AdoConst.TypeVarWChar
+                End If
+
+            Case vbDate
+                tipo = AdoConst.TypeDate
+
+            Case vbBoolean
+                tipo = AdoConst.TypeBoolean
+
+            Case vbCurrency
+                tipo = AdoConst.TypeCurrency
+
+            Case vbDecimal
+                ' i Decimal in giro per l'applicazione sono risultati di
+                ' Money, quindi importi: Currency li rappresenta esatti
+                tipo = AdoConst.TypeCurrency
+                valore = CCur(valore)
+
+            Case vbSingle, vbDouble
+                tipo = AdoConst.TypeDouble
+
+            Case vbByte, vbInteger, vbLong
+                tipo = AdoConst.TypeInteger
+
+            Case vbNull, vbEmpty
+                ' per una colonna numerica conviene passare esplicitamente
+                ' lo zero invece di Null: qui Null resta Null
+                tipo = AdoConst.TypeVarWChar
+                dimensione = 1
+                valore = Null
+
+            Case Else
+                Err.Raise 13, "Database.MakeParameter", _
+                          "Tipo di parametro non gestito: " & CStr(VarType(valore))
+        End Select
+
+        Return cmd.CreateParameter(nome, tipo, AdoConst.ParamInput, dimensione, valore)
+    End Function
+
+    ' Distingue un conflitto di blocco, che si risolve riprovando, da un
+    ' errore vero, che va mostrato all'utente. I messaggi del motore
+    ' arrivano nella lingua di Windows, quindi si controllano le radici
+    ' italiane oltre a quelle inglesi.
+    Private Function IsLockError(ByVal numero As Long, ByVal testo As String) As Boolean
+        Dim minuscolo As String
+
+        Select Case numero
+            Case 3186, 3187, 3188, 3197, 3218, 3260, 3261, 3262
+                Return True
+        End Select
+
+        minuscolo = LCase$(testo)
+        If InStr(minuscolo, "locked") > 0 Then Return True
+        If InStr(minuscolo, "bloccat") > 0 Then Return True
+        If InStr(minuscolo, "another user") > 0 Then Return True
+        If InStr(minuscolo, "altro utente") > 0 Then Return True
+        If InStr(minuscolo, "write conflict") > 0 Then Return True
+        If InStr(minuscolo, "conflitto") > 0 Then Return True
+        Return False
+    End Function
+
+    ' Numero di elementi di un array che puo' essere vuoto. Una ParamArray
+    ' senza argomenti ha UBound minore di LBound.
+    Private Function ArrayCount(ByRef args() As Variant) As Long
+        Dim quanti As Long
+
+        On Error Resume Next
+        quanti = UBound(args) - LBound(args) + 1
+        On Error GoTo 0
+        If quanti < 0 Then quanti = 0
+        Return quanti
+    End Function
+
+    Private Sub RequireConnection()
+        If Not IsOpen Then
+            Err.Raise vbObjectError + 1005, "Database", "Archivio non aperto"
+        End If
+    End Sub
+
+End Class

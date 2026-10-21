@@ -1,0 +1,258 @@
+'
+' Crypto - hash delle password degli utenti.
+'
+' L'archivio sta su una cartella condivisa, quindi chiunque abbia accesso
+' alla cartella puo' aprire il file con Access e leggere la tabella Utenti.
+' Una password in chiaro la' dentro vale zero, e anche un SHA-256 secco si
+' rompe con un dizionario in pochi minuti. Qui:
+'
+'   * ogni utente ha un sale casuale di 16 byte, quindi due utenti con la
+'     stessa password hanno hash diversi e una tabella precalcolata non
+'     serve a niente;
+'   * l'hash e' iterato venticinquemila volte, cosi' provare un dizionario
+'     costa venticinquemila volte di piu';
+'   * il numero di iterazioni e' salvato accanto all'hash, cosi' si puo'
+'     alzare in futuro senza invalidare le password esistenti.
+'
+' Algoritmo, scritto per esteso perche' va replicato tale e quale se un
+' domani le password dovessero servire altrove:
+'
+'   1. b = byte UTF-16LE della stringa (sale in esadecimale + password)
+'   2. h = SHA256(b)
+'   3. ripetuto iterazioni-1 volte: h = SHA256(h + byte UTF-16LE del sale)
+'   4. risultato = h in esadecimale maiuscolo, 64 caratteri
+'
+' Si appoggia alla CryptoAPI di Windows: nessuna libreria da distribuire.
+' Non e' PBKDF2 ufficiale, ma la struttura e la robustezza sono le stesse e
+' sta in un file che si legge tutto.
+'
+Module Crypto
+
+    Private Declare PtrSafe Function CryptAcquireContextW Lib "advapi32" ( _
+        ByRef phProv As LongPtr, _
+        ByVal pszContainer As LongPtr, _
+        ByVal pszProvider As LongPtr, _
+        ByVal dwProvType As Long, _
+        ByVal dwFlags As Long) As Long
+
+    Private Declare PtrSafe Function CryptReleaseContext Lib "advapi32" ( _
+        ByVal hProv As LongPtr, ByVal dwFlags As Long) As Long
+
+    Private Declare PtrSafe Function CryptCreateHash Lib "advapi32" ( _
+        ByVal hProv As LongPtr, _
+        ByVal algId As Long, _
+        ByVal hKey As LongPtr, _
+        ByVal dwFlags As Long, _
+        ByRef phHash As LongPtr) As Long
+
+    Private Declare PtrSafe Function CryptHashData Lib "advapi32" ( _
+        ByVal hHash As LongPtr, _
+        ByVal pbData As LongPtr, _
+        ByVal dwDataLen As Long, _
+        ByVal dwFlags As Long) As Long
+
+    Private Declare PtrSafe Function CryptGetHashParam Lib "advapi32" ( _
+        ByVal hHash As LongPtr, _
+        ByVal dwParam As Long, _
+        ByVal pbData As LongPtr, _
+        ByRef pdwDataLen As Long, _
+        ByVal dwFlags As Long) As Long
+
+    Private Declare PtrSafe Function CryptDestroyHash Lib "advapi32" ( _
+        ByVal hHash As LongPtr) As Long
+
+    Private Declare PtrSafe Function CryptGenRandom Lib "advapi32" ( _
+        ByVal hProv As LongPtr, _
+        ByVal dwLen As Long, _
+        ByVal pbBuffer As LongPtr) As Long
+
+    Private Const PROV_RSA_AES As Long = 24
+    Private Const CRYPT_VERIFYCONTEXT As Long = &HF0000000
+    Private Const CALG_SHA_256 As Long = &H800C&
+    Private Const HP_HASHVAL As Long = 2
+    Private Const SHA256_BYTES As Long = 32
+
+    Public Const ITERAZIONI_PREDEFINITE As Long = 25000
+
+    ' ------------------------------------------------------------------
+    ' Password
+    ' ------------------------------------------------------------------
+
+    ' Sale casuale in esadecimale, da salvare in Utenti.Salt.
+    Public Function NuovoSale(Optional ByVal quantiByte As Long = 16) As String
+        Dim hProv As LongPtr
+        Dim buffer() As Byte
+
+        If quantiByte < 8 Then quantiByte = 8
+        ReDim buffer(0 To quantiByte - 1)
+
+        hProv = ApriProvider()
+        If CryptGenRandom(hProv, quantiByte, VarPtr(buffer(0))) = 0 Then
+            CryptReleaseContext hProv, 0
+            Err.Raise vbObjectError + 1201, "Crypto.NuovoSale", _
+                      "CryptGenRandom non riuscita"
+        End If
+        CryptReleaseContext hProv, 0
+
+        Return ByteInHex(buffer)
+    End Function
+
+    ' Hash da salvare in Utenti.HashPassword, con il sale e il numero di
+    ' iterazioni accanto.
+    Public Function HashPassword(ByVal password As String, ByVal saleHex As String, _
+                                 Optional ByVal iterazioni As Long = 0) As String
+        Dim hProv As LongPtr
+        Dim digest() As Byte
+        Dim sale() As Byte
+        Dim i As Long
+        Dim risultato As String
+
+        If Len(saleHex) = 0 Then
+            Err.Raise 5, "Crypto.HashPassword", "Il sale non puo' essere vuoto"
+        End If
+        If iterazioni <= 0 Then iterazioni = ITERAZIONI_PREDEFINITE
+
+        hProv = ApriProvider()
+
+        On Error GoTo Pulisci
+        sale = StringaInByte(saleHex)
+        digest = HashUnaVolta(hProv, StringaInByte(saleHex & password))
+        For i = 2 To iterazioni
+            digest = HashUnaVolta(hProv, Concatena(digest, sale))
+        Next i
+        risultato = ByteInHex(digest)
+        CryptReleaseContext hProv, 0
+        Return risultato
+
+Pulisci:
+        CryptReleaseContext hProv, 0
+        Err.Raise Err.Number, "Crypto.HashPassword", Err.Description
+    End Function
+
+    ' Confronto fra la password digitata e quello che c'e' in archivio.
+    ' Un hash atteso vuoto significa password non ancora impostata: la
+    ' verifica fallisce sempre, e tocca al chiamante proporre di impostarla.
+    Public Function VerificaPassword(ByVal password As String, ByVal saleHex As String, _
+                                     ByVal iterazioni As Long, ByVal hashAtteso As String) As Boolean
+        If Len(Trim$(hashAtteso)) = 0 Then Return False
+        If Len(Trim$(saleHex)) = 0 Then Return False
+        Return (StrComp(HashPassword(password, saleHex, iterazioni), Trim$(hashAtteso), vbTextCompare) = 0)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Hash generico
+    ' ------------------------------------------------------------------
+
+    ' SHA-256 di un testo, in esadecimale. Serve anche per le impronte dei
+    ' file XML trasmessi, dove conta poter dire che due file sono identici.
+    Public Function Sha256Hex(ByVal testo As String) As String
+        Dim hProv As LongPtr
+        Dim risultato As String
+
+        hProv = ApriProvider()
+        On Error GoTo Pulisci
+        risultato = ByteInHex(HashUnaVolta(hProv, StringaInByte(testo)))
+        CryptReleaseContext hProv, 0
+        Return risultato
+
+Pulisci:
+        CryptReleaseContext hProv, 0
+        Err.Raise Err.Number, "Crypto.Sha256Hex", Err.Description
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function ApriProvider() As LongPtr
+        Dim hProv As LongPtr
+
+        If CryptAcquireContextW(hProv, 0, 0, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) = 0 Then
+            Err.Raise vbObjectError + 1202, "Crypto", _
+                      "CryptAcquireContext non riuscita: il provider di cifratura " & _
+                      "di Windows non risponde"
+        End If
+        Return hProv
+    End Function
+
+    Private Function HashUnaVolta(ByVal hProv As LongPtr, ByRef dati() As Byte) As Byte()
+        Dim hHash As LongPtr
+        Dim digest() As Byte
+        Dim lunghezza As Long
+
+        If CryptCreateHash(hProv, CALG_SHA_256, 0, 0, hHash) = 0 Then
+            Err.Raise vbObjectError + 1203, "Crypto", "CryptCreateHash non riuscita"
+        End If
+
+        If ByteCount(dati) > 0 Then
+            If CryptHashData(hHash, VarPtr(dati(LBound(dati))), ByteCount(dati), 0) = 0 Then
+                CryptDestroyHash hHash
+                Err.Raise vbObjectError + 1204, "Crypto", "CryptHashData non riuscita"
+            End If
+        End If
+
+        ReDim digest(0 To SHA256_BYTES - 1)
+        lunghezza = SHA256_BYTES
+        If CryptGetHashParam(hHash, HP_HASHVAL, VarPtr(digest(0)), lunghezza, 0) = 0 Then
+            CryptDestroyHash hHash
+            Err.Raise vbObjectError + 1205, "Crypto", "CryptGetHashParam non riuscita"
+        End If
+
+        CryptDestroyHash hHash
+        Return digest
+    End Function
+
+    ' Byte UTF-16LE di una stringa: in VB l'assegnazione di una String a un
+    ' array di Byte copia la rappresentazione interna, che e' quella.
+    Private Function StringaInByte(ByVal testo As String) As Byte()
+        Dim risultato() As Byte
+
+        ' un array dinamico mai allocato e' il modo pulito di dire "zero
+        ' byte": ByteCount lo legge come zero senza casi speciali
+        If Len(testo) = 0 Then Return risultato
+        risultato = testo
+        Return risultato
+    End Function
+
+    Private Function Concatena(ByRef primo() As Byte, ByRef secondo() As Byte) As Byte()
+        Dim risultato() As Byte
+        Dim quantiPrimo As Long
+        Dim quantiSecondo As Long
+        Dim i As Long
+
+        quantiPrimo = ByteCount(primo)
+        quantiSecondo = ByteCount(secondo)
+        If quantiPrimo + quantiSecondo = 0 Then Return risultato
+
+        ReDim risultato(0 To quantiPrimo + quantiSecondo - 1)
+        For i = 0 To quantiPrimo - 1
+            risultato(i) = primo(LBound(primo) + i)
+        Next i
+        For i = 0 To quantiSecondo - 1
+            risultato(quantiPrimo + i) = secondo(LBound(secondo) + i)
+        Next i
+        Return risultato
+    End Function
+
+    Private Function ByteInHex(ByRef dati() As Byte) As String
+        Dim risultato As String
+        Dim i As Long
+
+        If ByteCount(dati) = 0 Then Return ""
+        For i = LBound(dati) To UBound(dati)
+            risultato = risultato & Right$("0" & Hex$(dati(i)), 2)
+        Next i
+        Return risultato
+    End Function
+
+    Private Function ByteCount(ByRef dati() As Byte) As Long
+        Dim quanti As Long
+
+        On Error Resume Next
+        quanti = UBound(dati) - LBound(dati) + 1
+        On Error GoTo 0
+        If quanti < 0 Then quanti = 0
+        Return quanti
+    End Function
+
+End Module

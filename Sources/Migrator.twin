@@ -1,0 +1,286 @@
+'
+' Migrator - porta l'archivio alla versione dello schema attesa.
+'
+' Le modifiche allo schema stanno in file numerati nella cartella
+' Database/sql, nella forma NNNN_descrizione.sql. Il numero e' la versione.
+' La versione applicata vive nella tabella Parametri, chiave SchemaVersion.
+' Il Migrator applica solo i file con numero maggiore di quello registrato,
+' in ordine crescente.
+'
+' Perche' non modificare lo schema a mano da Access: con cinque o sette
+' postazioni gia' installate, la versione dell'archivio e quella attesa
+' dall'eseguibile devono poter essere confrontate da un programma. Un
+' archivio aggiornato a mano e un eseguibile vecchio sono il modo piu'
+' rapido di perdere dei dati.
+'
+' Una nota onesta: in Access il DDL non e' transazionale, quindi un file di
+' migrazione che si interrompe a meta' lascia lo schema a meta'. Per questo
+' Apply tiene la versione ferma finche' il file non e' finito tutto, e per
+' questo prima di aggiornare uno schema in produzione si fa una copia del
+' file .accdb. Il messaggio di errore dice quale istruzione si e' fermata.
+'
+Class Migrator
+
+    Private mDb As Database
+    Private mFolder As String
+
+    ' Elenco delle istruzioni eseguite, utile per capire dove ci si e'
+    ' fermati quando una migrazione va male.
+    Private mEseguite As Long
+
+    Public Sub Init(ByVal db As Database, ByVal cartellaSql As String)
+        Set mDb = db
+        mFolder = AddBackslash(cartellaSql)
+    End Sub
+
+    Public Property Get Folder() As String
+        Return mFolder
+    End Property
+
+    Public Property Get IstruzioniEseguite() As Long
+        Return mEseguite
+    End Property
+
+    ' Versione registrata nell'archivio. Zero se l'archivio e' vuoto o se
+    ' non c'e' ancora la tabella Parametri.
+    Public Function CurrentVersion() As Long
+        Dim valore As Variant
+
+        If Not mDb.TableExists("Parametri") Then Return 0
+
+        valore = mDb.ScalarValue("SELECT Contenuto FROM Parametri WHERE Chiave = ?", "SchemaVersion")
+        If IsNull(valore) Then Return 0
+        If Len(Trim$(CStr(valore))) = 0 Then Return 0
+        Return CLng(Val(CStr(valore)))
+    End Function
+
+    ' Versione piu' alta fra i file presenti nella cartella.
+    Public Function AvailableVersion() As Long
+        Dim files As Collection
+        Dim nome As Variant
+        Dim massimo As Long
+
+        Set files = ElencoFile()
+        For Each nome In files
+            If VersioneDi(CStr(nome)) > massimo Then massimo = VersioneDi(CStr(nome))
+        Next nome
+        Return massimo
+    End Function
+
+    Public Function PendingCount() As Long
+        Dim files As Collection
+        Dim nome As Variant
+        Dim corrente As Long
+        Dim quanti As Long
+
+        corrente = CurrentVersion()
+        Set files = ElencoFile()
+        For Each nome In files
+            If VersioneDi(CStr(nome)) > corrente Then quanti += 1
+        Next nome
+        Return quanti
+    End Function
+
+    ' Applica le migrazioni mancanti e restituisce quante ne ha applicate.
+    Public Function Apply() As Long
+        Dim files As Collection
+        Dim nome As Variant
+        Dim versione As Long
+        Dim corrente As Long
+        Dim applicate As Long
+
+        mEseguite = 0
+        corrente = CurrentVersion()
+        Set files = ElencoFile()
+
+        For Each nome In files
+            versione = VersioneDi(CStr(nome))
+            If versione > corrente Then
+                EseguiFile mFolder & CStr(nome)
+                ScriviVersione versione
+                corrente = versione
+                applicate += 1
+            End If
+        Next nome
+
+        Return applicate
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Esegue un file una istruzione per volta. ACE non accetta batch, e
+    ' comunque un errore su una istruzione sola si legge meglio.
+    Private Sub EseguiFile(ByVal percorso As String)
+        Dim istruzioni As Collection
+        Dim istruzione As Variant
+        Dim indice As Long
+        Dim numero As Long
+        Dim testo As String
+
+        Set istruzioni = SpezzaIstruzioni(LeggiTesto(percorso))
+
+        For Each istruzione In istruzioni
+            indice += 1
+            On Error Resume Next
+            mDb.Execute CStr(istruzione)
+            If Err.Number <> 0 Then
+                numero = Err.Number
+                testo = Err.Description
+                On Error GoTo 0
+                Err.Raise numero, "Migrator", _
+                          "Migrazione interrotta in " & NomeFile(percorso) & _
+                          ", istruzione " & CStr(indice) & vbCrLf & vbCrLf & _
+                          testo & vbCrLf & vbCrLf & CStr(istruzione)
+            End If
+            On Error GoTo 0
+            mEseguite += 1
+        Next istruzione
+    End Sub
+
+    Private Sub ScriviVersione(ByVal versione As Long)
+        Dim interessate As Long
+
+        interessate = mDb.Execute("UPDATE Parametri SET Contenuto = ? WHERE Chiave = ?", _
+                                  CStr(versione), "SchemaVersion")
+        If interessate = 0 Then
+            mDb.Execute "INSERT INTO Parametri (Chiave, Contenuto, Descrizione) VALUES (?, ?, ?)", _
+                        "SchemaVersion", CStr(versione), _
+                        "Versione dello schema applicata. La gestisce il Migrator"
+        End If
+    End Sub
+
+    ' File .sql della cartella, in ordine di nome. L'ordine di nome e'
+    ' l'ordine di versione perche' il numero e' a quattro cifre con gli
+    ' zeri davanti.
+    Private Function ElencoFile() As Collection
+        Dim trovati() As String
+        Dim quanti As Long
+        Dim nome As String
+        Dim risultato As Collection
+        Dim i As Long
+        Dim j As Long
+        Dim scambio As String
+
+        ReDim trovati(0 To 255)
+        nome = Dir$(mFolder & "*.sql")
+        Do While Len(nome) > 0
+            If VersioneDi(nome) > 0 Then
+                If quanti > UBound(trovati) Then ReDim Preserve trovati(0 To quanti + 64)
+                trovati(quanti) = nome
+                quanti += 1
+            End If
+            nome = Dir$()
+        Loop
+
+        ' ordinamento per inserzione: i file di migrazione sono pochi e
+        ' Dir non garantisce l'ordine
+        For i = 1 To quanti - 1
+            scambio = trovati(i)
+            j = i - 1
+            Do While j >= 0
+                If trovati(j) <= scambio Then Exit Do
+                trovati(j + 1) = trovati(j)
+                j -= 1
+            Loop
+            trovati(j + 1) = scambio
+        Next i
+
+        Set risultato = New Collection
+        For i = 0 To quanti - 1
+            risultato.Add trovati(i)
+        Next i
+        Return risultato
+    End Function
+
+    ' Le prime quattro cifre del nome del file. Zero se il nome non
+    ' comincia con un numero: quel file viene ignorato.
+    Private Function VersioneDi(ByVal nomeFile As String) As Long
+        Dim prefisso As String
+        Dim i As Long
+        Dim ch As String
+
+        prefisso = ""
+        For i = 1 To Len(nomeFile)
+            ch = Mid$(nomeFile, i, 1)
+            If Not (ch Like "#") Then Exit For
+            prefisso = prefisso & ch
+        Next i
+
+        If Len(prefisso) = 0 Then Return 0
+        Return CLng(Val(prefisso))
+    End Function
+
+    ' Divide il contenuto in istruzioni. Le righe che cominciano con due
+    ' trattini sono commenti, e un'istruzione finisce quando una riga
+    ' termina con il punto e virgola.
+    Private Function SpezzaIstruzioni(ByVal contenuto As String) As Collection
+        Dim risultato As Collection
+        Dim righe() As String
+        Dim i As Long
+        Dim riga As String
+        Dim buffer As String
+
+        Set risultato = New Collection
+        contenuto = Replace$(contenuto, vbCrLf, vbLf)
+        contenuto = Replace$(contenuto, vbCr, vbLf)
+        righe = Split(contenuto, vbLf)
+
+        For i = LBound(righe) To UBound(righe)
+            riga = Trim$(righe(i))
+            If Len(riga) > 0 Then
+                If Left$(riga, 2) <> "--" Then
+                    If Len(buffer) > 0 Then buffer = buffer & " "
+                    buffer = buffer & riga
+                    If Right$(riga, 1) = ";" Then
+                        buffer = Trim$(Left$(buffer, Len(buffer) - 1))
+                        If Len(buffer) > 0 Then risultato.Add buffer
+                        buffer = ""
+                    End If
+                End If
+            End If
+        Next i
+
+        ' ultima istruzione senza punto e virgola finale
+        buffer = Trim$(buffer)
+        If Len(buffer) > 0 Then risultato.Add buffer
+
+        Return risultato
+    End Function
+
+    ' Lettura in binario: i file di migrazione sono ASCII, cosi' il
+    ' contenuto non dipende dalla tabella codici della postazione.
+    Private Function LeggiTesto(ByVal percorso As String) As String
+        Dim numero As Integer
+        Dim contenuto As String
+
+        If Len(Dir$(percorso)) = 0 Then
+            Err.Raise 53, "Migrator", "File di migrazione non trovato: " & percorso
+        End If
+
+        numero = FreeFile
+        Open percorso For Binary Access Read As #numero
+        If LOF(numero) > 0 Then
+            contenuto = Space$(LOF(numero))
+            Get #numero, , contenuto
+        End If
+        Close #numero
+        Return contenuto
+    End Function
+
+    Private Function NomeFile(ByVal percorso As String) As String
+        Dim posizione As Long
+
+        posizione = InStrRev(percorso, "\")
+        If posizione = 0 Then Return percorso
+        Return Mid$(percorso, posizione + 1)
+    End Function
+
+    Private Function AddBackslash(ByVal cartella As String) As String
+        If Len(cartella) = 0 Then Return ""
+        If Right$(cartella, 1) = "\" Then Return cartella
+        Return cartella & "\"
+    End Function
+
+End Class

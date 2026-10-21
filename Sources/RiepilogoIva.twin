@@ -1,0 +1,30 @@
+'
+' RiepilogoIva - un rigo del riepilogo per aliquota.
+'
+' Corrisponde uno a uno a un blocco DatiRiepilogo della fattura
+' elettronica e alla tabella DocumentiRiepilogoIva. Il raggruppamento e'
+' per coppia aliquota piu' natura: 0% con natura N4 e 0% con natura N1
+' sono due righi distinti, e lo SDI li vuole distinti.
+'
+Class RiepilogoIva
+
+    Public PercentualeIva As Double
+    Public NaturaIva As String
+    Public Imponibile As Currency
+    Public Imposta As Currency
+    Public Esigibilita As String
+    Public RiferimentoNormativo As String
+    Public ConcorreAlBollo As Boolean
+
+    Private Sub Class_Initialize()
+        Esigibilita = Costanti.ESIGIBILITA_IMMEDIATA
+    End Sub
+
+    ' Chiave di raggruppamento, la stessa che CalcoloDocumento usa per
+    ' indicizzare la collezione. Passa dal testo invariante per non
+    ' dipendere dal separatore decimale della postazione.
+    Public Property Get Chiave() As String
+        Return Money.FormatInvariant(CCur(PercentualeIva), 2) & "|" & UCase$(Trim$(NaturaIva))
+    End Property
+
+End Class

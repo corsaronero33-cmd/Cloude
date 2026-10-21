@@ -1,0 +1,16 @@
+'
+' Scadenza - una rata di un documento.
+'
+Class Scadenza
+
+    Public NumeroRata As Long
+    Public DataScadenza As Date
+    Public Importo As Currency
+    Public ModalitaPagamento As String      ' MP01..MP23 della fattura elettronica
+
+    Public Function Descrizione() As String
+        Return "Rata " & CStr(NumeroRata) & " - " & Format$(DataScadenza, "dd/mm/yyyy") & _
+               " - " & Money.FormatAmount(Importo)
+    End Function
+
+End Class

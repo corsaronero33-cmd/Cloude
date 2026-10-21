@@ -1,0 +1,24 @@
+'
+' WinApi - le pochissime chiamate all'API di Windows che servono fuori dai
+' moduli che le usano direttamente.
+'
+' Esiste per una ragione di compatibilita': in VB6 le istruzioni Declare si
+' possono scrivere solo in un modulo standard, non in una classe. Database e
+' Numeratore hanno bisogno di aspettare qualche millesimo prima di
+' riprovare un'operazione respinta per blocco, e la dichiarazione di Sleep
+' sta qui invece che dentro di loro.
+'
+Module WinApi
+
+    Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+
+    ' Sospende la postazione per il tempo indicato. Si usa solo fra due
+    ' tentativi di scrittura in conflitto, dove le attese sono di qualche
+    ' decina di millesimi: per attese piu' lunghe servirebbe un ciclo con
+    ' DoEvents, altrimenti la finestra sembra bloccata.
+    Public Sub Attendi(ByVal millisecondi As Long)
+        If millisecondi <= 0 Then Exit Sub
+        Sleep millisecondi
+    End Sub
+
+End Module
