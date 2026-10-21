@@ -30,9 +30,23 @@ il driver del registratore telematico. Manca l'interfaccia utente.
 * Lettura della risposta con estrazione dei numeri fiscali e traduzione
   degli errori in messaggi mostrabili a chi sta servendo un cliente.
 
+**Fattura elettronica**
+
+* Generazione dell'XML FatturaPA 1.2 (FPR12 e FPA12) in un modulo di
+  funzioni pure, con test che girano senza archivio.
+* Ordine degli elementi secondo lo schema, numeri sempre col punto,
+  elementi opzionali omessi invece che vuoti: le tre cause della quasi
+  totalita' degli scarti.
+* Lettura del documento dall'archivio con confronto fra i totali
+  ricalcolati e quelli salvati: un documento che non coincide non si
+  trasmette, si riconferma.
+* Progressivo di invio univoco con lo stesso schema del numeratore,
+  scrittura in UTF-8, registro degli invii.
+* Validazione dei dati prima della generazione.
+
 **Archivio e infrastruttura**
 
-* 38 tabelle con migrazioni versionate.
+* 39 tabelle con migrazioni versionate.
 * Varianti taglia e colore, codici a barre multipli con moltiplicatore,
   reparti RT, casse, vendite, chiusure fiscali, prima nota, inventari.
 * Accesso ai dati con parametri, recordset scollegati, transazioni corte e
@@ -92,31 +106,23 @@ Il motore di calcolo c'e' gia' tutto: serve la maschera e il repository.
 L'evasione da documento a documento ha gia' il suo campo
 (`IdDocumentoOrigine`).
 
-## 5. Fattura elettronica
+## 5. Fattura elettronica: completare
 
-Il modulo che trasforma un documento nell'XML `FatturaPA`. Lo schema e il
-motore sono gia' predisposti: `DocumentiRiepilogoIva` ha la forma dei
-blocchi `DatiRiepilogo`, le nature IVA sono in anagrafica, i codici `TD` e
-`MP` sono nelle tabelle di servizio, `Money.FormatInvariant` produce i
-numeri nel formato che pretende lo SDI.
+Il generatore c'e' (vedere [06-fattura-elettronica.md](06-fattura-elettronica.md)).
+Restano quattro cose, e la prima e' una decisione:
 
-Da fare: generazione dell'XML, nome del file con progressivo univoco,
-validazione contro lo schema XSD prima dell'invio, stati (generata,
-inviata, consegnata, scartata) e notifiche.
-
-Due dettagli che si scoprono tardi:
-
-* quando il **bollo e' addebitato** al cliente va in `DatiBollo` e, se
-  compare come addebito, anche come riga con natura `N1`. Oggi il motore
-  tiene il bollo fuori dal riepilogo: va deciso li'.
-* il **canale di trasmissione** va scelto. Tramite intermediario (Aruba,
-  il commercialista) e' la strada normale: il gestionale deposita l'XML in
-  una cartella. L'invio diretto allo SDI richiede accreditamento e firma
-  digitale, e vale la pena solo se l'accreditamento c'e' gia'.
-
-Per un negozio serve soprattutto la **fattura da scontrino**: il cliente
-che chiede la fattura dopo aver pagato in cassa. La tabella `Documenti` ha
-`IdVenditaOrigine` per quel collegamento.
+* **il canale di trasmissione.** Tramite intermediario (Aruba, il
+  commercialista) e' la strada normale: il gestionale deposita l'XML in una
+  cartella condivisa. L'invio diretto allo SDI richiede accreditamento e
+  firma digitale, e vale la pena solo se l'accreditamento c'e' gia'.
+* **validazione contro lo schema XSD** prima dell'invio, e lettura delle
+  notifiche di esito. Finche' non e' stata provata una trasmissione vera
+  sul canale di prova, il generatore non e' collaudato.
+* **il bollo addebitato**, che oggi esce solo in `DatiBollo`: quando viene
+  addebitato al cliente andrebbe anche come riga con natura `N1`.
+* **la fattura da scontrino**, che per un negozio e' il caso piu'
+  frequente: il cliente che chiede la fattura dopo aver pagato in cassa.
+  La tabella `Documenti` ha gia' `IdVenditaOrigine`.
 
 ## 6. Stampa e PDF
 

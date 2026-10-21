@@ -6,11 +6,11 @@
 ' esempio: un solo avvio dice sia se il nucleo fiscale e' sano sia che
 ' numeri produce.
 '
-' Niente qui tocca l'archivio Access, e nemmeno il registratore
-' telematico. Il motore di calcolo, lo scadenzario, l'aritmetica monetaria
-' e la costruzione dell'XML della stampante fiscale non hanno bisogno di
-' niente per funzionare, ed e' per questo che si possono provare in mezzo
-' secondo a ogni modifica.
+' Niente qui tocca l'archivio Access, ne' il registratore telematico, ne'
+' lo SDI. Il motore di calcolo, lo scadenzario, l'aritmetica monetaria,
+' l'XML della stampante fiscale e quello della fattura elettronica non
+' hanno bisogno di niente per funzionare, ed e' per questo che si possono
+' provare in mezzo secondo a ogni modifica.
 '
 Module App
 
@@ -25,12 +25,15 @@ Module App
         CalcoloScadenzeTests.RunAll runner
         ScontrinoTests.RunAll runner
         RtEpsonXmlTests.RunAll runner
+        FatturaPaXmlTests.RunAll runner
         runner.Report
 
         ConsoleOut.WriteLine
         FatturaDiEsempio
         ConsoleOut.WriteLine
         ScontrinoDiEsempio
+        ConsoleOut.WriteLine
+        FatturaElettronicaDiEsempio
     End Sub
 
     ' Una fattura come se ne emettono: righe scontate, una voce esclusa
@@ -41,7 +44,7 @@ Module App
         Dim riga As RigaCalcolo
         Dim voce As RiepilogoIva
         Dim rate As Collection
-        Dim scadenza As Scadenza
+        Dim rata As Scadenza
         Dim dataDocumento As Date
 
         dataDocumento = DateSerial(2026, 3, 18)
@@ -97,9 +100,9 @@ Module App
         ConsoleOut.WriteLine
         ConsoleOut.WriteLine "Scadenze - RiBa 30 giorni fine mese"
         Set rate = CalcoloScadenze.Genera(dataDocumento, calc.TotaleDaPagare, 1, 30, 0, True, 0, "MP12")
-        For Each scadenza In rate
-            ConsoleOut.WriteLine "  " & scadenza.Descrizione()
-        Next scadenza
+        For Each rata In rate
+            ConsoleOut.WriteLine "  " & rata.Descrizione()
+        Next rata
 
         ConsoleOut.WriteLine
         MostraRilievi calc
@@ -199,6 +202,83 @@ Module App
         For Each problema In problemi
             ConsoleOut.WriteLine "  - " & CStr(problema)
         Next problema
+    End Sub
+
+    ' L'XML che si trasmette allo SDI, stampato per intero: e' il
+    ' documento fiscale vero, e vale la pena poterlo leggere.
+    Private Sub FatturaElettronicaDiEsempio()
+        Dim dati As DatiFatturaElettronica
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+        Dim problemi As Collection
+        Dim problema As Variant
+        Dim righe() As String
+        Dim i As Long
+
+        Set dati = New DatiFatturaElettronica
+        dati.IdPaeseTrasmittente = "IT"
+        dati.IdCodiceTrasmittente = "01234567890"
+        dati.ProgressivoInvio = FatturaPaXml.ProgressivoFormattato(42)
+        dati.DataDocumento = DateSerial(2026, 3, 18)
+        dati.Numero = "123/A"
+        dati.ModalitaPagamento = "MP05"
+
+        With dati.Cedente
+            .Denominazione = "Ferramenta Rossi Srl"
+            .PartitaIva = "01234567890"
+            .RegimeFiscale = "RF01"
+            .Indirizzo = "Via Roma"
+            .NumeroCivico = "10"
+            .Cap = "20100"
+            .Comune = "Milano"
+            .Provincia = "MI"
+            .Iban = "IT60X0542811101000000123456"
+        End With
+
+        With dati.Cessionario
+            .Denominazione = "Bianchi Costruzioni Spa"
+            .PartitaIva = "09876543210"
+            .CodiceFiscale = "09876543210"
+            .Indirizzo = "Via Verdi"
+            .NumeroCivico = "5"
+            .Cap = "00100"
+            .Comune = "Roma"
+            .Provincia = "RM"
+            .CodiceDestinatario = "ABC1234"
+        End With
+
+        Set calc = New CalcoloDocumento
+        Set riga = calc.AggiungiArticolo("BULL-640", "Bulloni 6x40 zincati", 100, 0.45@, 22)
+        riga.UnitaMisura = "NR"
+        riga.Sconto1 = 10
+        Set riga = calc.AggiungiArticolo("MANO-OPE", "Manodopera di posa", 4, 35@, 22)
+        riga.UnitaMisura = "ORE"
+        calc.SpeseIncasso = 3@
+        calc.PercentualeIvaSpese = 22
+        calc.Calcola
+        Set dati.Calcolo = calc
+
+        Set dati.Scadenze = CalcoloScadenze.Genera(dati.DataDocumento, calc.TotaleDaPagare, _
+                                                   1, 30, 0, True, 0, "MP05")
+
+        ConsoleOut.WriteHeading "Fattura elettronica - " & FatturaPaXml.NomeFile(dati)
+
+        Set problemi = FatturaPaXml.Validazione(dati)
+        If problemi.Count > 0 Then
+            ConsoleOut.WriteLine "Validazione: " & CStr(problemi.Count) & " rilievi"
+            For Each problema In problemi
+                ConsoleOut.WriteLine "  - " & CStr(problema)
+            Next problema
+            ConsoleOut.WriteLine
+            Exit Sub
+        End If
+        ConsoleOut.WriteLine "Validazione: nessun rilievo, il file e' trasmettibile."
+        ConsoleOut.WriteLine
+
+        righe = Split(FatturaPaXml.Genera(dati), vbCrLf)
+        For i = LBound(righe) To UBound(righe)
+            ConsoleOut.WriteLine righe(i)
+        Next i
     End Sub
 
     Private Function DescrizioneAliquota(ByVal voce As RiepilogoIva) As String

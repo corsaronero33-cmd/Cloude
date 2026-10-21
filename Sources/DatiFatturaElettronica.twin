@@ -1,0 +1,99 @@
+'
+' DatiFatturaElettronica - tutto quello che serve per scrivere un XML.
+'
+' Raccoglie in un posto i dati che nell'archivio stanno sparsi fra Aziende,
+' Soggetti, Documenti, DocumentiRighe, DocumentiRiepilogoIva e Scadenze, e
+' li consegna a FatturaPaXml, che e' un modulo di funzioni pure.
+'
+' La divisione e' la stessa del registratore telematico: chi legge
+' l'archivio (FatturaElettronica) e chi scrive il testo (FatturaPaXml) sono
+' separati, cosi' la generazione dell'XML si prova con dati inventati,
+' senza archivio.
+'
+' I totali e il riepilogo non si ricopiano: si passa l'oggetto
+' CalcoloDocumento gia' calcolato. E' lo stesso che ha prodotto i numeri
+' stampati sulla fattura di carta, quindi i due documenti non possono
+' divergere.
+'
+Class DatiFatturaElettronica
+
+    ' --- trasmissione ---------------------------------------------------
+
+    Public IdPaeseTrasmittente As String
+    Public IdCodiceTrasmittente As String
+    Public ProgressivoInvio As String
+
+    ' FPR12 per i privati, FPA12 per la pubblica amministrazione
+    Public FormatoTrasmissione As String
+
+    ' --- le due parti ---------------------------------------------------
+
+    Public Cedente As SoggettoFE
+    Public Cessionario As SoggettoFE
+
+    ' --- documento ------------------------------------------------------
+
+    Public TipoDocumento As String          ' TD01, TD04, TD24...
+    Public Divisa As String
+    Public DataDocumento As Date
+    Public Numero As String
+    Public Causale As String
+
+    ' --- ritenuta, cassa, bollo -----------------------------------------
+
+    ' RT01 ritenuta di persone fisiche, RT02 di persone giuridiche.
+    ' CausalePagamento e' la lettera del quadro della dichiarazione dei
+    ' redditi: A per le prestazioni di lavoro autonomo.
+    Public TipoRitenuta As String
+    Public CausalePagamento As String
+
+    ' TC01 cassa nazionale previdenza e assistenza avvocati e procuratori,
+    ' TC22 INPS, e via elencando. Dipende dall'albo.
+    Public TipoCassa As String
+
+    ' --- riferimenti ----------------------------------------------------
+
+    Public NumeroDdt As String
+    Public DataDdt As Date
+    Public NumeroOrdine As String
+    Public DataOrdine As Date
+
+    ' --- pagamento ------------------------------------------------------
+
+    Public CondizioniPagamento As String    ' TP01 rate, TP02 completo, TP03 anticipo
+    Public ModalitaPagamento As String      ' MP01 contanti, MP05 bonifico...
+
+    ' --- il calcolo e le scadenze ---------------------------------------
+
+    Public Calcolo As CalcoloDocumento
+    Public Scadenze As Collection
+
+    Private Sub Class_Initialize()
+        Set Cedente = New SoggettoFE
+        Set Cessionario = New SoggettoFE
+        Set Scadenze = New Collection
+        FormatoTrasmissione = "FPR12"
+        Divisa = "EUR"
+        TipoDocumento = "TD01"
+        DataDocumento = Date
+    End Sub
+
+    Public Property Get HaRitenuta() As Boolean
+        If Calcolo Is Nothing Then Return False
+        Return (Calcolo.Ritenuta <> 0)
+    End Property
+
+    Public Property Get HaCassaPrevidenziale() As Boolean
+        If Calcolo Is Nothing Then Return False
+        Return (Calcolo.CassaPrevidenziale <> 0)
+    End Property
+
+    ' Il bollo entra nell'XML solo se e' stato calcolato. Che sia poi
+    ' addebitato al cliente o a carico di chi emette cambia il totale, non
+    ' la presenza del blocco DatiBollo.
+    Public Property Get HaBollo() As Boolean
+        If Calcolo Is Nothing Then Return False
+        Return (Calcolo.Bollo <> 0)
+    End Property
+
+End Class

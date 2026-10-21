@@ -1,0 +1,513 @@
+'
+' FatturaElettronica - dall'archivio al file XML.
+'
+' Legge il documento dall'archivio, riempie un DatiFatturaElettronica e lo
+' passa a FatturaPaXml, che e' il modulo di funzioni pure che scrive il
+' testo. La divisione e' la stessa del registratore telematico: chi legge
+' l'archivio e chi produce il file sono separati, cosi' il formato si prova
+' senza archivio.
+'
+' UNA SCELTA CHE VALE LA PENA SPIEGARE. Prepara ricostruisce i totali
+' ripassando le righe dal motore di calcolo, e poi li CONFRONTA con quelli
+' salvati sul documento. Se non coincidono si ferma.
+'
+' Sembra pignoleria e non lo e'. Un documento confermato porta in archivio
+' i totali che sono stati stampati sulla carta e consegnati al cliente. Se
+' un domani una regola di arrotondamento cambia, ricalcolare in silenzio
+' produrrebbe un XML con numeri diversi da quelli della fattura di carta:
+' due documenti fiscali diversi con lo stesso numero. Meglio fermarsi e
+' dire che il documento va riconfermato.
+'
+' Il progressivo di invio passa dallo stesso schema del Numeratore, un
+' UPDATE che legge e scrive insieme: lo SDI rifiuta un progressivo gia'
+' visto, anche con contenuto diverso, e due postazioni che trasmettono
+' nello stesso momento non devono prendere lo stesso numero.
+'
+Class FatturaElettronica
+
+    Private mDb As Database
+
+    Public Sub Init(ByVal db As Database)
+        Set mDb = db
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Preparazione
+    ' ------------------------------------------------------------------
+
+    ' Raccoglie dall'archivio tutto quello che serve. Non assegna il
+    ' progressivo di invio: quello si prende solo quando il file si scrive
+    ' davvero, perche' un progressivo chiesto e abbandonato e' un buco.
+    Public Function Prepara(ByVal idDocumento As Long) As DatiFatturaElettronica
+        Dim dati As DatiFatturaElettronica
+        Dim rs As Object
+
+        RequireDb
+        Set dati = New DatiFatturaElettronica
+
+        Set rs = mDb.OpenRecordset( _
+            "SELECT d.*, t.TipoDocumentoFE, p.ModalitaPagamentoFE, p.CondizioniPagamentoFE " & _
+            "FROM ((Documenti AS d " & _
+            "INNER JOIN TipiDocumento AS t ON d.IdTipoDocumento = t.Id) " & _
+            "LEFT JOIN Pagamenti AS p ON d.IdPagamento = p.Id) " & _
+            "WHERE d.Id = ?", idDocumento)
+        If rs.EOF Then
+            rs.Close
+            Err.Raise 5, "FatturaElettronica.Prepara", _
+                      "Documento " & CStr(idDocumento) & " non trovato"
+        End If
+
+        LeggiTestata dati, rs
+        LeggiCedente dati
+        LeggiCessionario dati, CLng(rs.Fields("IdSoggetto").Value)
+        Set dati.Calcolo = RicostruisciCalcolo(idDocumento, rs)
+        ControllaTotali dati.Calcolo, rs
+        Set dati.Scadenze = LeggiScadenze(idDocumento)
+        rs.Close
+
+        Return dati
+    End Function
+
+    ' XML del documento, senza scriverlo su disco. Si ferma se la
+    ' validazione trova qualcosa: un file scartato dallo SDI costa piu'
+    ' tempo di un controllo in piu' adesso.
+    Public Function Genera(ByVal idDocumento As Long, _
+                           Optional ByVal progressivo As String = "") As String
+        Dim dati As DatiFatturaElettronica
+        Dim problemi As Collection
+
+        Set dati = Prepara(idDocumento)
+        If Len(progressivo) > 0 Then
+            dati.ProgressivoInvio = progressivo
+        Else
+            dati.ProgressivoInvio = FatturaPaXml.ProgressivoFormattato(1)
+        End If
+
+        Set problemi = FatturaPaXml.Validazione(dati)
+        If problemi.Count > 0 Then
+            Err.Raise vbObjectError + 1501, "FatturaElettronica.Genera", _
+                      "La fattura non e' trasmettibile:" & vbCrLf & Elenco(problemi)
+        End If
+
+        Return FatturaPaXml.Genera(dati)
+    End Function
+
+    ' Scrive il file nella cartella indicata e aggiorna lo stato del
+    ' documento. Restituisce il percorso completo del file.
+    Public Function Salva(ByVal idDocumento As Long, _
+                          Optional ByVal cartella As String = "") As String
+        Dim dati As DatiFatturaElettronica
+        Dim problemi As Collection
+        Dim xml As String
+        Dim percorso As String
+        Dim nome As String
+
+        Set dati = Prepara(idDocumento)
+        dati.ProgressivoInvio = FatturaPaXml.ProgressivoFormattato(ProssimoProgressivo())
+
+        Set problemi = FatturaPaXml.Validazione(dati)
+        If problemi.Count > 0 Then
+            RegistraLog idDocumento, "generazione", "", dati.ProgressivoInvio, False, _
+                        "Validazione non superata", ""
+            Err.Raise vbObjectError + 1501, "FatturaElettronica.Salva", _
+                      "La fattura non e' trasmettibile:" & vbCrLf & Elenco(problemi)
+        End If
+
+        xml = FatturaPaXml.Genera(dati)
+        nome = FatturaPaXml.NomeFile(dati)
+        percorso = CartellaDi(cartella) & nome
+
+        ScriviFile percorso, xml
+
+        mDb.Execute "UPDATE Documenti SET StatoFE = ?, NomeFileFE = ?, ProgressivoFE = ?, " & _
+                    "DataInvioFE = Null WHERE Id = ?", _
+                    "generata", nome, dati.ProgressivoInvio, idDocumento
+        RegistraLog idDocumento, "generazione", nome, dati.ProgressivoInvio, True, _
+                    "File scritto in " & percorso, xml
+
+        Return percorso
+    End Function
+
+    ' Segna il documento come trasmesso. L'invio vero lo fa
+    ' l'intermediario, o chi carica il file sul portale: questo metodo
+    ' registra il fatto, non lo compie.
+    Public Sub SegnaInviata(ByVal idDocumento As Long)
+        RequireDb
+        mDb.Execute "UPDATE Documenti SET StatoFE = ?, DataInvioFE = ? WHERE Id = ?", _
+                    "inviata", Now(), idDocumento
+        RegistraLog idDocumento, "invio", "", "", True, "Segnata come inviata", ""
+    End Sub
+
+    Public Sub SegnaEsito(ByVal idDocumento As Long, ByVal stato As String, _
+                          ByVal messaggio As String)
+        RequireDb
+        mDb.Execute "UPDATE Documenti SET StatoFE = ? WHERE Id = ?", stato, idDocumento
+        RegistraLog idDocumento, "esito", "", "", (stato <> "scartata"), messaggio, ""
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Lettura dall'archivio
+    ' ------------------------------------------------------------------
+
+    Private Sub LeggiTestata(ByVal dati As DatiFatturaElettronica, ByVal rs As Object)
+        dati.TipoDocumento = Testo(rs.Fields("TipoDocumentoFE").Value)
+        If Len(dati.TipoDocumento) = 0 Then dati.TipoDocumento = "TD01"
+        dati.DataDocumento = CDate(rs.Fields("DataDocumento").Value)
+        dati.Numero = Testo(rs.Fields("NumeroCompleto").Value)
+        dati.Causale = Testo(rs.Fields("Note").Value)
+        dati.NumeroDdt = Testo(rs.Fields("NumeroDdt").Value)
+        If Not IsNull(rs.Fields("DataDdt").Value) Then
+            dati.DataDdt = CDate(rs.Fields("DataDdt").Value)
+        End If
+        dati.ModalitaPagamento = Testo(rs.Fields("ModalitaPagamentoFE").Value)
+        dati.CondizioniPagamento = Testo(rs.Fields("CondizioniPagamentoFE").Value)
+        dati.TipoRitenuta = Testo(rs.Fields("TipoRitenutaFE").Value)
+        dati.CausalePagamento = Testo(rs.Fields("CausalePagamentoFE").Value)
+        dati.TipoCassa = Testo(rs.Fields("TipoCassaFE").Value)
+        dati.FormatoTrasmissione = Parametro("FEFormatoTrasmissione", "FPR12")
+    End Sub
+
+    Private Sub LeggiCedente(ByVal dati As DatiFatturaElettronica)
+        Dim rs As Object
+
+        Set rs = mDb.OpenRecordset("SELECT * FROM Aziende WHERE Attiva = True")
+        If rs.EOF Then
+            rs.Close
+            Err.Raise 5, "FatturaElettronica", _
+                      "Nessuna azienda attiva in archivio: completare i dati aziendali"
+        End If
+
+        With dati.Cedente
+            .Denominazione = Testo(rs.Fields("RagioneSociale").Value)
+            .PartitaIva = Testo(rs.Fields("PartitaIva").Value)
+            .CodiceFiscale = Testo(rs.Fields("CodiceFiscale").Value)
+            .RegimeFiscale = Testo(rs.Fields("RegimeFiscale").Value)
+            .IdPaese = Paese(rs.Fields("Nazione").Value)
+            .Indirizzo = Testo(rs.Fields("Indirizzo").Value)
+            .NumeroCivico = Testo(rs.Fields("Civico").Value)
+            .Cap = Testo(rs.Fields("Cap").Value)
+            .Comune = Testo(rs.Fields("Comune").Value)
+            .Provincia = Testo(rs.Fields("Provincia").Value)
+            .Nazione = Paese(rs.Fields("Nazione").Value)
+            .Iban = Testo(rs.Fields("Iban").Value)
+        End With
+
+        dati.IdPaeseTrasmittente = Paese(rs.Fields("IdPaeseTrasmittente").Value)
+        dati.IdCodiceTrasmittente = Testo(rs.Fields("IdCodiceTrasmittente").Value)
+        If Len(dati.IdCodiceTrasmittente) = 0 Then
+            ' chi emette trasmette per conto proprio
+            dati.IdCodiceTrasmittente = dati.Cedente.PartitaIva
+        End If
+        If Len(dati.IdPaeseTrasmittente) = 0 Then dati.IdPaeseTrasmittente = "IT"
+
+        rs.Close
+    End Sub
+
+    Private Sub LeggiCessionario(ByVal dati As DatiFatturaElettronica, ByVal idSoggetto As Long)
+        Dim rs As Object
+
+        Set rs = mDb.OpenRecordset("SELECT * FROM Soggetti WHERE Id = ?", idSoggetto)
+        If rs.EOF Then
+            rs.Close
+            Err.Raise 5, "FatturaElettronica", "Soggetto " & CStr(idSoggetto) & " non trovato"
+        End If
+
+        With dati.Cessionario
+            If rs.Fields("PersonaFisica").Value Then
+                .Nome = Testo(rs.Fields("Nome").Value)
+                .Cognome = Testo(rs.Fields("Cognome").Value)
+            Else
+                .Denominazione = Testo(rs.Fields("RagioneSociale").Value)
+            End If
+            .PartitaIva = Testo(rs.Fields("PartitaIva").Value)
+            .CodiceFiscale = Testo(rs.Fields("CodiceFiscale").Value)
+            .IdPaese = Paese(rs.Fields("Nazione").Value)
+            .Indirizzo = Testo(rs.Fields("Indirizzo").Value)
+            .NumeroCivico = Testo(rs.Fields("Civico").Value)
+            .Cap = Testo(rs.Fields("Cap").Value)
+            .Comune = Testo(rs.Fields("Comune").Value)
+            .Provincia = Testo(rs.Fields("Provincia").Value)
+            .Nazione = Paese(rs.Fields("Nazione").Value)
+            .CodiceDestinatario = Testo(rs.Fields("CodiceDestinatario").Value)
+            .Pec = Testo(rs.Fields("Pec").Value)
+        End With
+
+        rs.Close
+    End Sub
+
+    ' Ricostruisce il calcolo dalle righe salvate. Il riferimento normativo
+    ' e la spunta del bollo arrivano dall'anagrafica delle aliquote.
+    Private Function RicostruisciCalcolo(ByVal idDocumento As Long, _
+                                         ByVal testata As Object) As CalcoloDocumento
+        Dim calc As CalcoloDocumento
+        Dim rs As Object
+        Dim riga As RigaCalcolo
+
+        Set calc = New CalcoloDocumento
+        calc.PrezziIvati = Vero(testata.Fields("PrezziIvati").Value)
+        calc.ScontoPiedePerc = Numero(testata.Fields("ScontoPiedePerc").Value)
+        calc.SpeseTrasporto = Valuta(testata.Fields("SpeseTrasporto").Value)
+        calc.SpeseIncasso = Valuta(testata.Fields("SpeseIncasso").Value)
+        calc.SpeseImballo = Valuta(testata.Fields("SpeseImballo").Value)
+        calc.CassaPrevidenzialePerc = Numero(testata.Fields("CassaPrevidenzialePerc").Value)
+        calc.RitenutaPerc = Numero(testata.Fields("RitenutaPerc").Value)
+        calc.RitenutaBasePerc = Numero(testata.Fields("RitenutaBasePerc").Value)
+        If calc.RitenutaBasePerc = 0 Then calc.RitenutaBasePerc = 100
+        calc.BolloAddebitato = Vero(testata.Fields("BolloAddebitato").Value)
+        calc.SplitPayment = Vero(testata.Fields("SplitPayment").Value)
+        calc.PercentualeIvaSpese = AliquotaDi(testata.Fields("IdAliquotaSpese").Value)
+        calc.NaturaIvaSpese = NaturaDi(testata.Fields("IdAliquotaSpese").Value)
+        calc.PercentualeIvaCassa = AliquotaDi(testata.Fields("IdAliquotaCassa").Value)
+        calc.NaturaIvaCassa = NaturaDi(testata.Fields("IdAliquotaCassa").Value)
+
+        Set rs = mDb.OpenRecordset( _
+            "SELECT r.*, a.RiferimentoNormativo, a.ConcorreAlBollo " & _
+            "FROM DocumentiRighe AS r LEFT JOIN AliquoteIva AS a ON r.IdAliquotaIva = a.Id " & _
+            "WHERE r.IdDocumento = ? ORDER BY r.Posizione", idDocumento)
+
+        Do While Not rs.EOF
+            Set riga = calc.AggiungiRiga()
+            riga.TipoRiga = Testo(rs.Fields("TipoRiga").Value)
+            If Len(riga.TipoRiga) = 0 Then riga.TipoRiga = Costanti.RIGA_ARTICOLO
+            riga.Codice = Testo(rs.Fields("CodiceArticolo").Value)
+            riga.Descrizione = Testo(rs.Fields("Descrizione").Value)
+            riga.UnitaMisura = Testo(rs.Fields("SiglaUnitaMisura").Value)
+            riga.Quantita = Numero(rs.Fields("Quantita").Value)
+            riga.PrezzoUnitario = Valuta(rs.Fields("PrezzoUnitario").Value)
+            riga.Sconto1 = Numero(rs.Fields("Sconto1").Value)
+            riga.Sconto2 = Numero(rs.Fields("Sconto2").Value)
+            riga.Sconto3 = Numero(rs.Fields("Sconto3").Value)
+            riga.ScontoImporto = Valuta(rs.Fields("ScontoImporto").Value)
+            riga.PercentualeIva = Numero(rs.Fields("PercentualeIva").Value)
+            riga.NaturaIva = Testo(rs.Fields("NaturaIva").Value)
+            riga.RiferimentoNormativo = Testo(rs.Fields("RiferimentoNormativo").Value)
+            riga.ConcorreAlBollo = Vero(rs.Fields("ConcorreAlBollo").Value)
+            riga.Omaggio = Vero(rs.Fields("Omaggio").Value)
+            riga.SoggettaRitenuta = Vero(rs.Fields("SoggettaRitenuta").Value)
+            rs.MoveNext
+        Loop
+        rs.Close
+
+        calc.Calcola
+        Return calc
+    End Function
+
+    ' Il confronto spiegato nell'intestazione della classe.
+    Private Sub ControllaTotali(ByVal calc As CalcoloDocumento, ByVal testata As Object)
+        Dim salvato As Currency
+
+        salvato = Valuta(testata.Fields("TotaleDocumento").Value)
+        If salvato = 0 Then Exit Sub        ' documento mai confermato
+
+        If calc.TotaleDocumento <> salvato Then
+            Err.Raise vbObjectError + 1502, "FatturaElettronica", _
+                      "I totali ricalcolati non coincidono con quelli salvati sul documento: " & _
+                      Money.FormatAmount(calc.TotaleDocumento) & " invece di " & _
+                      Money.FormatAmount(salvato) & "." & vbCrLf & vbCrLf & _
+                      "Il documento va riaperto e riconfermato prima di generare l'XML."
+        End If
+    End Sub
+
+    Private Function LeggiScadenze(ByVal idDocumento As Long) As Collection
+        Dim rate As Collection
+        Dim rs As Object
+        Dim rata As Scadenza
+
+        Set rate = New Collection
+        Set rs = mDb.OpenRecordset( _
+            "SELECT NumeroRata, DataScadenza, Importo, ModalitaPagamento FROM Scadenze " & _
+            "WHERE IdDocumento = ? ORDER BY NumeroRata", idDocumento)
+
+        Do While Not rs.EOF
+            Set rata = New Scadenza
+            rata.NumeroRata = CLng(Numero(rs.Fields("NumeroRata").Value))
+            rata.DataScadenza = CDate(rs.Fields("DataScadenza").Value)
+            rata.Importo = Valuta(rs.Fields("Importo").Value)
+            rata.ModalitaPagamento = Testo(rs.Fields("ModalitaPagamento").Value)
+            rate.Add rata
+            rs.MoveNext
+        Loop
+        rs.Close
+
+        Return rate
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Progressivo di invio
+    ' ------------------------------------------------------------------
+
+    ' Stesso schema del Numeratore: un UPDATE che legge e scrive insieme,
+    ' dentro una transazione. Un progressivo duplicato fa rifiutare il file
+    ' dallo SDI anche se il contenuto e' diverso.
+    Private Function ProssimoProgressivo() As Long
+        Dim valore As Variant
+        Dim numeroErrore As Long
+        Dim testoErrore As String
+
+        RequireDb
+        On Error GoTo Annulla
+
+        mDb.BeginTrans
+        mDb.Execute "UPDATE Aziende SET ProgressivoInvio = ProgressivoInvio + 1 " & _
+                    "WHERE Attiva = True"
+        valore = mDb.ScalarValue("SELECT ProgressivoInvio FROM Aziende WHERE Attiva = True")
+        mDb.CommitTrans
+        On Error GoTo 0
+
+        If IsNull(valore) Then Return 1
+        Return CLng(valore)
+
+Annulla:
+        numeroErrore = Err.Number
+        testoErrore = Err.Description
+        On Error GoTo 0
+        mDb.RollbackTrans
+        Err.Raise numeroErrore, "FatturaElettronica.ProssimoProgressivo", testoErrore
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Sub ScriviFile(ByVal percorso As String, ByVal contenuto As String)
+        Dim canale As Integer
+        Dim byteUtf8() As Byte
+
+        ' l'XML dichiara UTF-8, quindi va scritto in UTF-8 e non nella
+        ' tabella codici della postazione
+        byteUtf8 = Utf8(contenuto)
+
+        canale = FreeFile
+        Open percorso For Binary Access Write As #canale
+        Put #canale, 1, byteUtf8
+        Close #canale
+    End Sub
+
+    ' Conversione in UTF-8 fatta a mano: sono tre rami e nessuna
+    ' dipendenza. Il testo della fattura e' quasi tutto ASCII, ma una
+    ' ragione sociale con una lettera accentata basta a far scartare un
+    ' file dichiarato UTF-8 e scritto in ANSI.
+    Private Function Utf8(ByVal origine As String) As Byte()
+        Dim risultato() As Byte
+        Dim quanti As Long
+        Dim i As Long
+        Dim codice As Long
+
+        ReDim risultato(0 To Len(origine) * 3)
+        For i = 1 To Len(origine)
+            codice = AscW(Mid$(origine, i, 1))
+            If codice < 0 Then codice = codice + 65536
+
+            If codice < &H80& Then
+                risultato(quanti) = CByte(codice)
+                quanti = quanti + 1
+            ElseIf codice < &H800& Then
+                risultato(quanti) = CByte(&HC0& Or (codice \ &H40&))
+                risultato(quanti + 1) = CByte(&H80& Or (codice And &H3F&))
+                quanti = quanti + 2
+            Else
+                risultato(quanti) = CByte(&HE0& Or (codice \ &H1000&))
+                risultato(quanti + 1) = CByte(&H80& Or ((codice \ &H40&) And &H3F&))
+                risultato(quanti + 2) = CByte(&H80& Or (codice And &H3F&))
+                quanti = quanti + 3
+            End If
+        Next i
+
+        If quanti = 0 Then
+            ReDim risultato(0 To 0)
+            Return risultato
+        End If
+        ReDim Preserve risultato(0 To quanti - 1)
+        Return risultato
+    End Function
+
+    Private Function CartellaDi(ByVal cartella As String) As String
+        Dim percorso As String
+
+        percorso = cartella
+        If Len(percorso) = 0 Then percorso = Parametro("CartellaFatturaElettronica", "")
+        If Len(percorso) = 0 Then percorso = AppConfig.BaseFolder
+        If Right$(percorso, 1) <> "\" Then percorso = percorso & "\"
+        Return percorso
+    End Function
+
+    Private Sub RegistraLog(ByVal idDocumento As Long, ByVal operazione As String, _
+                            ByVal nomeFile As String, ByVal progressivo As String, _
+                            ByVal riuscita As Boolean, ByVal messaggio As String, _
+                            ByVal contenuto As String)
+        On Error Resume Next
+        mDb.Execute "INSERT INTO LogFE (QuandoIl, IdDocumento, Operazione, NomeFile, " & _
+                    "ProgressivoInvio, Riuscita, Messaggio, Contenuto, Utente) " & _
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", _
+                    Now(), idDocumento, operazione, nomeFile, progressivo, riuscita, _
+                    Left$(messaggio, 255), contenuto, AppConfig.UtentePerTraccia
+        Err.Clear
+        On Error GoTo 0
+    End Sub
+
+    Private Function Parametro(ByVal chiave As String, ByVal predefinito As String) As String
+        Dim valore As Variant
+
+        valore = mDb.ScalarValue("SELECT Contenuto FROM Parametri WHERE Chiave = ?", chiave)
+        If IsNull(valore) Then Return predefinito
+        If Len(Trim$(CStr(valore))) = 0 Then Return predefinito
+        Return CStr(valore)
+    End Function
+
+    Private Function AliquotaDi(ByVal idAliquota As Variant) As Double
+        Dim valore As Variant
+
+        If IsNull(idAliquota) Then Return 0
+        valore = mDb.ScalarValue("SELECT Percentuale FROM AliquoteIva WHERE Id = ?", CLng(idAliquota))
+        Return Numero(valore)
+    End Function
+
+    Private Function NaturaDi(ByVal idAliquota As Variant) As String
+        Dim valore As Variant
+
+        If IsNull(idAliquota) Then Return ""
+        valore = mDb.ScalarValue("SELECT Natura FROM AliquoteIva WHERE Id = ?", CLng(idAliquota))
+        Return Testo(valore)
+    End Function
+
+    Private Function Elenco(ByVal problemi As Collection) As String
+        Dim problema As Variant
+        Dim righe As String
+
+        For Each problema In problemi
+            righe = righe & "  - " & CStr(problema) & vbCrLf
+        Next problema
+        Return righe
+    End Function
+
+    Private Function Testo(ByVal valore As Variant) As String
+        If IsNull(valore) Then Return ""
+        Return Trim$(CStr(valore))
+    End Function
+
+    Private Function Numero(ByVal valore As Variant) As Double
+        If IsNull(valore) Then Return 0
+        Return CDbl(valore)
+    End Function
+
+    Private Function Valuta(ByVal valore As Variant) As Currency
+        If IsNull(valore) Then Return 0
+        Return CCur(valore)
+    End Function
+
+    Private Function Vero(ByVal valore As Variant) As Boolean
+        If IsNull(valore) Then Return False
+        Return CBool(valore)
+    End Function
+
+    Private Function Paese(ByVal valore As Variant) As String
+        Return UCase$(Left$(Testo(valore), 2))
+    End Function
+
+    Private Sub RequireDb()
+        If mDb Is Nothing Then
+            Err.Raise 91, "FatturaElettronica", "Chiamare Init prima di generare le fatture"
+        End If
+    End Sub
+
+End Class

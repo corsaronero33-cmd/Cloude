@@ -1,0 +1,430 @@
+'
+' FatturaPaXmlTests - suite di test del generatore di fatture elettroniche.
+'
+' Gira senza archivio e senza rete: FatturaPaXml e' fatto di funzioni pure,
+' ed e' per questo che e' stato separato da chi legge l'archivio.
+'
+' Il test che vale piu' degli altri e' quello sull'ORDINE degli elementi.
+' Lo schema XSD della fattura elettronica e' una sequenza, non un insieme:
+' DatiBollo deve stare fra DatiRitenuta e DatiCassaPrevidenziale, e se sta
+' altrove lo SDI scarta il file senza spiegare molto. E' il tipo di errore
+' che si introduce aggiungendo un elemento "in fondo, tanto e' opzionale".
+'
+Module FatturaPaXmlTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestFatturaBase runner
+        TestOrdineElementi runner
+        TestDestinatario runner
+        TestPersonaFisica runner
+        TestRitenutaBolloCassa runner
+        TestOperazioniSenzaImposta runner
+        TestPrezziIvati runner
+        TestProtezioneCaratteri runner
+        TestNomeFile runner
+        TestValidazione runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+
+    Private Sub TestFatturaBase(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim xml As String
+
+        Set dati = FatturaDiProva()
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "La radice dichiara formato e spazio dei nomi"
+        runner.IsTrue StringUtils.Contains(xml, "versione=""FPR12""")
+        runner.IsTrue StringUtils.Contains(xml, "xmlns:p=""http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2""")
+
+        runner.BeginTest "I dati di trasmissione ci sono tutti"
+        runner.IsTrue StringUtils.Contains(xml, "<ProgressivoInvio>00042</ProgressivoInvio>")
+        runner.IsTrue StringUtils.Contains(xml, "<FormatoTrasmissione>FPR12</FormatoTrasmissione>")
+        runner.IsTrue StringUtils.Contains(xml, "<CodiceDestinatario>ABC1234</CodiceDestinatario>")
+
+        runner.BeginTest "Il cedente porta regime fiscale e sede"
+        runner.IsTrue StringUtils.Contains(xml, "<Denominazione>Ferramenta Rossi Srl</Denominazione>")
+        runner.IsTrue StringUtils.Contains(xml, "<RegimeFiscale>RF01</RegimeFiscale>")
+        runner.IsTrue StringUtils.Contains(xml, "<CAP>20100</CAP>")
+        runner.IsTrue StringUtils.Contains(xml, "<Provincia>MI</Provincia>")
+
+        runner.BeginTest "La data e' in forma ISO e il numero e' quello del documento"
+        runner.IsTrue StringUtils.Contains(xml, "<Data>2026-03-18</Data>")
+        runner.IsTrue StringUtils.Contains(xml, "<Numero>123/A</Numero>")
+        runner.IsTrue StringUtils.Contains(xml, "<TipoDocumento>TD01</TipoDocumento>")
+        runner.IsTrue StringUtils.Contains(xml, "<Divisa>EUR</Divisa>")
+
+        runner.BeginTest "Le righe portano prezzo unitario, sconto e totale netto"
+        ' cento bulloni da 0,45 scontati del dieci per cento: il prezzo
+        ' unitario resta quello di listino e lo sconto si dichiara
+        runner.IsTrue StringUtils.Contains(xml, "<PrezzoUnitario>0.45</PrezzoUnitario>")
+        runner.IsTrue StringUtils.Contains(xml, "<Percentuale>10.00</Percentuale>")
+        runner.IsTrue StringUtils.Contains(xml, "<PrezzoTotale>40.50</PrezzoTotale>")
+        runner.IsTrue StringUtils.Contains(xml, "<Quantita>100.00</Quantita>")
+        runner.IsTrue StringUtils.Contains(xml, "<UnitaMisura>NR</UnitaMisura>")
+
+        runner.BeginTest "Le spese diventano una riga, non un'aggiunta al riepilogo"
+        ' due righe di merce piu' le spese di incasso
+        runner.AreEqual 3, StringUtils.CountOccurrences(xml, "<DettaglioLinee>")
+        runner.IsTrue StringUtils.Contains(xml, "<Descrizione>Spese di incasso</Descrizione>")
+
+        runner.BeginTest "Il riepilogo quadra con le righe"
+        runner.AreEqual 1, StringUtils.CountOccurrences(xml, "<DatiRiepilogo>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImponibileImporto>183.50</ImponibileImporto>")
+        runner.IsTrue StringUtils.Contains(xml, "<Imposta>40.37</Imposta>")
+        runner.IsTrue StringUtils.Contains(xml, "<EsigibilitaIVA>I</EsigibilitaIVA>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoTotaleDocumento>223.87</ImportoTotaleDocumento>")
+
+        runner.BeginTest "Il pagamento porta modalita', scadenza e importo"
+        runner.IsTrue StringUtils.Contains(xml, "<CondizioniPagamento>TP02</CondizioniPagamento>")
+        runner.IsTrue StringUtils.Contains(xml, "<ModalitaPagamento>MP05</ModalitaPagamento>")
+        runner.IsTrue StringUtils.Contains(xml, "<DataScadenzaPagamento>2026-04-30</DataScadenzaPagamento>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoPagamento>223.87</ImportoPagamento>")
+
+        runner.BeginTest "Nessuna virgola decimale nell'XML"
+        ' una virgola al posto del punto fa scartare il file, e capiterebbe
+        ' solo sulle macchine con impostazioni italiane
+        runner.IsFalse StringUtils.Contains(xml, ",")
+    End Sub
+
+    Private Sub TestOrdineElementi(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim xml As String
+
+        Set dati = FatturaConTutto()
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "DatiRitenuta, DatiBollo e DatiCassaPrevidenziale in quest'ordine"
+        ' lo schema e' una sequenza: fuori ordine il file viene scartato
+        runner.IsTrue (InStr(xml, "<DatiRitenuta>") > 0)
+        runner.IsTrue (InStr(xml, "<DatiRitenuta>") < InStr(xml, "<DatiBollo>"))
+        runner.IsTrue (InStr(xml, "<DatiBollo>") < InStr(xml, "<DatiCassaPrevidenziale>"))
+        runner.IsTrue (InStr(xml, "<DatiCassaPrevidenziale>") < InStr(xml, "<ImportoTotaleDocumento>"))
+
+        runner.BeginTest "Nel documento l'intestazione precede il corpo"
+        runner.IsTrue (InStr(xml, "<FatturaElettronicaHeader>") < InStr(xml, "<FatturaElettronicaBody>"))
+        runner.IsTrue (InStr(xml, "<CedentePrestatore>") < InStr(xml, "<CessionarioCommittente>"))
+
+        runner.BeginTest "Nel corpo i blocchi stanno nell'ordine dello schema"
+        runner.IsTrue (InStr(xml, "<DatiGenerali>") < InStr(xml, "<DatiBeniServizi>"))
+        runner.IsTrue (InStr(xml, "<DatiBeniServizi>") < InStr(xml, "<DatiPagamento>"))
+
+        runner.BeginTest "Nella riga il prezzo unitario precede sconto e totale"
+        runner.IsTrue (InStr(xml, "<PrezzoUnitario>") < InStr(xml, "<ScontoMaggiorazione>"))
+        runner.IsTrue (InStr(xml, "<ScontoMaggiorazione>") < InStr(xml, "<PrezzoTotale>"))
+
+        runner.BeginTest "Il riepilogo viene dopo tutte le righe"
+        runner.IsTrue (InStr(xml, "<DettaglioLinee>") < InStr(xml, "<DatiRiepilogo>"))
+    End Sub
+
+    Private Sub TestDestinatario(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim xml As String
+
+        Set dati = FatturaDiProva()
+        dati.Cessionario.CodiceDestinatario = ""
+        dati.Cessionario.Pec = "bianchi@pec.it"
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "Senza codice destinatario si usa la PEC"
+        runner.IsTrue StringUtils.Contains(xml, "<CodiceDestinatario>0000000</CodiceDestinatario>")
+        runner.IsTrue StringUtils.Contains(xml, "<PECDestinatario>bianchi@pec.it</PECDestinatario>")
+
+        Set dati = FatturaDiProva()
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "Con un codice destinatario vero la PEC non si scrive"
+        ' metterle entrambe fa scartare il file
+        runner.IsFalse StringUtils.Contains(xml, "<PECDestinatario>")
+
+        Set dati = FatturaDiProva()
+        dati.Cessionario.CodiceDestinatario = ""
+        dati.Cessionario.Nazione = "DE"
+        dati.Cessionario.IdPaese = "DE"
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "Un cliente estero usa il codice convenzionale"
+        runner.IsTrue StringUtils.Contains(xml, "<CodiceDestinatario>XXXXXXX</CodiceDestinatario>")
+        runner.IsTrue StringUtils.Contains(xml, "<Nazione>DE</Nazione>")
+    End Sub
+
+    Private Sub TestPersonaFisica(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim xml As String
+
+        Set dati = FatturaDiProva()
+        dati.Cessionario.Denominazione = ""
+        dati.Cessionario.Nome = "Mario"
+        dati.Cessionario.Cognome = "Bianchi"
+        dati.Cessionario.PartitaIva = ""
+        dati.Cessionario.CodiceFiscale = "BNCMRA80A01H501Z"
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "Una persona fisica si identifica con nome e cognome"
+        runner.IsTrue StringUtils.Contains(xml, "<Nome>Mario</Nome>")
+        runner.IsTrue StringUtils.Contains(xml, "<Cognome>Bianchi</Cognome>")
+        runner.IsTrue StringUtils.Contains(xml, "<CodiceFiscale>BNCMRA80A01H501Z</CodiceFiscale>")
+
+        runner.BeginTest "Nome e cognome escludono la denominazione"
+        ' lo schema e' una scelta fra le due forme: scriverle entrambe fa
+        ' scartare il file
+        runner.AreEqual 1, StringUtils.CountOccurrences(xml, "<Denominazione>")
+    End Sub
+
+    Private Sub TestRitenutaBolloCassa(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim xml As String
+
+        Set dati = FatturaConTutto()
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "La ritenuta porta tipo, importo, aliquota e causale"
+        runner.IsTrue StringUtils.Contains(xml, "<TipoRitenuta>RT02</TipoRitenuta>")
+        runner.IsTrue StringUtils.Contains(xml, "<AliquotaRitenuta>20.00</AliquotaRitenuta>")
+        runner.IsTrue StringUtils.Contains(xml, "<CausalePagamento>A</CausalePagamento>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoRitenuta>208.00</ImportoRitenuta>")
+
+        runner.BeginTest "La cassa previdenziale porta tipo, aliquota e importo"
+        runner.IsTrue StringUtils.Contains(xml, "<TipoCassa>TC01</TipoCassa>")
+        runner.IsTrue StringUtils.Contains(xml, "<AlCassa>4.00</AlCassa>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoContributoCassa>40.00</ImportoContributoCassa>")
+
+        runner.BeginTest "Le righe soggette a ritenuta lo dichiarano"
+        runner.IsTrue StringUtils.Contains(xml, "<Ritenuta>SI</Ritenuta>")
+    End Sub
+
+    Private Sub TestOperazioniSenzaImposta(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim calc As CalcoloDocumento
+        Dim xml As String
+
+        Set dati = FatturaDiProva()
+        Set calc = New CalcoloDocumento
+        calc.BolloAddebitato = True
+        AggiungiRigaEsente calc
+        calc.Calcola
+        Set dati.Calcolo = calc
+        Set dati.Scadenze = New Collection
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "Un'operazione esente porta natura e riferimento normativo"
+        runner.IsTrue StringUtils.Contains(xml, "<AliquotaIVA>0.00</AliquotaIVA>")
+        runner.IsTrue StringUtils.Contains(xml, "<Natura>N4</Natura>")
+        runner.IsTrue StringUtils.Contains(xml, "<RiferimentoNormativo>Esente ex art. 10 DPR 633/72</RiferimentoNormativo>")
+        runner.IsTrue StringUtils.Contains(xml, "<Imposta>0.00</Imposta>")
+
+        runner.BeginTest "Oltre la soglia compare il bollo virtuale"
+        runner.IsTrue StringUtils.Contains(xml, "<BolloVirtuale>SI</BolloVirtuale>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoBollo>2.00</ImportoBollo>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoTotaleDocumento>102.00</ImportoTotaleDocumento>")
+    End Sub
+
+    Private Sub TestPrezziIvati(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim calc As CalcoloDocumento
+        Dim xml As String
+
+        Set dati = FatturaDiProva()
+        Set calc = New CalcoloDocumento
+        calc.PrezziIvati = True
+        calc.AggiungiArticolo "ART", "Articolo al pubblico", 1, 122@, 22
+        calc.Calcola
+        Set dati.Calcolo = calc
+        Set dati.Scadenze = New Collection
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "In un documento a prezzi di scaffale l'XML porta il netto"
+        ' nell'XML gli importi sono sempre al netto: il prezzo unitario va
+        ' scorporato, con otto decimali perche' il prodotto per la
+        ' quantita' resti vicino al totale di riga
+        runner.IsTrue StringUtils.Contains(xml, "<PrezzoUnitario>100.00000000</PrezzoUnitario>")
+        runner.IsTrue StringUtils.Contains(xml, "<PrezzoTotale>100.00</PrezzoTotale>")
+        runner.IsTrue StringUtils.Contains(xml, "<Imposta>22.00</Imposta>")
+        runner.IsTrue StringUtils.Contains(xml, "<ImportoTotaleDocumento>122.00</ImportoTotaleDocumento>")
+    End Sub
+
+    Private Sub TestProtezioneCaratteri(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+        Dim xml As String
+
+        Set dati = FatturaDiProva()
+        dati.Calcolo.Righe.Item(1).Descrizione = "Bulloni 6x40 & dadi <M6>"
+        dati.Calcolo.Calcola
+        xml = FatturaPaXml.Genera(dati)
+
+        runner.BeginTest "I caratteri speciali vengono protetti"
+        ' senza protezione una descrizione cosi' romperebbe l'XML
+        runner.IsTrue StringUtils.Contains(xml, "Bulloni 6x40 &amp; dadi &lt;M6&gt;")
+        runner.IsFalse StringUtils.Contains(xml, "& dadi")
+    End Sub
+
+    Private Sub TestNomeFile(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+
+        Set dati = FatturaDiProva()
+
+        runner.BeginTest "Il nome del file e' paese, identificativo e progressivo"
+        runner.AreEqual "IT01234567890_00042.xml", FatturaPaXml.NomeFile(dati)
+
+        runner.BeginTest "Il progressivo e' riempito di zeri a cinque cifre"
+        runner.AreEqual "00001", FatturaPaXml.ProgressivoFormattato(1)
+        runner.AreEqual "00042", FatturaPaXml.ProgressivoFormattato(42)
+        runner.AreEqual "123456", FatturaPaXml.ProgressivoFormattato(123456)
+    End Sub
+
+    Private Sub TestValidazione(ByVal runner As TestRunner)
+        Dim dati As DatiFatturaElettronica
+
+        Set dati = FatturaDiProva()
+        runner.BeginTest "Una fattura completa non ha rilievi"
+        runner.AreEqual 0, QuantiRilievi(dati)
+
+        Set dati = FatturaDiProva()
+        dati.Cedente.RegimeFiscale = ""
+        runner.BeginTest "Il cedente senza regime fiscale e' un rilievo"
+        runner.AreEqual 1, QuantiRilievi(dati)
+
+        Set dati = FatturaDiProva()
+        dati.Cedente.Cap = "2010"
+        runner.BeginTest "Un CAP di quattro cifre e' un rilievo"
+        runner.AreEqual 1, QuantiRilievi(dati)
+
+        Set dati = FatturaDiProva()
+        dati.Cessionario.PartitaIva = ""
+        dati.Cessionario.CodiceFiscale = ""
+        runner.BeginTest "Il cliente senza partita IVA ne' codice fiscale e' un rilievo"
+        runner.IsTrue (QuantiRilievi(dati) >= 1)
+
+        Set dati = FatturaDiProva()
+        dati.ProgressivoInvio = ""
+        runner.BeginTest "Senza progressivo di invio non si trasmette"
+        runner.IsTrue (QuantiRilievi(dati) >= 1)
+
+        Set dati = FatturaDiProva()
+        dati.Cessionario.CodiceDestinatario = ""
+        dati.Cessionario.Pec = ""
+        runner.BeginTest "Senza codice destinatario e senza PEC non si trasmette"
+        runner.IsTrue (QuantiRilievi(dati) >= 1)
+
+        Set dati = FatturaConTutto()
+        dati.TipoRitenuta = ""
+        runner.BeginTest "Una ritenuta senza tipo e' un rilievo"
+        runner.IsTrue (QuantiRilievi(dati) >= 1)
+
+        Set dati = FatturaDiProva()
+        dati.Scadenze.Item(1).Importo = 100@
+        runner.BeginTest "Scadenze che non quadrano col totale sono un rilievo"
+        runner.IsTrue (QuantiRilievi(dati) >= 1)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Dati di prova
+    ' ------------------------------------------------------------------
+
+    ' Una fattura di ferramenta: cento bulloni scontati, quattro ore di
+    ' manodopera, spese di incasso, pagamento a trenta giorni fine mese.
+    Private Function FatturaDiProva() As DatiFatturaElettronica
+        Dim dati As DatiFatturaElettronica
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+
+        Set dati = New DatiFatturaElettronica
+        dati.IdPaeseTrasmittente = "IT"
+        dati.IdCodiceTrasmittente = "01234567890"
+        dati.ProgressivoInvio = "00042"
+        dati.TipoDocumento = "TD01"
+        dati.DataDocumento = DateSerial(2026, 3, 18)
+        dati.Numero = "123/A"
+        dati.ModalitaPagamento = "MP05"
+        dati.CondizioniPagamento = "TP02"
+
+        With dati.Cedente
+            .Denominazione = "Ferramenta Rossi Srl"
+            .PartitaIva = "01234567890"
+            .RegimeFiscale = "RF01"
+            .Indirizzo = "Via Roma"
+            .NumeroCivico = "10"
+            .Cap = "20100"
+            .Comune = "Milano"
+            .Provincia = "MI"
+            .Iban = "IT60 X054 2811 1010 0000 0123 456"
+        End With
+
+        With dati.Cessionario
+            .Denominazione = "Bianchi Costruzioni Spa"
+            .PartitaIva = "09876543210"
+            .CodiceFiscale = "09876543210"
+            .Indirizzo = "Via Verdi"
+            .NumeroCivico = "5"
+            .Cap = "00100"
+            .Comune = "Roma"
+            .Provincia = "RM"
+            .CodiceDestinatario = "ABC1234"
+        End With
+
+        Set calc = New CalcoloDocumento
+        Set riga = calc.AggiungiArticolo("BULL-640", "Bulloni 6x40", 100, 0.45@, 22)
+        riga.UnitaMisura = "NR"
+        riga.Sconto1 = 10
+        Set riga = calc.AggiungiArticolo("MANO-OPE", "Manodopera", 4, 35@, 22)
+        riga.UnitaMisura = "ORE"
+        calc.SpeseIncasso = 3@
+        calc.PercentualeIvaSpese = 22
+        calc.Calcola
+        Set dati.Calcolo = calc
+
+        Set dati.Scadenze = CalcoloScadenze.Genera(dati.DataDocumento, calc.TotaleDaPagare, _
+                                                   1, 30, 0, True, 0, "MP05")
+        Return dati
+    End Function
+
+    ' Una parcella di professionista: ritenuta, cassa previdenziale e
+    ' bollo tutti e tre presenti, per provare l'ordine degli elementi.
+    Private Function FatturaConTutto() As DatiFatturaElettronica
+        Dim dati As DatiFatturaElettronica
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+
+        Set dati = FatturaDiProva()
+        dati.TipoRitenuta = "RT02"
+        dati.CausalePagamento = "A"
+        dati.TipoCassa = "TC01"
+
+        Set calc = New CalcoloDocumento
+        calc.AggiungiArticolo "PRE-PROF", "Prestazione professionale", 1, 1000@, 22
+        Set riga = calc.AggiungiArticolo("RIMB-15", "Rimborso spese escluse art. 15", 1, 100@, 0, "N1")
+        riga.RiferimentoNormativo = "Escluso ex art. 15 DPR 633/72"
+        ' un rimborso di spese escluse non entra ne' nella base della cassa
+        ' previdenziale ne' in quella della ritenuta
+        riga.SoggettaCassa = False
+        riga.SoggettaRitenuta = False
+        calc.CassaPrevidenzialePerc = 4
+        calc.PercentualeIvaCassa = 22
+        calc.RitenutaPerc = 20
+        calc.CassaSoggettaRitenuta = True
+        calc.BolloAddebitato = True
+        calc.Calcola
+        Set dati.Calcolo = calc
+
+        Set dati.Scadenze = CalcoloScadenze.Genera(dati.DataDocumento, calc.TotaleDaPagare, _
+                                                   1, 30, 0, True, 0, "MP05")
+        Return dati
+    End Function
+
+    Private Sub AggiungiRigaEsente(ByVal calc As CalcoloDocumento)
+        Dim riga As RigaCalcolo
+
+        Set riga = calc.AggiungiArticolo("PRES-ES", "Prestazione esente", 1, 100@, 0, "N4")
+        riga.UnitaMisura = "NR"
+        riga.RiferimentoNormativo = "Esente ex art. 10 DPR 633/72"
+    End Sub
+
+    Private Function QuantiRilievi(ByVal dati As DatiFatturaElettronica) As Long
+        Dim problemi As Collection
+
+        Set problemi = FatturaPaXml.Validazione(dati)
+        Return problemi.Count
+    End Function
+
+End Module

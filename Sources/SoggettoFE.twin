@@ -1,0 +1,65 @@
+'
+' SoggettoFE - un soggetto come lo vuole la fattura elettronica.
+'
+' Serve sia per il cedente prestatore (chi emette) sia per il cessionario
+' committente (chi riceve): i due blocchi dell'XML hanno quasi gli stessi
+' campi, e le poche differenze (il regime fiscale lo ha solo il cedente)
+' si gestiscono in fase di scrittura.
+'
+' Oggetto di soli dati. La validazione sta in FatturaPaXml, perche' le
+' regole sono diverse a seconda che il soggetto sia il cedente o il
+' cessionario: il cedente deve avere partita IVA e regime fiscale, il
+' cessionario puo' essere un privato con il solo codice fiscale.
+'
+Class SoggettoFE
+
+    ' Identificazione fiscale. IdPaese e IdCodice formano IdFiscaleIVA.
+    Public IdPaese As String
+    Public PartitaIva As String
+    Public CodiceFiscale As String
+
+    ' Anagrafica: o Denominazione, o Nome piu' Cognome. Mai entrambe le
+    ' forme: lo SDI scarta il file.
+    Public Denominazione As String
+    Public Nome As String
+    Public Cognome As String
+
+    ' Solo per il cedente
+    Public RegimeFiscale As String
+
+    ' Sede
+    Public Indirizzo As String
+    Public NumeroCivico As String
+    Public Cap As String
+    Public Comune As String
+    Public Provincia As String
+    Public Nazione As String
+
+    ' Recapito elettronico del cessionario
+    Public CodiceDestinatario As String
+    Public Pec As String
+
+    Public Iban As String
+
+    Private Sub Class_Initialize()
+        IdPaese = "IT"
+        Nazione = "IT"
+    End Sub
+
+    ' Vero se l'anagrafica e' in forma di persona fisica.
+    Public Property Get PersonaFisica() As Boolean
+        Return (Len(Trim$(Denominazione)) = 0 And _
+                (Len(Trim$(Nome)) > 0 Or Len(Trim$(Cognome)) > 0))
+    End Property
+
+    Public Property Get HaPartitaIva() As Boolean
+        Return (Len(Trim$(PartitaIva)) > 0)
+    End Property
+
+    ' Come compare nei messaggi di errore e negli elenchi.
+    Public Function Etichetta() As String
+        If Len(Trim$(Denominazione)) > 0 Then Return Trim$(Denominazione)
+        Return Trim$(Trim$(Cognome) & " " & Trim$(Nome))
+    End Function
+
+End Class

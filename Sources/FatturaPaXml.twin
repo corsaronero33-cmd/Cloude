@@ -1,0 +1,683 @@
+'
+' FatturaPaXml - genera l'XML della fattura elettronica.
+'
+' Modulo di funzioni pure: nessun archivio, nessuna rete. Chi legge
+' l'archivio e' FatturaElettronica, che riempie un DatiFatturaElettronica e
+' lo passa qui. La divisione e' la stessa del registratore telematico, e per
+' la stessa ragione: la generazione dell'XML si prova con dati inventati,
+' in mezzo secondo, senza niente installato.
+'
+' Formato: FatturaPA versione 1.2, FormatoTrasmissione FPR12 per i privati.
+'
+' Tre cose su cui lo SDI e' inflessibile e che sono la causa della quasi
+' totalita' degli scarti:
+'
+'   L'ORDINE DEGLI ELEMENTI. Lo schema XSD e' una sequenza, non un insieme.
+'   DatiBollo deve stare fra DatiRitenuta e DatiCassaPrevidenziale, e non
+'   altrove. Le funzioni di questo modulo seguono l'ordine dello schema
+'   dall'alto in basso: se si aggiunge un elemento, va messo al suo posto e
+'   non in fondo.
+'
+'   I NUMERI. Punto come separatore decimale, sempre, qualunque sia la
+'   lingua di Windows. Passano tutti da Money.FormatInvariant.
+'
+'   GLI ELEMENTI VUOTI. Un elemento opzionale si omette. Scriverlo vuoto
+'   (<Provincia></Provincia>) fa scartare il file. Per questo
+'   XmlBuilder.Elemento salta i valori vuoti e solo ElementoSempre scrive
+'   comunque.
+'
+' Una avvertenza onesta: questo modulo produce un XML conforme a quanto
+' descritto sopra, ma prima della prima trasmissione vera il file va
+' validato contro lo schema XSD ufficiale e provato sul canale di prova. Un
+' generatore scritto senza aver mai visto una ricevuta dello SDI non e' un
+' generatore collaudato.
+'
+Module FatturaPaXml
+
+    ' Codice destinatario convenzionale quando si usa la PEC.
+    Public Const DESTINATARIO_PEC As String = "0000000"
+
+    ' Codice destinatario per i soggetti esteri.
+    Public Const DESTINATARIO_ESTERO As String = "XXXXXXX"
+
+    Private Const NAMESPACE_FATTURA As String = _
+        "http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2"
+
+    ' Lunghezze massime dello schema, nei punti dove un testo lungo arriva
+    ' davvero: una ragione sociale di 90 caratteri esiste.
+    Private Const MAX_DENOMINAZIONE As Long = 80
+    Private Const MAX_NOME As Long = 60
+    Private Const MAX_INDIRIZZO As Long = 60
+    Private Const MAX_CIVICO As Long = 8
+    Private Const MAX_COMUNE As Long = 60
+    Private Const MAX_CODICE_FISCALE As Long = 16
+    Private Const MAX_ID_CODICE As Long = 28
+    Private Const MAX_NUMERO As Long = 20
+    Private Const MAX_DESCRIZIONE As Long = 1000
+    Private Const MAX_CODICE_ARTICOLO As Long = 35
+    Private Const MAX_UNITA_MISURA As Long = 10
+    Private Const MAX_CAUSALE As Long = 200
+    Private Const MAX_RIFERIMENTO As Long = 100
+    Private Const MAX_IBAN As Long = 34
+
+    ' ------------------------------------------------------------------
+    ' Generazione
+    ' ------------------------------------------------------------------
+
+    Public Function Genera(ByVal dati As DatiFatturaElettronica) As String
+        Dim xml As XmlBuilder
+
+        If dati Is Nothing Then
+            Err.Raise 5, "FatturaPaXml.Genera", "Dati della fattura non forniti"
+        End If
+        If dati.Calcolo Is Nothing Then
+            Err.Raise 5, "FatturaPaXml.Genera", _
+                      "Manca il calcolo del documento: FatturaPaXml non ricalcola i totali"
+        End If
+
+        Set xml = New XmlBuilder
+        xml.Dichiarazione "UTF-8"
+        xml.Apri "p:FatturaElettronica", AttributiRadice(dati)
+        ScriviHeader xml, dati
+        ScriviBody xml, dati
+        xml.Chiudi "p:FatturaElettronica"
+
+        If xml.Livello <> 0 Then
+            Err.Raise vbObjectError + 1401, "FatturaPaXml.Genera", _
+                      "XML non bilanciato: manca una chiusura"
+        End If
+        Return xml.Risultato()
+    End Function
+
+    ' Nome del file come lo vuole lo SDI: paese piu' identificativo del
+    ' trasmittente, underscore, progressivo univoco.
+    Public Function NomeFile(ByVal dati As DatiFatturaElettronica) As String
+        Return UCase$(Trim$(dati.IdPaeseTrasmittente)) & _
+               Trim$(dati.IdCodiceTrasmittente) & "_" & _
+               Trim$(dati.ProgressivoInvio) & ".xml"
+    End Function
+
+    ' Progressivo di invio. Deve essere univoco per trasmittente e non
+    ' riutilizzabile: lo SDI rifiuta un file con un progressivo gia' visto,
+    ' anche se il contenuto e' diverso.
+    Public Function ProgressivoFormattato(ByVal numero As Long) As String
+        Return Format$(numero, "00000")
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Intestazione
+    ' ------------------------------------------------------------------
+
+    Private Function AttributiRadice(ByVal dati As DatiFatturaElettronica) As String
+        Return "versione=""" & dati.FormatoTrasmissione & """ " & _
+               "xmlns:p=""" & NAMESPACE_FATTURA & """ " & _
+               "xmlns:ds=""http://www.w3.org/2000/09/xmldsig#"" " & _
+               "xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"""
+    End Function
+
+    Private Sub ScriviHeader(ByVal xml As XmlBuilder, ByVal dati As DatiFatturaElettronica)
+        Dim destinatario As String
+
+        destinatario = CodiceDestinatarioDi(dati)
+
+        xml.Apri "FatturaElettronicaHeader"
+
+        xml.Apri "DatiTrasmissione"
+        xml.Apri "IdTrasmittente"
+        xml.ElementoSempre "IdPaese", Paese(dati.IdPaeseTrasmittente)
+        xml.ElementoSempre "IdCodice", Testo(dati.IdCodiceTrasmittente, MAX_ID_CODICE)
+        xml.Chiudi "IdTrasmittente"
+        xml.ElementoSempre "ProgressivoInvio", Trim$(dati.ProgressivoInvio)
+        xml.ElementoSempre "FormatoTrasmissione", dati.FormatoTrasmissione
+        xml.ElementoSempre "CodiceDestinatario", destinatario
+        ' la PEC si scrive solo con il codice convenzionale: metterla
+        ' insieme a un codice destinatario vero fa scartare il file
+        If destinatario = DESTINATARIO_PEC Then
+            xml.Elemento "PECDestinatario", Trim$(dati.Cessionario.Pec)
+        End If
+        xml.Chiudi "DatiTrasmissione"
+
+        ScriviSoggetto xml, "CedentePrestatore", dati.Cedente, True
+        ScriviSoggetto xml, "CessionarioCommittente", dati.Cessionario, False
+
+        xml.Chiudi "FatturaElettronicaHeader"
+    End Sub
+
+    ' Il blocco anagrafico, uguale per le due parti salvo il regime
+    ' fiscale, che ha solo il cedente.
+    Private Sub ScriviSoggetto(ByVal xml As XmlBuilder, ByVal nomeBlocco As String, _
+                               ByVal soggetto As SoggettoFE, ByVal cedente As Boolean)
+        xml.Apri nomeBlocco
+
+        xml.Apri "DatiAnagrafici"
+        If soggetto.HaPartitaIva Then
+            xml.Apri "IdFiscaleIVA"
+            xml.ElementoSempre "IdPaese", Paese(soggetto.IdPaese)
+            xml.ElementoSempre "IdCodice", Testo(soggetto.PartitaIva, MAX_ID_CODICE)
+            xml.Chiudi "IdFiscaleIVA"
+        End If
+        xml.Elemento "CodiceFiscale", Testo(UCase$(soggetto.CodiceFiscale), MAX_CODICE_FISCALE)
+
+        xml.Apri "Anagrafica"
+        ' o Denominazione, o Nome piu' Cognome: lo schema e' una scelta fra
+        ' le due forme, non un elenco
+        If soggetto.PersonaFisica Then
+            xml.Elemento "Nome", Testo(soggetto.Nome, MAX_NOME)
+            xml.Elemento "Cognome", Testo(soggetto.Cognome, MAX_NOME)
+        Else
+            xml.ElementoSempre "Denominazione", Testo(soggetto.Denominazione, MAX_DENOMINAZIONE)
+        End If
+        xml.Chiudi "Anagrafica"
+
+        If cedente Then
+            xml.ElementoSempre "RegimeFiscale", Trim$(soggetto.RegimeFiscale)
+        End If
+        xml.Chiudi "DatiAnagrafici"
+
+        xml.Apri "Sede"
+        xml.ElementoSempre "Indirizzo", Testo(soggetto.Indirizzo, MAX_INDIRIZZO)
+        xml.Elemento "NumeroCivico", Testo(soggetto.NumeroCivico, MAX_CIVICO)
+        xml.ElementoSempre "CAP", SoloCifre(soggetto.Cap)
+        xml.ElementoSempre "Comune", Testo(soggetto.Comune, MAX_COMUNE)
+        xml.Elemento "Provincia", Sigla(soggetto.Provincia)
+        xml.ElementoSempre "Nazione", Paese(soggetto.Nazione)
+        xml.Chiudi "Sede"
+
+        xml.Chiudi nomeBlocco
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Corpo
+    ' ------------------------------------------------------------------
+
+    Private Sub ScriviBody(ByVal xml As XmlBuilder, ByVal dati As DatiFatturaElettronica)
+        xml.Apri "FatturaElettronicaBody"
+        ScriviDatiGenerali xml, dati
+        ScriviBeniServizi xml, dati
+        ScriviPagamento xml, dati
+        xml.Chiudi "FatturaElettronicaBody"
+    End Sub
+
+    ' L'ordine qui dentro e' quello dello schema e non e' negoziabile:
+    ' TipoDocumento, Divisa, Data, Numero, DatiRitenuta, DatiBollo,
+    ' DatiCassaPrevidenziale, ScontoMaggiorazione, ImportoTotaleDocumento,
+    ' Causale.
+    Private Sub ScriviDatiGenerali(ByVal xml As XmlBuilder, ByVal dati As DatiFatturaElettronica)
+        Dim calc As CalcoloDocumento
+
+        Set calc = dati.Calcolo
+
+        xml.Apri "DatiGenerali"
+        xml.Apri "DatiGeneraliDocumento"
+
+        xml.ElementoSempre "TipoDocumento", Trim$(dati.TipoDocumento)
+        xml.ElementoSempre "Divisa", Trim$(dati.Divisa)
+        xml.ElementoSempre "Data", DataXml(dati.DataDocumento)
+        xml.ElementoSempre "Numero", Testo(dati.Numero, MAX_NUMERO)
+
+        If dati.HaRitenuta Then
+            xml.Apri "DatiRitenuta"
+            xml.ElementoSempre "TipoRitenuta", Trim$(dati.TipoRitenuta)
+            xml.ElementoSempre "ImportoRitenuta", Importo(calc.Ritenuta)
+            xml.ElementoSempre "AliquotaRitenuta", Aliquota(calc.RitenutaPerc)
+            xml.ElementoSempre "CausalePagamento", Trim$(dati.CausalePagamento)
+            xml.Chiudi "DatiRitenuta"
+        End If
+
+        If dati.HaBollo Then
+            xml.Apri "DatiBollo"
+            xml.ElementoSempre "BolloVirtuale", "SI"
+            xml.ElementoSempre "ImportoBollo", Importo(calc.Bollo)
+            xml.Chiudi "DatiBollo"
+        End If
+
+        If dati.HaCassaPrevidenziale Then
+            xml.Apri "DatiCassaPrevidenziale"
+            xml.ElementoSempre "TipoCassa", Trim$(dati.TipoCassa)
+            xml.ElementoSempre "AlCassa", Aliquota(calc.CassaPrevidenzialePerc)
+            xml.ElementoSempre "ImportoContributoCassa", Importo(calc.CassaPrevidenziale)
+            xml.ElementoSempre "AliquotaIVA", Aliquota(calc.PercentualeIvaCassa)
+            If dati.HaRitenuta And calc.CassaSoggettaRitenuta Then
+                xml.ElementoSempre "Ritenuta", "SI"
+            End If
+            If calc.PercentualeIvaCassa = 0 Then
+                xml.Elemento "Natura", UCase$(Trim$(calc.NaturaIvaCassa))
+            End If
+            xml.Chiudi "DatiCassaPrevidenziale"
+        End If
+
+        If calc.ScontoPiedePerc <> 0 Then
+            xml.Apri "ScontoMaggiorazione"
+            If calc.ScontoPiedePerc > 0 Then
+                xml.ElementoSempre "Tipo", "SC"
+            Else
+                xml.ElementoSempre "Tipo", "MG"
+            End If
+            xml.ElementoSempre "Percentuale", Aliquota(Abs(calc.ScontoPiedePerc))
+            xml.Chiudi "ScontoMaggiorazione"
+        End If
+
+        ' Totale comprensivo di imposta e di bollo addebitato, non al netto
+        ' della ritenuta: la ritenuta si legge nel suo blocco, e il totale
+        ' da versare si ricava dalle scadenze.
+        xml.ElementoSempre "ImportoTotaleDocumento", Importo(calc.TotaleDocumento)
+        xml.Elemento "Causale", Testo(dati.Causale, MAX_CAUSALE)
+
+        xml.Chiudi "DatiGeneraliDocumento"
+
+        If Len(Trim$(dati.NumeroOrdine)) > 0 Then
+            xml.Apri "DatiOrdineAcquisto"
+            xml.ElementoSempre "IdDocumento", Testo(dati.NumeroOrdine, MAX_NUMERO)
+            If dati.DataOrdine > 0 Then xml.Elemento "Data", DataXml(dati.DataOrdine)
+            xml.Chiudi "DatiOrdineAcquisto"
+        End If
+
+        If Len(Trim$(dati.NumeroDdt)) > 0 Then
+            xml.Apri "DatiDDT"
+            xml.ElementoSempre "NumeroDDT", Testo(dati.NumeroDdt, MAX_NUMERO)
+            If dati.DataDdt > 0 Then xml.Elemento "DataDDT", DataXml(dati.DataDdt)
+            xml.Chiudi "DatiDDT"
+        End If
+
+        xml.Chiudi "DatiGenerali"
+    End Sub
+
+    Private Sub ScriviBeniServizi(ByVal xml As XmlBuilder, ByVal dati As DatiFatturaElettronica)
+        Dim calc As CalcoloDocumento
+        Dim riga As RigaCalcolo
+        Dim voce As RiepilogoIva
+        Dim numeroLinea As Long
+
+        Set calc = dati.Calcolo
+        xml.Apri "DatiBeniServizi"
+
+        For Each riga In calc.Righe
+            If riga.Conteggiata Then
+                numeroLinea += 1
+                ScriviLinea xml, dati, riga, numeroLinea
+            End If
+        Next riga
+
+        ' Le spese diventano righe: cosi' la somma dei PrezzoTotale torna
+        ' con l'imponibile del riepilogo, che e' il controllo piu' facile da
+        ' fare a mano quando qualcosa non quadra. La cassa previdenziale no:
+        ' quella ha il suo blocco e non va anche in riga, altrimenti conta
+        ' due volte.
+        numeroLinea = ScriviRigaSpesa(xml, calc, numeroLinea, "Spese di trasporto", calc.SpeseTrasporto)
+        numeroLinea = ScriviRigaSpesa(xml, calc, numeroLinea, "Spese di incasso", calc.SpeseIncasso)
+        numeroLinea = ScriviRigaSpesa(xml, calc, numeroLinea, "Spese di imballo", calc.SpeseImballo)
+
+        For Each voce In calc.Riepilogo
+            xml.Apri "DatiRiepilogo"
+            xml.ElementoSempre "AliquotaIVA", Aliquota(voce.PercentualeIva)
+            If voce.PercentualeIva = 0 Then
+                xml.Elemento "Natura", UCase$(Trim$(voce.NaturaIva))
+            End If
+            xml.ElementoSempre "ImponibileImporto", Importo(voce.Imponibile)
+            xml.ElementoSempre "Imposta", Importo(voce.Imposta)
+            xml.Elemento "EsigibilitaIVA", Trim$(voce.Esigibilita)
+            If voce.PercentualeIva = 0 Then
+                xml.Elemento "RiferimentoNormativo", Testo(voce.RiferimentoNormativo, MAX_RIFERIMENTO)
+            End If
+            xml.Chiudi "DatiRiepilogo"
+        Next voce
+
+        xml.Chiudi "DatiBeniServizi"
+    End Sub
+
+    ' Una riga di dettaglio. L'ordine e' quello dello schema: NumeroLinea,
+    ' CodiceArticolo, Descrizione, Quantita, UnitaMisura, PrezzoUnitario,
+    ' ScontoMaggiorazione, PrezzoTotale, AliquotaIVA, Ritenuta, Natura.
+    Private Sub ScriviLinea(ByVal xml As XmlBuilder, ByVal dati As DatiFatturaElettronica, _
+                            ByVal riga As RigaCalcolo, ByVal numeroLinea As Long)
+        xml.Apri "DettaglioLinee"
+        xml.ElementoSempre "NumeroLinea", CStr(numeroLinea)
+
+        If Len(Trim$(riga.Codice)) > 0 Then
+            xml.Apri "CodiceArticolo"
+            xml.ElementoSempre "CodiceTipo", "INTERNO"
+            xml.ElementoSempre "CodiceValore", Testo(riga.Codice, MAX_CODICE_ARTICOLO)
+            xml.Chiudi "CodiceArticolo"
+        End If
+
+        xml.ElementoSempre "Descrizione", Testo(riga.Descrizione, MAX_DESCRIZIONE)
+        xml.ElementoSempre "Quantita", Quantita(riga.Quantita)
+        ' con la quantita' l'unita' di misura e' obbligatoria: senza, il
+        ' file viene scartato
+        xml.ElementoSempre "UnitaMisura", UnitaDi(riga)
+        xml.ElementoSempre "PrezzoUnitario", PrezzoUnitarioDi(riga, dati.Calcolo.PrezziIvati)
+
+        ScriviScontiRiga xml, riga
+
+        xml.ElementoSempre "PrezzoTotale", Importo(riga.Imponibile)
+        xml.ElementoSempre "AliquotaIVA", Aliquota(riga.PercentualeIva)
+        If dati.HaRitenuta And riga.SoggettaRitenuta Then
+            xml.ElementoSempre "Ritenuta", "SI"
+        End If
+        If riga.PercentualeIva = 0 Then
+            xml.Elemento "Natura", UCase$(Trim$(riga.NaturaIva))
+        End If
+
+        xml.Chiudi "DettaglioLinee"
+    End Sub
+
+    ' Gli sconti si dichiarano, non si nascondono nel prezzo: il
+    ' PrezzoUnitario resta quello di listino e il PrezzoTotale e' il netto.
+    Private Sub ScriviScontiRiga(ByVal xml As XmlBuilder, ByVal riga As RigaCalcolo)
+        ScriviSconto xml, riga.Sconto1
+        ScriviSconto xml, riga.Sconto2
+        ScriviSconto xml, riga.Sconto3
+
+        If riga.ScontoImporto <> 0 Then
+            xml.Apri "ScontoMaggiorazione"
+            If riga.ScontoImporto > 0 Then
+                xml.ElementoSempre "Tipo", "SC"
+            Else
+                xml.ElementoSempre "Tipo", "MG"
+            End If
+            xml.ElementoSempre "Importo", Importo(Abs(riga.ScontoImporto))
+            xml.Chiudi "ScontoMaggiorazione"
+        End If
+    End Sub
+
+    Private Sub ScriviSconto(ByVal xml As XmlBuilder, ByVal percentuale As Double)
+        If percentuale = 0 Then Exit Sub
+
+        xml.Apri "ScontoMaggiorazione"
+        If percentuale > 0 Then
+            xml.ElementoSempre "Tipo", "SC"
+        Else
+            xml.ElementoSempre "Tipo", "MG"
+        End If
+        xml.ElementoSempre "Percentuale", Aliquota(Abs(percentuale))
+        xml.Chiudi "ScontoMaggiorazione"
+    End Sub
+
+    ' Una voce di spesa come riga di dettaglio. Restituisce il numero di
+    ' linea aggiornato, cosi' il chiamante non deve contare.
+    Private Function ScriviRigaSpesa(ByVal xml As XmlBuilder, ByVal calc As CalcoloDocumento, _
+                                     ByVal numeroLinea As Long, ByVal descrizione As String, _
+                                     ByVal valoreSpesa As Currency) As Long
+        If valoreSpesa = 0 Then Return numeroLinea
+
+        numeroLinea += 1
+        xml.Apri "DettaglioLinee"
+        xml.ElementoSempre "NumeroLinea", CStr(numeroLinea)
+        xml.ElementoSempre "Descrizione", descrizione
+        xml.ElementoSempre "Quantita", Quantita(1)
+        xml.ElementoSempre "UnitaMisura", "NR"
+        xml.ElementoSempre "PrezzoUnitario", Importo(valoreSpesa)
+        xml.ElementoSempre "PrezzoTotale", Importo(valoreSpesa)
+        xml.ElementoSempre "AliquotaIVA", Aliquota(calc.PercentualeIvaSpese)
+        If calc.PercentualeIvaSpese = 0 Then
+            xml.Elemento "Natura", UCase$(Trim$(calc.NaturaIvaSpese))
+        End If
+        xml.Chiudi "DettaglioLinee"
+        Return numeroLinea
+    End Function
+
+    Private Sub ScriviPagamento(ByVal xml As XmlBuilder, ByVal dati As DatiFatturaElettronica)
+        Dim rata As Scadenza
+
+        If dati.Scadenze Is Nothing Then Exit Sub
+        If dati.Scadenze.Count = 0 Then Exit Sub
+
+        xml.Apri "DatiPagamento"
+        xml.ElementoSempre "CondizioniPagamento", CondizioniDi(dati)
+
+        For Each rata In dati.Scadenze
+            xml.Apri "DettaglioPagamento"
+            xml.ElementoSempre "ModalitaPagamento", ModalitaDi(dati, rata)
+            xml.Elemento "DataScadenzaPagamento", DataXml(rata.DataScadenza)
+            xml.ElementoSempre "ImportoPagamento", Importo(rata.Importo)
+            xml.Elemento "IBAN", Testo(Replace$(dati.Cedente.Iban, " ", ""), MAX_IBAN)
+            xml.Chiudi "DettaglioPagamento"
+        Next rata
+
+        xml.Chiudi "DatiPagamento"
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Validazione
+    ' ------------------------------------------------------------------
+
+    ' Elenco dei problemi, vuoto se il file e' trasmettibile. Comprende i
+    ' rilievi del motore di calcolo: una fattura che non sta in piedi sulla
+    ' carta non sta in piedi nemmeno in XML.
+    '
+    ' Non sostituisce la validazione contro lo schema XSD: controlla le
+    ' cose che si possono controllare senza lo schema, cioe' quelle che
+    ' dipendono dai dati e non dalla forma.
+    Public Function Validazione(ByVal dati As DatiFatturaElettronica) As Collection
+        Dim problemi As Collection
+        Dim ereditati As Collection
+        Dim problema As Variant
+        Dim destinatario As String
+        Dim totaleScadenze As Currency
+
+        Set problemi = New Collection
+        If dati Is Nothing Then
+            problemi.Add "Dati della fattura non forniti"
+            Return problemi
+        End If
+
+        ' --- trasmissione ---
+        If Len(Trim$(dati.IdCodiceTrasmittente)) = 0 Then
+            problemi.Add "Trasmittente: manca l'identificativo (partita IVA o codice fiscale)"
+        End If
+        If Len(Trim$(dati.ProgressivoInvio)) = 0 Then
+            problemi.Add "Trasmissione: manca il progressivo di invio"
+        End If
+        If dati.FormatoTrasmissione <> "FPR12" And dati.FormatoTrasmissione <> "FPA12" Then
+            problemi.Add "Trasmissione: formato " & dati.FormatoTrasmissione & " non riconosciuto"
+        End If
+
+        destinatario = CodiceDestinatarioDi(dati)
+        If dati.FormatoTrasmissione = "FPR12" And Len(destinatario) <> 7 Then
+            problemi.Add "Destinatario: il codice deve essere di sette caratteri"
+        End If
+        If destinatario = DESTINATARIO_PEC Then
+            If Len(Trim$(dati.Cessionario.Pec)) = 0 Then
+                problemi.Add "Destinatario: senza codice destinatario serve la PEC del cliente"
+            End If
+        End If
+
+        ' --- cedente ---
+        ControllaAnagrafica problemi, "Cedente", dati.Cedente
+        If Not dati.Cedente.HaPartitaIva Then
+            problemi.Add "Cedente: la partita IVA e' obbligatoria"
+        End If
+        If Len(Trim$(dati.Cedente.RegimeFiscale)) = 0 Then
+            problemi.Add "Cedente: manca il regime fiscale (RF01 e seguenti)"
+        End If
+
+        ' --- cessionario ---
+        ControllaAnagrafica problemi, "Cliente", dati.Cessionario
+        If Not dati.Cessionario.HaPartitaIva Then
+            If Len(Trim$(dati.Cessionario.CodiceFiscale)) = 0 Then
+                problemi.Add "Cliente: serve la partita IVA oppure il codice fiscale"
+            End If
+        End If
+
+        ' --- documento ---
+        If Len(Trim$(dati.TipoDocumento)) = 0 Then
+            problemi.Add "Documento: manca il tipo (TD01 e seguenti)"
+        End If
+        If Len(Trim$(dati.Numero)) = 0 Then
+            problemi.Add "Documento: manca il numero"
+        End If
+        If dati.DataDocumento = 0 Then
+            problemi.Add "Documento: manca la data"
+        End If
+
+        If dati.Calcolo Is Nothing Then
+            problemi.Add "Documento: manca il calcolo dei totali"
+            Return problemi
+        End If
+
+        Set ereditati = dati.Calcolo.Validazione()
+        For Each problema In ereditati
+            problemi.Add CStr(problema)
+        Next problema
+
+        ' --- ritenuta e cassa ---
+        If dati.HaRitenuta Then
+            If Len(Trim$(dati.TipoRitenuta)) = 0 Then
+                problemi.Add "Ritenuta: manca il tipo (RT01 persone fisiche, RT02 persone giuridiche)"
+            End If
+            If Len(Trim$(dati.CausalePagamento)) = 0 Then
+                problemi.Add "Ritenuta: manca la causale di pagamento"
+            End If
+        End If
+        If dati.HaCassaPrevidenziale Then
+            If Len(Trim$(dati.TipoCassa)) = 0 Then
+                problemi.Add "Cassa previdenziale: manca il tipo di cassa (TC01 e seguenti)"
+            End If
+        End If
+
+        ' --- pagamento ---
+        If dati.Scadenze.Count > 0 Then
+            If Len(ModalitaDi(dati, Nothing)) = 0 Then
+                problemi.Add "Pagamento: manca la modalita' (MP01 e seguenti)"
+            End If
+            totaleScadenze = CalcoloScadenze.TotaleRate(dati.Scadenze)
+            If totaleScadenze <> dati.Calcolo.TotaleDaPagare Then
+                problemi.Add "Pagamento: le scadenze sommano " & Money.FormatAmount(totaleScadenze) & _
+                             " invece di " & Money.FormatAmount(dati.Calcolo.TotaleDaPagare)
+            End If
+        End If
+
+        Return problemi
+    End Function
+
+    Private Sub ControllaAnagrafica(ByVal problemi As Collection, ByVal chi As String, _
+                                    ByVal soggetto As SoggettoFE)
+        If Len(Trim$(soggetto.Denominazione)) = 0 Then
+            If Len(Trim$(soggetto.Cognome)) = 0 Then
+                problemi.Add chi & ": serve la denominazione oppure nome e cognome"
+            End If
+        End If
+        If Len(Trim$(soggetto.Indirizzo)) = 0 Then
+            problemi.Add chi & ": manca l'indirizzo"
+        End If
+        If Len(SoloCifre(soggetto.Cap)) <> 5 Then
+            problemi.Add chi & ": il CAP deve essere di cinque cifre"
+        End If
+        If Len(Trim$(soggetto.Comune)) = 0 Then
+            problemi.Add chi & ": manca il comune"
+        End If
+        If Len(Paese(soggetto.Nazione)) <> 2 Then
+            problemi.Add chi & ": la nazione deve essere di due lettere"
+        End If
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Formato dei valori
+    ' ------------------------------------------------------------------
+
+    ' Importo con due decimali e il punto come separatore, sempre.
+    Public Function Importo(ByVal valore As Currency) As String
+        Return Money.FormatInvariant(valore, 2)
+    End Function
+
+    Public Function Aliquota(ByVal valore As Double) As String
+        Return Money.FormatInvariant(CCur(valore), 2)
+    End Function
+
+    Public Function Quantita(ByVal valore As Double) As String
+        Return Money.FormatInvariant(CCur(valore), 2)
+    End Function
+
+    ' Data in forma ISO. Costruita cifra per cifra e non con un'unica
+    ' maschera di Format, perche' in alcune lingue di Windows i separatori
+    ' dentro le maschere di data vengono sostituiti.
+    Public Function DataXml(ByVal valore As Date) As String
+        Return Format$(Year(valore), "0000") & "-" & _
+               Format$(Month(valore), "00") & "-" & _
+               Format$(Day(valore), "00")
+    End Function
+
+    ' Testo normalizzato e accorciato. L'accorciamento viene prima della
+    ' protezione dei caratteri speciali, che la fa XmlBuilder: tagliare
+    ' dopo spezzerebbe un'entita' a meta'.
+    Public Function Testo(ByVal valore As String, ByVal massimo As Long) As String
+        Dim risultato As String
+
+        risultato = StringUtils.CollapseWhitespace(valore)
+        If Len(risultato) > massimo Then risultato = Left$(risultato, massimo)
+        Return risultato
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Nell'XML gli importi sono sempre al netto. In un documento a prezzi di
+    ' scaffale il prezzo unitario va scorporato, e si tengono otto decimali
+    ' perche' il prodotto per la quantita' resti vicino al PrezzoTotale.
+    Private Function PrezzoUnitarioDi(ByVal riga As RigaCalcolo, ByVal prezziIvati As Boolean) As String
+        If Not prezziIvati Then Return Money.FormatInvariant(riga.PrezzoUnitario, 2)
+        Return Money.FormatInvariant( _
+            Money.RoundHalfUp(Money.NetOfVat(riga.PrezzoUnitario, riga.PercentualeIva), 8), 8)
+    End Function
+
+    Private Function UnitaDi(ByVal riga As RigaCalcolo) As String
+        Dim unita As String
+
+        unita = Testo(riga.UnitaMisura, MAX_UNITA_MISURA)
+        If Len(unita) = 0 Then Return "NR"
+        Return unita
+    End Function
+
+    ' Un cliente estero si identifica con il codice convenzionale, uno
+    ' italiano senza codice destinatario passa dalla PEC.
+    Public Function CodiceDestinatarioDi(ByVal dati As DatiFatturaElettronica) As String
+        Dim codice As String
+
+        codice = UCase$(Trim$(dati.Cessionario.CodiceDestinatario))
+        If Len(codice) > 0 Then Return codice
+        If Paese(dati.Cessionario.Nazione) <> "IT" Then Return DESTINATARIO_ESTERO
+        Return DESTINATARIO_PEC
+    End Function
+
+    ' TP02 pagamento completo, TP01 a rate. Se non e' indicato si deduce
+    ' dal numero di scadenze, che e' il dato vero.
+    Private Function CondizioniDi(ByVal dati As DatiFatturaElettronica) As String
+        If Len(Trim$(dati.CondizioniPagamento)) > 0 Then Return Trim$(dati.CondizioniPagamento)
+        If dati.Scadenze.Count > 1 Then Return "TP01"
+        Return "TP02"
+    End Function
+
+    ' La modalita' della singola rata vince su quella del documento: una
+    ' prima rata in contanti e il saldo a bonifico e' un caso normale.
+    Private Function ModalitaDi(ByVal dati As DatiFatturaElettronica, _
+                                ByVal rata As Scadenza) As String
+        If Not rata Is Nothing Then
+            If Len(Trim$(rata.ModalitaPagamento)) > 0 Then
+                Return Trim$(rata.ModalitaPagamento)
+            End If
+        End If
+        Return Trim$(dati.ModalitaPagamento)
+    End Function
+
+    Private Function Paese(ByVal valore As String) As String
+        Return UCase$(Left$(Trim$(valore), 2))
+    End Function
+
+    Private Function Sigla(ByVal valore As String) As String
+        Return UCase$(Left$(Trim$(valore), 2))
+    End Function
+
+    Private Function SoloCifre(ByVal valore As String) As String
+        Dim risultato As String
+        Dim i As Long
+        Dim ch As String
+
+        For i = 1 To Len(valore)
+            ch = Mid$(valore, i, 1)
+            If ch Like "#" Then risultato = risultato & ch
+        Next i
+        Return risultato
+    End Function
+
+End Module

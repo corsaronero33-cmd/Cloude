@@ -1,0 +1,134 @@
+'
+' XmlBuilder - costruzione di XML leggibile, con indentazione automatica.
+'
+' Serve alla fattura elettronica, ma non sa niente di fatture: tiene il
+' livello di annidamento, protegge i caratteri speciali e accumula le righe
+' in un array che viene unito una volta sola alla fine. Concatenare stringhe
+' in un ciclo su un documento con duecento righe costa il quadrato del
+' numero di righe, e una fattura di magazzino le duecento righe le ha.
+'
+' L'indentazione non e' un vezzo: quando lo SDI scarta un file, la prima
+' cosa che si fa e' aprirlo e leggerlo. Un XML su una riga sola non si
+' legge.
+'
+'     Dim xml As XmlBuilder
+'     Set xml = New XmlBuilder
+'     xml.Dichiarazione
+'     xml.Apri "Documento", "versione=""1.0"""
+'     xml.ElementoSempre "Numero", "123"
+'     xml.Elemento "Note", ""          ' saltato: vuoto
+'     xml.Chiudi "Documento"
+'     Debug.Print xml.Risultato()
+'
+Class XmlBuilder
+
+    Private Const PASSO As String = "  "
+
+    Private mRighe() As String
+    Private mQuante As Long
+    Private mLivello As Long
+
+    Private Sub Class_Initialize()
+        ReDim mRighe(0 To 63)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Scrittura
+    ' ------------------------------------------------------------------
+
+    Public Sub Dichiarazione(Optional ByVal codifica As String = "UTF-8")
+        Aggiungi "<?xml version=""1.0"" encoding=""" & codifica & """?>"
+    End Sub
+
+    ' Gli attributi si passano gia' formati: sono pochi e in un solo punto,
+    ' e cosi' non serve una seconda collezione per trasportarli.
+    Public Sub Apri(ByVal nome As String, Optional ByVal attributi As String = "")
+        If Len(Trim$(attributi)) > 0 Then
+            Aggiungi Indentazione() & "<" & nome & " " & Trim$(attributi) & ">"
+        Else
+            Aggiungi Indentazione() & "<" & nome & ">"
+        End If
+        mLivello += 1
+    End Sub
+
+    Public Sub Chiudi(ByVal nome As String)
+        If mLivello > 0 Then mLivello -= 1
+        Aggiungi Indentazione() & "</" & nome & ">"
+    End Sub
+
+    ' Elemento con contenuto, saltato se il contenuto e' vuoto. Nella
+    ' fattura elettronica un elemento opzionale si omette: scriverlo vuoto
+    ' fa scartare il file.
+    Public Sub Elemento(ByVal nome As String, ByVal valore As String)
+        If Len(Trim$(valore)) = 0 Then Exit Sub
+        ElementoSempre nome, valore
+    End Sub
+
+    ' Elemento scritto anche se vuoto, per i pochi casi obbligatori.
+    Public Sub ElementoSempre(ByVal nome As String, ByVal valore As String)
+        Aggiungi Indentazione() & "<" & nome & ">" & Protetto(valore) & "</" & nome & ">"
+    End Sub
+
+    Public Sub Commento(ByVal testo As String)
+        Aggiungi Indentazione() & "<!-- " & Replace$(testo, "--", "- -") & " -->"
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Risultato
+    ' ------------------------------------------------------------------
+
+    Public Function Risultato() As String
+        Dim utili() As String
+        Dim i As Long
+
+        If mQuante = 0 Then Return ""
+        ReDim utili(0 To mQuante - 1)
+        For i = 0 To mQuante - 1
+            utili(i) = mRighe(i)
+        Next i
+        Return Join(utili, vbCrLf)
+    End Function
+
+    Public Property Get NumeroRighe() As Long
+        Return mQuante
+    End Property
+
+    ' Livello di annidamento corrente. A documento finito deve essere zero:
+    ' se non lo e', qualcuno ha scordato una Chiudi.
+    Public Property Get Livello() As Long
+        Return mLivello
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Helper
+    ' ------------------------------------------------------------------
+
+    ' Protegge i caratteri che in XML hanno un significato. Va chiamato
+    ' anche sui valori degli attributi, che questa classe riceve gia'
+    ' formati.
+    Public Function Protetto(ByVal valore As String) As String
+        Dim testo As String
+
+        testo = Replace$(valore, "&", "&amp;")
+        testo = Replace$(testo, "<", "&lt;")
+        testo = Replace$(testo, ">", "&gt;")
+        testo = Replace$(testo, """", "&quot;")
+        testo = Replace$(testo, "'", "&apos;")
+        Return testo
+    End Function
+
+    ' Array che raddoppia: niente ReDim Preserve a ogni riga.
+    Private Sub Aggiungi(ByVal testo As String)
+        If mQuante > UBound(mRighe) Then
+            ReDim Preserve mRighe(0 To (UBound(mRighe) + 1) * 2 - 1)
+        End If
+        mRighe(mQuante) = testo
+        mQuante += 1
+    End Sub
+
+    Private Function Indentazione() As String
+        If mLivello <= 0 Then Return ""
+        Return StringUtils.Repeat(PASSO, mLivello)
+    End Function
+
+End Class

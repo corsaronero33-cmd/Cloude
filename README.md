@@ -8,14 +8,15 @@ magazzino con varianti taglia e colore, documenti di clienti e fornitori,
 prima nota di cassa, fattura elettronica.
 
 Oggi nel repository c'e' il **nucleo fiscale, il livello dati, la vendita
-al banco e il driver del registratore**. Le maschere non ci sono ancora, e
+al banco, il driver del registratore e la fattura elettronica**. Le maschere non ci sono ancora, e
 la scelta e' deliberata: in un gestionale le finestre si riscrivono due
 volte, il motore di calcolo dell'IVA no. La strada da qui in avanti sta in
 [docs/04-roadmap.md](docs/04-roadmap.md).
 
-Tutto il nucleo e' coperto da test che girano **senza archivio e senza
-registratore collegato**: premere F5 e in mezzo secondo si sa se i conti
-tornano e se l'XML per la stampante fiscale e' quello giusto.
+Tutto il nucleo e' coperto da test che girano **senza archivio, senza
+registratore collegato e senza rete**: premere F5 e in mezzo secondo si sa
+se i conti tornano e se i due XML, quello della stampante fiscale e quello
+per lo SDI, sono quelli giusti.
 
 ## Contenuto
 
@@ -32,6 +33,16 @@ tornano e se l'XML per la stampante fiscale e' quello giusto.
 | `Sources/Scontrino.twin` | Vendita al banco: prezzi di scaffale, pagamenti multipli, resto |
 | `Sources/PagamentoScontrino.twin` | Una forma di pagamento |
 | `Sources/Costanti.twin` | Valori di dominio condivisi |
+
+### Fattura elettronica
+
+| File | Ruolo |
+| --- | --- |
+| `Sources/FatturaPaXml.twin` | Genera l'XML FatturaPA 1.2: funzioni pure, provabili senza archivio |
+| `Sources/FatturaElettronica.twin` | Legge il documento, scrive il file, aggiorna lo stato |
+| `Sources/DatiFatturaElettronica.twin` | Tutto quello che serve per scrivere un XML |
+| `Sources/SoggettoFE.twin` | Cedente o cessionario |
+| `Sources/XmlBuilder.twin` | XML indentato, con protezione dei caratteri |
 
 ### Registratore telematico
 
@@ -62,6 +73,7 @@ tornano e se l'XML per la stampante fiscale e' quello giusto.
 | `Database/sql/0002_dati_base.sql` | Aliquote, nature IVA, tipi documento, pagamenti, unita' di misura |
 | `Database/sql/0003_negozio.sql` | Varianti, codici a barre, reparti, casse, vendite, chiusure, prima nota, inventari |
 | `Database/sql/0004_dati_negozio.sql` | Taglie, colori, reparti RT, causali, conti cassa, prima cassa simulata |
+| `Database/sql/0005_fattura_elettronica.sql` | Codici di ritenuta e cassa sul documento, registro degli invii |
 | `Database/Tools/CreaDatabase.vbs` | Crea l'archivio e applica le migrazioni dal prompt |
 
 ### Test e utilita'
@@ -73,6 +85,7 @@ tornano e se l'XML per la stampante fiscale e' quello giusto.
 | `Sources/CalcoloScadenzeTests.twin` | Rate, fine mese, quadratura |
 | `Sources/ScontrinoTests.twin` | Scorporo, pagamenti misti, resto, sconti, resi |
 | `Sources/RtEpsonXmlTests.twin` | L'XML uscente e la lettura della risposta |
+| `Sources/FatturaPaXmlTests.twin` | Ordine degli elementi, destinatario, ritenuta, bollo, validazione |
 | `Sources/StringUtils.twin` | Libreria di utilita' per stringhe |
 | `Sources/StringUtilsTests.twin` | Suite di test della libreria |
 | `Sources/TestRunner.twin` | Micro framework di test, circa cento righe |
@@ -88,6 +101,7 @@ tornano e se l'XML per la stampante fiscale e' quello giusto.
 | [03-access-in-rete.md](docs/03-access-in-rete.md) | ACE e architettura, le cinque regole della multiutenza, backup, cosa non si risolve |
 | [04-roadmap.md](docs/04-roadmap.md) | Cosa manca, in che ordine e perche' |
 | [05-negozio-e-rt.md](docs/05-negozio-e-rt.md) | Il flusso di cassa, varianti, reparti, il driver del registratore, l'arrotondamento con i prezzi IVA inclusa |
+| [06-fattura-elettronica.md](docs/06-fattura-elettronica.md) | Le tre cose su cui lo SDI e' inflessibile, il progressivo di invio, un esempio di XML completo |
 
 ## Come aprirlo nell'IDE
 
@@ -147,7 +161,7 @@ password predefinita che nessuno cambia.
 Gestionale - suite di test
 --------------------------
 
-Asserzioni superate: 323 su 323
+Asserzioni superate: 406 su 406
 Esito: TUTTO OK
 
 Fattura di esempio del 18/03/2026
@@ -198,7 +212,25 @@ XML per il registratore 908 caratteri
 Righe di vendita...... 3
 Totali di pagamento... 2
 Separatore decimale... punto, corretto
+
+Fattura elettronica - IT01234567890_00042.xml
+---------------------------------------------
+Validazione: nessun rilievo, il file e' trasmettibile.
+
+<?xml version="1.0" encoding="UTF-8"?>
+<p:FatturaElettronica versione="FPR12" xmlns:p="http://ivaservizi...">
+  <FatturaElettronicaHeader>
+    <DatiTrasmissione>
+      <IdTrasmittente>
+        <IdPaese>IT</IdPaese>
+        <IdCodice>01234567890</IdCodice>
+      </IdTrasmittente>
+      <ProgressivoInvio>00042</ProgressivoInvio>
+      ...
 ```
+
+L'XML viene stampato per intero: qui sopra e' tagliato, quello completo e'
+in [06-fattura-elettronica.md](docs/06-fattura-elettronica.md).
 
 Due numeri valgono la pena di essere guardati.
 
