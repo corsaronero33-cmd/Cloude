@@ -56,9 +56,31 @@ Si duplica `D_PuntiControllo elenco`, occorrenza **`PAR|Parametri`**, nome
 esatto `D_Parametri elenco`. Si cancellano casella di ricerca, `Tutti`,
 `+ Nuovo` e `Apri`: resta solo `← Menù`.
 
-**La parte nuova:** `Formati › Imposta parti... › Crea › Sottoriepilogo
-durante l'ordinamento`, campo **`Categoria`**, posizionata **sopra** il corpo.
+### Le "parti" di un formato
+
+Un formato FileMaker non e' un foglio unico: e' fatto di **fasce orizzontali
+sovrapposte**, e ognuna si chiama *parte*. Sono quelle con la linguetta grigia
+sul bordo sinistro quando si e' in Modifica formato.
+
+| Parte | Quante volte compare | Da noi contiene |
+|---|---|---|
+| Intestazione | una sola, in cima | fascia blu, titolo, pulsanti, etichette di colonna |
+| Corpo | **una per record** | la riga dell'elenco |
+| Pie' di pagina | una sola, in fondo | il contatore |
+| **Sottoriepilogo** | **una per gruppo** | il nome della categoria |
+
+**La parte nuova:** in **Modifica formato** (in Modo Usa quel menu non c'e'),
+`Formati › Imposta parti...` apre l'elenco delle fasce del formato. `Crea...`
+apre la finestra **Parte**: si sceglie **Sottoriepilogo durante
+l'ordinamento** — quello che nell'elenco sta **sopra** `Corpo`, non quello
+sotto — e nella colonna di destra il campo **`Categoria`**.
+
 Alta 34, sfondo `#E7EEF5`, dentro il campo `Categoria` in grassetto.
+
+**Scorciatoia:** doppio clic sulla linguetta grigia di una parte apre la
+stessa finestra, gia' puntata su quella. Serve per cambiare tipo o altezza di
+una fascia che esiste; per crearne una nuova serve `Imposta parti... ›
+Crea...`.
 
 Sopra e non sotto: il sottoriepilogo iniziale fa da **titolo** del gruppo, il
 finale da **totale**. I totali serviranno alle stampe.
