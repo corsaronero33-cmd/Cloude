@@ -263,6 +263,19 @@ Come alla radice: nomi di tabelle, campi, occorrenze, funzioni e script in
 `Quantita`, `NonConformita`, `Modalita`). Le accentate vanno bene solo nelle
 etichette a video e nelle stampe, dove le legge una persona.
 
+## Nei calcoli, solo i nomi che abbiamo dato noi
+
+`Get ( NomeSetPrivilegi )` restituisce `[Full Access]` anche su un file
+italiano: i nomi dei set predefiniti sono **tradotti solo nell'interfaccia**.
+Un calcolo che confronta con `"[Accesso completo]"` e' quindi sempre vero, e
+il guasto non da' nessun errore — si vede solo provando con tre account
+diversi.
+
+Vale per tutto: nomi di set di privilegi predefiniti, nomi di formati di
+sistema, messaggi di errore. **Nei calcoli si confrontano solo i nomi scritti
+da noi** — `Responsabile`, `Operatore`, `Si`, `No` — perche' quelli nessuno
+li traduce.
+
 ## Dove i limiti critici non vanno mai
 
 Dentro una formula. Arrivano da `PuntiControllo` o da `Prodotti`, passati come

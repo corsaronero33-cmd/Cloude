@@ -72,8 +72,13 @@ sul bordo sinistro quando si e' in Modifica formato.
 **La parte nuova:** in **Modifica formato** (in Modo Usa quel menu non c'e'),
 `Formati › Imposta parti...` apre l'elenco delle fasce del formato. `Crea...`
 apre la finestra **Parte**: si sceglie **Sottoriepilogo durante
-l'ordinamento** — quello che nell'elenco sta **sopra** `Corpo`, non quello
-sotto — e nella colonna di destra il campo **`Categoria`**.
+l'ordinamento** e nella colonna di destra il campo **`Categoria`**.
+
+> **Sopra `Corpo` ce ne sono due**, e l'altra e' `Riepilogo iniziale`, che
+> compare **una volta sola in cima** e mostra il valore del primo record. Si
+> distinguono con certezza da una cosa: selezionando quella giusta **si
+> accende l'elenco dei campi a destra**, perche' FileMaker chiede su cosa
+> raggruppare. Se non chiede nessun campo, e' quella sbagliata.
 
 Alta 34, sfondo `#E7EEF5`, dentro il campo `Categoria` in grassetto.
 
@@ -118,19 +123,26 @@ Campo A, *Nascondi oggetto quando*:
 
 ```
 PAR|Parametri::ModificabileDalCliente = "No"
-and Get ( NomeSetPrivilegi ) <> "[Accesso completo]"
+and ( Get ( NomeSetPrivilegi ) = "Responsabile"
+      or Get ( NomeSetPrivilegi ) = "Operatore" )
 ```
 
 Campo B, l'opposto:
 
 ```
 not ( PAR|Parametri::ModificabileDalCliente = "No"
-and Get ( NomeSetPrivilegi ) <> "[Accesso completo]" )
+and ( Get ( NomeSetPrivilegi ) = "Responsabile"
+      or Get ( NomeSetPrivilegi ) = "Operatore" ) )
 ```
 
-**Verifica il nome del set prima di fidarti.** `[Accesso completo]` e'
-tradotto. `Strumenti › Visualizzatore dati`, scheda Corrente,
-`Get ( NomeSetPrivilegi )`: copia esattamente quello che restituisce.
+**La formula chiede "sei il cliente?", non "non sei l'amministratore?".** La
+prima versione confrontava con `[Accesso completo]`: sbagliata, perche' quel
+nome e' tradotto solo nell'interfaccia mentre `Get ( NomeSetPrivilegi )`
+restituisce il valore inglese, e il confronto risultava vero anche per
+l'amministratore.
+
+**Regola generale: nei calcoli non confrontare mai i nomi che FileMaker si e'
+dato da solo, ma quelli che hai dato tu.**
 
 **Perche' due campi e non una spunta.** *Consenti l'immissione nel campo* e'
 una proprieta' fissa dell'oggetto, non si puo' calcolare. *Nascondi oggetto
