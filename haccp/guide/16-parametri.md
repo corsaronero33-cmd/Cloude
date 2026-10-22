@@ -119,30 +119,51 @@ bloccata.
 | Immissione | consentita | **tolta** |
 | Sfondo | bianco | **grigio chiaro**, bordi spenti |
 
+Quale si vede, per chi:
+
+| Chi guarda | I 14 modificabili | I 6 bloccati |
+|---|---|---|
+| accesso completo | bianchi | bianchi |
+| `Responsabile` | bianchi | **grigi** |
+| `Operatore` | **grigi** | **grigi** |
+
 Campo A, *Nascondi oggetto quando*:
 
 ```
-PAR|Parametri::ModificabileDalCliente = "No"
-and ( Get ( NomeSetPrivilegi ) = "Responsabile"
-      or Get ( NomeSetPrivilegi ) = "Operatore" )
+Get ( NomeSetPrivilegi ) = "Operatore"
+or ( Get ( NomeSetPrivilegi ) = "Responsabile"
+     and PAR|Parametri::ModificabileDalCliente = "No" )
 ```
 
 Campo B, l'opposto:
 
 ```
-not ( PAR|Parametri::ModificabileDalCliente = "No"
-and ( Get ( NomeSetPrivilegi ) = "Responsabile"
-      or Get ( NomeSetPrivilegi ) = "Operatore" ) )
+not ( Get ( NomeSetPrivilegi ) = "Operatore"
+or ( Get ( NomeSetPrivilegi ) = "Responsabile"
+     and PAR|Parametri::ModificabileDalCliente = "No" ) )
 ```
 
-**La formula chiede "sei il cliente?", non "non sei l'amministratore?".** La
-prima versione confrontava con `[Accesso completo]`: sbagliata, perche' quel
-nome e' tradotto solo nell'interfaccia mentre `Get ( NomeSetPrivilegi )`
-restituisce il valore inglese, e il confronto risultava vero anche per
-l'amministratore.
+Si legge come una frase: *nascondi la casella scrivibile se chi guarda e'
+l'operatore — sempre, qualunque parametro — **oppure** se e' il responsabile e
+quel parametro e' bloccato.*
 
-**Regola generale: nei calcoli non confrontare mai i nomi che FileMaker si e'
-dato da solo, ma quelli che hai dato tu.**
+**Le regole sono due, diverse fra loro.** Per l'**operatore** nessun parametro
+si tocca mai: configurare il programma non e' lavoro di chi compila i
+registri. Per il **responsabile** si toccano i quattordici ma non i sei: e'
+lui che accende e spegne i moduli del suo locale, ma non deve poter rompere il
+file. Una formula che conoscesse una regola sola lascerebbe all'operatore i
+quattordici bianchi — ed e' l'errore con cui questa scheda e' nata.
+
+**Per l'operatore il grigio e' coerenza, per il responsabile e' l'unica
+protezione.** Nel set `Operatore` la tabella `Parametri` e' gia' in sola
+lettura. Il `Responsabile` invece puo' modificare tutte le tabelle: sui sei
+parametri di sistema quella casella nascosta e' l'unica cosa che lo ferma, e
+regge perche' non ha accesso a Modifica formato.
+
+**Nei calcoli, solo i nomi che abbiamo dato noi.** La prima versione
+confrontava con `[Accesso completo]`: sbagliata, perche' quel nome e' tradotto
+solo nell'interfaccia mentre `Get ( NomeSetPrivilegi )` restituisce il valore
+inglese.
 
 **Perche' due campi e non una spunta.** *Consenti l'immissione nel campo* e'
 una proprieta' fissa dell'oggetto, non si puo' calcolare. *Nascondi oggetto
@@ -158,7 +179,7 @@ Undici prove. Le tre che contano:
 
 - **5.7** chiude un ritocco vecchio: `ColorePrimario` vale ancora `#1F4E5F`,
   va `#1B3A5C`. Con l'accesso completo la casella e' bianca.
-- **5.10** come operatore: tutte e venti grigie.
+- **5.10** come operatore: **tutte e venti** grigie, nessuna esclusa.
 - **5.11** come **responsabile**: quattordici bianche, sei grigie. E' l'unica
   prova che verifica davvero la formula — dal proprio account tutto e' bianco,
   da operatore tutto e' grigio, e solo dal responsabile si vede la differenza.
