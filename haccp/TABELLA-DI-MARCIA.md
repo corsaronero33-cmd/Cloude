@@ -56,14 +56,18 @@ Porta con se' tre cose nuove: due campi **Contenitore** (`Logo` e
 la tabella e' vuota**, e il fatto che da qui in poi il menu mostra finalmente
 il nome del locale invece di una riga bianca.
 
-### `D_Parametri elenco` — dopo
+### `D_Parametri elenco` — `guide/16-parametri.md`
 
-Venti parametri chiave/valore, elenco editabile direttamente senza scheda.
-La parte da progettare: **otto parametri non vanno toccati dal cliente**, fra
-cui `VersioneSchema`, che cambiato a mano rende il file non aggiornabile. La
-tabella ha gia' la colonna `ModificabileDalCliente`: si useranno **due campi
-sovrapposti**, uno scrivibile e uno bloccato, e comparira' quello giusto a
-seconda di chi guarda.
+<https://claude.ai/artifact/MMV8Wh1bEVjgf2jUT89kgB>
+
+Venti parametri chiave/valore, elenco editabile direttamente senza scheda,
+raggruppati per categoria con la prima **parte di sottoriepilogo** del
+progetto — la tecnica su cui saranno fatte quasi tutte le stampe.
+
+**Sei** parametri (non otto) non vanno toccati dal cliente, fra cui
+`VersioneSchema`, che cambiato a mano rende il file non aggiornabile. Si
+usano **due campi `Valore` sovrapposti**, uno scrivibile e uno bloccato, e
+compare quello giusto a seconda di chi guarda.
 
 ---
 
