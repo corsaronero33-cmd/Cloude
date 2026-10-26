@@ -69,6 +69,7 @@ ognuna parte da dove finisce la precedente.
 | 17 | `guide/15-impresa.md` | <https://claude.ai/artifact/XwN5T92X5WNoucdKtQmBsf> |
 | 18 | `guide/16-parametri.md` | <https://claude.ai/artifact/MMV8Wh1bEVjgf2jUT89kgB> |
 | 19 | `archivio/collaudo-013.md` | <https://claude.ai/artifact/YLT9Fs4pggEyPphiyzoppW> |
+| 20 | `guide/17-larghezze.md` | <https://claude.ai/artifact/B1Z6cACD2TLeCmvs4mioqv> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione

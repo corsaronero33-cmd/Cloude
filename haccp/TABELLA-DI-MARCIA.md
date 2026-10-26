@@ -20,7 +20,7 @@ funziona** e con un DDR da verificare.
 | 2 | Account e permessi | due set di privilegi, login all'apertura, script `94` che crea gli account | **fatto** |
 | 3 | Punti di controllo | l'ultima anagrafica | **fatto** — `archivio/collaudo-012.md` |
 | 4 | Impresa e Parametri | il menu e' completo: tredici pulsanti, tredici destinazioni | **fatto** — `archivio/collaudo-013.md` |
-| **5** | **Le larghezze** | **tutti i formati a 1020, ridistribuendo le colonne dei quattro elenchi piu' larghi** | **← sei qui** |
+| **5** | **Le larghezze** | **tutti i formati a 1020, ridistribuendo le colonne dei quattro elenchi piu' larghi** | **← sei qui**, `guide/17-larghezze.md` |
 | 6 | Le rilevazioni | si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita' | |
 | 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
 | 8 | Ricevimenti e lotti | il **passo indietro** della rintracciabilita': da un lotto al DDT e al fornitore | |
@@ -68,8 +68,15 @@ sulla guida.
 Punti di controllo, Parametri — dove le colonne vanno **ridistribuite**, non
 trascinate. Le sei schede si muovono di pochi punti.
 
-Si chiudono anche i sette ritocchi minori e i due debiti sugli script `90` e
-`93`.
+Si chiudono anche i ritocchi minori (nome dello stile nel tema, trigger della
+ricerca da `OnObjectExit` a `OnObjectSave`, spunte della Ricerca rapida, la
+`S` maiuscola di `D_Impresa Scheda`) e i due debiti sugli script `90` e `93`.
+
+Scheda di lavoro: `guide/17-larghezze.md` —
+<https://claude.ai/artifact/B1Z6cACD2TLeCmvs4mioqv>
+
+Le colonne di tutti e sette gli elenchi sono gia' calcolate dentro: non c'e'
+nessun conto da rifare.
 
 ---
 
