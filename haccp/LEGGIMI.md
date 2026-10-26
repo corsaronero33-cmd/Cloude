@@ -16,7 +16,7 @@ File ospitato, accesso da desktop e da **FileMaker Go** su iPhone/iPad
 | **Il piano** | **`TABELLA-DI-MARCIA.md`** — dodici tappe, dove siamo, cosa aspetta. Tutto in una pagina |
 | | <https://claude.ai/artifact/7XnevvYVZU5pPmpdkpMcDZ> |
 | **Come si scrive qui dentro** | `CLAUDE.md` — convenzioni, valide per chiunque, persona o assistente |
-| **Ultima verifica del file reale** | `archivio/collaudo-012.md` — tappa 3 chiusa, nessun difetto |
+| **Ultima verifica del file reale** | `archivio/collaudo-013.md` — tappa 4 chiusa |
 
 Il file `Haccp.fmp12` **non sta nel repository**: e' binario e non si confronta
 fra due versioni. Qui stanno la specifica e i pezzi da incollare. Ad ogni
@@ -68,6 +68,7 @@ ognuna parte da dove finisce la precedente.
 | 16 | `archivio/collaudo-011.md` | <https://claude.ai/artifact/FmkcGXHaATyFF55ATWKeiA> |
 | 17 | `guide/15-impresa.md` | <https://claude.ai/artifact/XwN5T92X5WNoucdKtQmBsf> |
 | 18 | `guide/16-parametri.md` | <https://claude.ai/artifact/MMV8Wh1bEVjgf2jUT89kgB> |
+| 19 | `archivio/collaudo-013.md` | <https://claude.ai/artifact/YLT9Fs4pggEyPphiyzoppW> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione

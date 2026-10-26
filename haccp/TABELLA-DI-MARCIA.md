@@ -19,8 +19,8 @@ funziona** e con un DDR da verificare.
 | 1 | Il menu e cinque anagrafiche | Reparti, Attrezzature, Fornitori, Prodotti, Operatori: elenco e scheda, ricerca, navigazione | **fatto** |
 | 2 | Account e permessi | due set di privilegi, login all'apertura, script `94` che crea gli account | **fatto** |
 | 3 | Punti di controllo | l'ultima anagrafica | **fatto** — `archivio/collaudo-012.md` |
-| **4** | **Impresa e Parametri** | **due schede piccole; chiudono i due pulsanti del menu che oggi non portano da nessuna parte** | **← sei qui**, `guide/15-impresa.md` |
-| 5 | Le larghezze | tutti i formati a una misura sola (**1020**), ridistribuendo le colonne dei tre elenchi piu' larghi | |
+| 4 | Impresa e Parametri | il menu e' completo: tredici pulsanti, tredici destinazioni | **fatto** — `archivio/collaudo-013.md` |
+| **5** | **Le larghezze** | **tutti i formati a 1020, ridistribuendo le colonne dei quattro elenchi piu' larghi** | **← sei qui** |
 | 6 | Le rilevazioni | si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita' | |
 | 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
 | 8 | Ricevimenti e lotti | il **passo indietro** della rintracciabilita': da un lotto al DDT e al fornitore | |
@@ -38,36 +38,38 @@ rivendibile; la 9 lo rende **consegnabile**.
 
 ---
 
-## Tappa 4 — Impresa e Parametri
+## Tappa 5 — Le larghezze
 
-Due maschere, una scheda di lavoro ciascuna. **Il DDR si fa a fine tappa**,
-con tutte e due montate.
+L'unica tappa che non costruisce niente di nuovo: mette in riga quello che
+c'e'. **Mezza giornata**, e va fatta adesso.
 
-### `D_Impresa scheda` — `guide/15-impresa.md`
+**Perche' adesso.** Dalla tappa 6 alla 8 nascono **sei formati nuovi**:
+rilevazioni, sanificazioni, non conformita', ricevimenti, righe, lotti. Se la
+misura di progetto si decide dopo, vanno rifatti tutti e sei.
 
-<https://claude.ai/artifact/XwN5T92X5WNoucdKtQmBsf>
+**La misura: 1020.** Le schede si sono assestate da sole fra 1004 e 1018
+costruendo, ed e' dove servono: sei di quelle maschere hanno due colonne di
+campi. Il 960 che avevo proposto a tavolino era sbagliato — il file vince
+sulla guida.
 
-L'unica maschera **senza elenco**: l'impresa e' un record solo. Niente
-ricerca, niente `+ Nuovo`, niente `Elimina`, niente contatore.
+| | Scheda | Elenco |
+|---|---|---|
+| Reparti | 701 | 725 |
+| Attrezzature | 1018 | 968 |
+| Fornitori | 1018 | 968 |
+| Prodotti | 1004 | 1097 |
+| Operatori | 1010 | 1248 |
+| Punti di controllo | 1004 | 1271 |
+| Impresa | 1004 | — |
+| Parametri | — | 1295 |
+| `D_Menu` | 731 | — |
 
-Porta con se' tre cose nuove: due campi **Contenitore** (`Logo` e
-`ManualeAutocontrollo`, memorizzati esternamente), lo script
-**`96 - Impresa - Apri la scheda`** che porta sull'unico record e **lo crea se
-la tabella e' vuota**, e il fatto che da qui in poi il menu mostra finalmente
-il nome del locale invece di una riga bianca.
+**Il lavoro vero sono i quattro elenchi sopra 1020** — Prodotti, Operatori,
+Punti di controllo, Parametri — dove le colonne vanno **ridistribuite**, non
+trascinate. Le sei schede si muovono di pochi punti.
 
-### `D_Parametri elenco` — `guide/16-parametri.md`
-
-<https://claude.ai/artifact/MMV8Wh1bEVjgf2jUT89kgB>
-
-Venti parametri chiave/valore, elenco editabile direttamente senza scheda,
-raggruppati per categoria con la prima **parte di sottoriepilogo** del
-progetto — la tecnica su cui saranno fatte quasi tutte le stampe.
-
-**Sei** parametri (non otto) non vanno toccati dal cliente, fra cui
-`VersioneSchema`, che cambiato a mano rende il file non aggiornabile. Si
-usano **due campi `Valore` sovrapposti**, uno scrivibile e uno bloccato, e
-compare quello giusto a seconda di chi guarda.
+Si chiudono anche i sette ritocchi minori e i due debiti sugli script `90` e
+`93`.
 
 ---
 
