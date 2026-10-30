@@ -63,10 +63,22 @@ la condizione in cui fra sei mesi non si sa piu' quale sia la misura giusta.
 | `Titolo Riquadro` | **15** — tutti i titoli di tutte le maschere |
 | `Titolo maschera` | **0** |
 
-Lo stile nuovo e' stato creato invece di rinominare il vecchio. Si elimina
-`Titolo maschera` (si puo', non lo usa nessuno), poi si rinomina
-`Titolo Riquadro`, poi **si salva il tema**. In quest'ordine: rinominando
-prima, FileMaker aggiungerebbe un numero al nome duplicato.
+Lo stile nuovo e' stato creato invece di rinominare il vecchio.
+
+**La via che non richiede di rinominare.** Il comando *Rinomina stile* non e'
+detto che esista in quella forma, e indicarlo e' stato un errore. Si fa con
+due operazioni certe, applicare ed eliminare:
+
+1. selezionare il **titolo** in intestazione, Ispettore › **Aspetto**;
+2. cliccare **`Titolo maschera`** nella lista degli stili — l'aspetto non deve
+   cambiare; se cambia, si sistema e si fa *Salva modifiche allo stile*;
+3. ripetere sui quindici titoli;
+4. eliminare `Titolo Riquadro`, ora inutilizzato;
+5. **salvare il tema**.
+
+**Se non riesce, si lascia.** E' un nome interno: non cambia niente di come
+funziona o di come si vede il programma. Si chiude quando si rimettera' mano
+al tema, alle stampe.
 
 ## 3. Due punti di disallineamento verticale
 

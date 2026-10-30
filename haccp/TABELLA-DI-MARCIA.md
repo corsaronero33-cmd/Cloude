@@ -87,17 +87,13 @@ Non sono dimenticanze: ognuna ha un momento in cui conviene farla.
 rintracciabilita': oggi si sa da dove viene un lotto, non in quale
 preparazione e' finito. Va chiusa **prima** della consegna al cliente.
 
-### I sette ritocchi, da fare tutti insieme alla tappa 5
+### Ritocco rimasto
 
-| | Cosa | Dove |
-|---|---|---|
-| 1 | `91 - Attrezzature - Entra nell'elenco` ha due spazi in fondo al nome | Script |
-| 2 | `Apri` a x **1**: tocca il bordo, va a **24** | tutti gli elenchi |
-| 3 | Etichette di colonna a y 113 / 114 / 115 | `D_Operatori elenco` |
-| 4 | Lo stile si chiama `Titolo Riquadro` ma veste il titolo dell'intestazione: rinominalo `Titolo maschera` | tema `HACCP` |
-| 5 | Set `Operatore`, riga delle tabelle future: da scrivibile a sola visualizzazione | Sicurezza |
-| 6 | `OnObjectSave` invece di `OnObjectExit` sulla casella di ricerca | gli elenchi |
-| 7 | `ColorePrimario` vale `#1F4E5F`, il colore del tema vecchio: va `#1B3A5C` | tabella `Parametri` |
+Lo stile del tema si chiama ancora `Titolo Riquadro` e veste i quindici
+titoli delle maschere; `Titolo maschera` esiste ma non lo usa nessuno. Si
+chiude applicando il secondo ai quindici titoli ed eliminando il primo —
+oppure **si lascia**: e' un nome interno, non cambia niente. Rientra alla
+tappa 9, quando gli stili serviranno per le stampe.
 
 ---
 
