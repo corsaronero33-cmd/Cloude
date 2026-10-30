@@ -21,7 +21,7 @@ funziona** e con un DDR da verificare.
 | 3 | Punti di controllo | l'ultima anagrafica | **fatto** — `archivio/collaudo-012.md` |
 | 4 | Impresa e Parametri | il menu e' completo: tredici pulsanti, tredici destinazioni | **fatto** — `archivio/collaudo-013.md` |
 | 5 | Le larghezze | quindici formati a 1020, tutti chiusi a 996 | **fatto** — `archivio/collaudo-014.md` |
-| **6** | **Le rilevazioni** | **si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita'** | **← sei qui** |
+| **6** | **Le rilevazioni** | **si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita'** | **← sei qui**, `guide/18-rilevazioni-registra.md` |
 | 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
 | 8 | Ricevimenti e lotti | il **passo indietro** della rintracciabilita': da un lotto al DDT e al fornitore | |
 | 9 | Le stampe | i registri in PDF per l'ispezione — **qui il lavoro diventa consegnabile** | |
@@ -52,7 +52,23 @@ conformita'** mostrando l'`AzioneCorrettiva` caricata alla tappa 3.
 giorno** (`08-SCRIPT.md`): gira sul formato tecnico `Z_RIL Rilevazioni`. Alla
 tappa 6 gli si mette davanti una faccia.
 
-Tre cose nuove rispetto alle anagrafiche:
+Due maschere, una scheda di lavoro ciascuna. **DDR a fine tappa.**
+
+### `D_Rilevazioni registra` — `guide/18-rilevazioni-registra.md`
+
+<https://claude.ai/artifact/EDoUvUjqFjFpL63ceLzBqE>
+
+Porta con se' tre cose nuove: una **relazione da un campo globale**
+(`RIL|PuntoScelto`) che fa vedere i limiti **prima** di registrare; un formato
+con **una parte sola**, perche' i campi globali nel corpo non si vedrebbero a
+tabella vuota; e due correzioni allo script `20`, che oggi resta sul formato
+tecnico e non dice niente quando il valore e' conforme.
+
+### `D_Rilevazioni elenco` — dopo
+
+Il registro: sola lettura, per data decrescente, raggruppato per giorno.
+
+### Tre cose nuove rispetto alle anagrafiche:
 
 - la maschera non serve a **consultare** ma a **registrare**: si apre vuota e
   si chiude salvando;
