@@ -20,8 +20,8 @@ funziona** e con un DDR da verificare.
 | 2 | Account e permessi | due set di privilegi, login all'apertura, script `94` che crea gli account | **fatto** |
 | 3 | Punti di controllo | l'ultima anagrafica | **fatto** — `archivio/collaudo-012.md` |
 | 4 | Impresa e Parametri | il menu e' completo: tredici pulsanti, tredici destinazioni | **fatto** — `archivio/collaudo-013.md` |
-| **5** | **Le larghezze** | **tutti i formati a 1020, ridistribuendo le colonne dei quattro elenchi piu' larghi** | **← sei qui**, `guide/17-larghezze.md` |
-| 6 | Le rilevazioni | si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita' | |
+| 5 | Le larghezze | quindici formati a 1020, tutti chiusi a 996 | **fatto** — `archivio/collaudo-014.md` |
+| **6** | **Le rilevazioni** | **si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita'** | **← sei qui** |
 | 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
 | 8 | Ricevimenti e lotti | il **passo indietro** della rintracciabilita': da un lotto al DDT e al fornitore | |
 | 9 | Le stampe | i registri in PDF per l'ispezione — **qui il lavoro diventa consegnabile** | |
@@ -38,45 +38,32 @@ rivendibile; la 9 lo rende **consegnabile**.
 
 ---
 
-## Tappa 5 — Le larghezze
+## Tappa 6 — Le rilevazioni
 
-L'unica tappa che non costruisce niente di nuovo: mette in riga quello che
-c'e'. **Mezza giornata**, e va fatta adesso.
+**Qui si smette di costruire i dati di contorno e si costruisce il
+programma.**
 
-**Perche' adesso.** Dalla tappa 6 alla 8 nascono **sei formati nuovi**:
-rilevazioni, sanificazioni, non conformita', ricevimenti, righe, lotti. Se la
-misura di progetto si decide dopo, vanno rifatti tutti e sei.
+La maschera con cui un cuoco, col guanto ancora addosso, segna che il frigo e'
+a 3 gradi. Il programma confronta con `LimiteMin` e `LimiteMax` del punto di
+controllo, scrive l'esito, e **se e' fuori limite apre da solo la non
+conformita'** mostrando l'`AzioneCorrettiva` caricata alla tappa 3.
 
-**La misura: 1020.** Le schede si sono assestate da sole fra 1004 e 1018
-costruendo, ed e' dove servono: sei di quelle maschere hanno due colonne di
-campi. Il 960 che avevo proposto a tavolino era sbagliato — il file vince
-sulla guida.
+**Lo script `20 - Rilevazioni - Registra` e' scritto e collaudato dal primo
+giorno** (`08-SCRIPT.md`): gira sul formato tecnico `Z_RIL Rilevazioni`. Alla
+tappa 6 gli si mette davanti una faccia.
 
-| | Scheda | Elenco |
-|---|---|---|
-| Reparti | 701 | 725 |
-| Attrezzature | 1018 | 968 |
-| Fornitori | 1018 | 968 |
-| Prodotti | 1004 | 1097 |
-| Operatori | 1010 | 1248 |
-| Punti di controllo | 1004 | 1271 |
-| Impresa | 1004 | — |
-| Parametri | — | 1295 |
-| `D_Menu` | 731 | — |
+Tre cose nuove rispetto alle anagrafiche:
 
-**Il lavoro vero sono i quattro elenchi sopra 1020** — Prodotti, Operatori,
-Punti di controllo, Parametri — dove le colonne vanno **ridistribuite**, non
-trascinate. Le sei schede si muovono di pochi punti.
+- la maschera non serve a **consultare** ma a **registrare**: si apre vuota e
+  si chiude salvando;
+- l'elenco delle rilevazioni e' un **registro**, quindi si legge per data e
+  non si modifica;
+- e' la prima maschera che un **operatore** usera' davvero, quindi la prova
+  che conta e' farla usare a qualcuno che non l'ha costruita.
 
-Si chiudono anche i ritocchi minori (nome dello stile nel tema, trigger della
-ricerca da `OnObjectExit` a `OnObjectSave`, spunte della Ricerca rapida, la
-`S` maiuscola di `D_Impresa Scheda`) e i due debiti sugli script `90` e `93`.
-
-Scheda di lavoro: `guide/17-larghezze.md` —
-<https://claude.ai/artifact/B1Z6cACD2TLeCmvs4mioqv>
-
-Le colonne di tutti e sette gli elenchi sono gia' calcolate dentro: non c'e'
-nessun conto da rifare.
+Resta aperto il **debito n. 1**: gli script `01`, `02` e `10` girano ancora
+sui formati nati dall'importazione. Si ripuntano qui, con le occorrenze
+davanti.
 
 ---
 
