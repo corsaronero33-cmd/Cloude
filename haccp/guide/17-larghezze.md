@@ -204,8 +204,26 @@ Otto prove. La prima e' quella che vale la tappa: **aprire tutte e tredici le
 destinazioni dal menu e tornare indietro, senza che la finestra cambi mai
 larghezza.**
 
-La **6.8** e' anche una verifica dei permessi: entrando come operatore, un
-pulsante vietato deve dire *"non hai i permessi"* e non *"non c'e' ancora"*.
+La **6.9** e' l'unica che distingue il `93` vecchio dal nuovo: si copia il
+pulsante `+ Nuovo`, gli si mette il parametro `"D_Pippo"` — un formato che non
+esiste — e si guarda il **contatore**. Con il `93` vecchio sale di uno e nasce
+una riga vuota in mezzo ai dati; con il nuovo non succede niente.
+
+### Una prova che avevo scritto male
+
+La prima versione della `6.8` diceva che da operatore un pulsante vietato
+avrebbe risposto *"non hai i permessi"*. **Non puo' succedere:** nel set
+`Operatore` tutti i formati sono visualizzabili e tutte le ventuno tabelle
+leggibili, quindi non c'e' niente che gli venga rifiutato. E nel ramo del
+formato mancante il messaggio nuovo e' **identico** al vecchio, quindi
+guardandolo non si distinguerebbe comunque quale script sta girando.
+
+I quattro pulsanti dei registri puntano a formati che arriveranno alla tappa
+6: li' *"non c'e' ancora"* e' la risposta **giusta**.
+
+**Il ramo "accesso negato" e' una rete per il futuro.** Si attivava il 3
+ottobre, quando i privilegi erano vuoti. Da quando sono compilati non si
+attiva piu', ed e' giusto cosi'.
 
 ---
 
