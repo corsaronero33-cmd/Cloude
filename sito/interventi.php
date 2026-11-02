@@ -18,34 +18,32 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/comune.php';
+require_once __DIR__ . '/eliminazioni.php';
+require_once __DIR__ . '/numeri.php';
 require_once __DIR__ . '/layout.php';
 
 richiedi_accesso();
 
 $id = g('id');
 
-/** Il numero del rapportino: 2026/001, progressivo per anno. */
-function prossimo_numero(): string
-{
-  $anno = date('Y');
-  $ultimo = (string) (valore(
-    'select numero from interventi where numero like ? order by numero desc limit 1',
-    [$anno . '/%'],
-  ) ?? '');
-  $n = $ultimo === '' ? 0 : (int) substr($ultimo, 5);
-  return sprintf('%s/%03d', $anno, $n + 1);
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   verifica_gettone();
   $adesso = date('Y-m-d H:i:s');
 
   if (p('azione') === 'cancella') {
-    $idInt = (int) p('id');
-    q('delete from intervento_righe where intervento_id = ?', [$idInt]);
-    q('delete from interventi where id = ?', [$idInt]);
-    avvisa('Intervento cancellato.');
+    // Un rapportino consegnato al cliente non lo cancella un tecnico per
+    // sbaglio dal telefono: questa e' roba da amministratore.
+    richiedi_amministratore();
+    elimina_intervento((int) p('id'));
+    avvisa('Intervento eliminato.');
     reindirizza('interventi.php');
+  }
+
+  // Due tocchi su Salva, col telefono, facevano due rapportini con due numeri.
+  $gia = invio_gia_fatto();
+  if ($gia !== null) {
+    avvisa('Era gia\' stato salvato: questo e\' il rapportino, non un doppione.');
+    reindirizza('interventi.php?id=' . $gia);
   }
 
   $campi = [
@@ -112,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     avvisa('Intervento salvato.');
   }
 
+  invio_registra((string) $idInt);
   reindirizza('interventi.php?id=' . $idInt);
 }
 
@@ -198,7 +197,7 @@ intestazione(
 </p>
 
 <form method="post" data-bozza="intervento-<?= $nuovo ? 'nuovo' : (int) $i['id'] ?>">
-  <?= campo_gettone() ?>
+  <?= campo_gettone() ?><?= campo_invio() ?>
   <input type="hidden" name="id" value="<?= $nuovo ? '' : (int) $i['id'] ?>">
 
   <div class="scheda">
@@ -333,12 +332,13 @@ intestazione(
   </div>
 </form>
 
-<?php if (!$nuovo): ?>
-  <form method="post" style="margin-top:24px" onsubmit="return confirm('Cancellare questo intervento?')">
+<?php if (!$nuovo && e_amministratore()): ?>
+  <form method="post" style="margin-top:24px"
+        onsubmit="return confirm('Eliminare questo rapportino e le sue righe?')">
     <?= campo_gettone() ?>
     <input type="hidden" name="azione" value="cancella">
     <input type="hidden" name="id" value="<?= (int) $i['id'] ?>">
-    <button type="submit" class="pericolo">Cancella l'intervento</button>
+    <button type="submit" class="pericolo">Elimina il rapportino</button>
   </form>
 <?php endif ?>
 

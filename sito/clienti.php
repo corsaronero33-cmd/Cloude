@@ -16,6 +16,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/comune.php';
+require_once __DIR__ . '/eliminazioni.php';
 require_once __DIR__ . '/layout.php';
 
 richiedi_accesso();
@@ -30,6 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $adesso = date('Y-m-d H:i:s');
 
   if ($azione === 'cliente') {
+    // Premuto due volte? La prima ha gia' scritto: si va a vedere quella.
+    $gia = invio_gia_fatto();
+    if ($gia !== null) {
+      avvisa('Era gia\' stato salvato: questo e\' il cliente, non un doppione.');
+      reindirizza('clienti.php?id=' . $gia);
+    }
+
     $campi = [
       'ragione_sociale' => p('ragione_sociale'),
       'partita_iva'     => p_o_null('partita_iva'),
@@ -54,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $idCliente = p('id') === '' ? null : (int) p('id');
     if ($idCliente === null) $campi['creato_il'] = $adesso;
     $idCliente = salva_riga('clienti', $campi, $idCliente);
+    invio_registra((string) $idCliente);
 
     avvisa('Cliente salvato.');
     reindirizza('clienti.php?id=' . $idCliente);
@@ -61,9 +70,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($azione === 'sede') {
     $idCliente = (int) p('cliente_id');
+
+    $gia = invio_gia_fatto();
+    if ($gia !== null) {
+      avvisa('Era gia\' stata salvata.');
+      reindirizza('clienti.php?id=' . $idCliente);
+    }
+
+    // Prima bastava premere il pulsante per avere una sede chiamata "Sede"
+    // senza niente dentro: un record che non serve a nessuno.
+    if (p('nome') === '') {
+      avvisa('Dai un nome alla sede (per esempio "Negozio di via Roma"): senza, non la salvo.');
+      reindirizza('clienti.php?id=' . $idCliente);
+    }
+
     $campi = [
       'cliente_id' => $idCliente,
-      'nome'       => p('nome') ?: 'Sede',
+      'nome'       => p('nome'),
       'indirizzo'  => p_o_null('indirizzo'),
       'cap'        => p_o_null('cap'),
       'citta'      => p_o_null('citta'),
@@ -72,9 +95,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       'telefono'   => p_o_null('telefono'),
       'note'       => p_o_null('note'),
     ];
-    salva_riga('sedi', $campi, p('id') === '' ? null : (int) p('id'));
+    $idSede = salva_riga('sedi', $campi, p('id') === '' ? null : (int) p('id'));
+    invio_registra((string) $idSede);
     avvisa('Sede salvata.');
     reindirizza('clienti.php?id=' . $idCliente);
+  }
+
+  if ($azione === 'elimina_cliente' || $azione === 'elimina_cliente_tutto') {
+    richiedi_amministratore();
+    $idCliente = (int) p('id');
+    $cliente = riga('select ragione_sociale from clienti where id = ?', [$idCliente]);
+    if ($cliente === null) reindirizza('clienti.php');
+
+    $conti = collegati_al_cliente($idCliente);
+
+    // Il tasto normale non porta via niente che non sia il cliente stesso.
+    // Per il resto ci vuole il secondo pulsante, quello che dice cosa fa.
+    if ($azione === 'elimina_cliente' && quanti_collegati($conti) > 0) {
+      avvisa('Non l\'ho cancellato: ha ancora ' . descrivi_collegati($conti)
+        . '. Usa il pulsante che porta via anche quelli, se e\' quello che vuoi.');
+      reindirizza('clienti.php?id=' . $idCliente . '&elimina=1');
+    }
+
+    elimina_cliente($idCliente);
+    avvisa('Eliminato: ' . $cliente['ragione_sociale']
+      . (quanti_collegati($conti) > 0 ? ' (con ' . descrivi_collegati($conti) . ')' : '') . '.');
+    reindirizza('clienti.php');
   }
 
   if ($azione === 'cancella_sede') {
@@ -123,7 +169,8 @@ if ($id === '') {
     <?php endif ?>
     <?php foreach ($elenco as $c): ?>
       <a class="voce" href="clienti.php?id=<?= (int) $c['id'] ?>">
-        <span class="capo"><?= h($c['ragione_sociale']) ?>
+        <span class="capo">
+          <?= $c['ragione_sociale'] !== '' ? h($c['ragione_sociale']) : '<i>(senza nome)</i>' ?>
           <?= $c['attivo'] ? '' : '<span class="pillola">non attivo</span>' ?></span>
         <span class="data"><?= (int) $c['apparecchi'] ?> app. · <?= (int) $c['contratti'] ?> contr.</span>
         <span class="nota"><?= h(trim(($c['citta'] ?? '') . ' ' . ($c['provincia'] ? '(' . $c['provincia'] . ')' : ''))) ?>
@@ -152,7 +199,7 @@ intestazione($nuovo ? 'Nuovo cliente' : (string) $c['ragione_sociale']);
 
 <div class="scheda">
   <form method="post">
-    <?= campo_gettone() ?>
+    <?= campo_gettone() ?><?= campo_invio() ?>
     <input type="hidden" name="azione" value="cliente">
     <input type="hidden" name="id" value="<?= $nuovo ? '' : (int) $c['id'] ?>">
 
@@ -181,10 +228,55 @@ intestazione($nuovo ? 'Nuovo cliente' : (string) $c['ragione_sociale']);
       <?= bottone('clienti.php', 'Torna all\'elenco', 'neutro') ?>
       <?php if (!$nuovo): ?>
         <?= bottone('interventi.php?id=nuovo&cliente_id=' . (int) $c['id'], 'Nuovo intervento', 'neutro') ?>
+        <?php if (e_amministratore()): ?>
+          <?= bottone('clienti.php?id=' . (int) $c['id'] . '&elimina=1#elimina', 'Elimina cliente', 'pericolo') ?>
+        <?php endif ?>
       <?php endif ?>
     </div>
   </form>
 </div>
+
+<?php
+// Il riquadro per eliminare compare solo quando lo si chiede, e dice sempre
+// prima che cosa si porta via.
+if (!$nuovo && e_amministratore() && g('elimina') === '1'):
+  $conti = collegati_al_cliente((int) $c['id']);
+  $quanti = quanti_collegati($conti);
+?>
+  <div class="scheda" id="elimina" style="border-color:#fecaca">
+    <h2 style="margin-top:0;color:#b91c1c">Eliminare <?= h($c['ragione_sociale']) ?></h2>
+
+    <?php if ($quanti === 0): ?>
+      <p>A questo cliente non e' collegato niente: si puo' togliere senza conseguenze.</p>
+      <form method="post" onsubmit="return confirm('Eliminare definitivamente questo cliente?')">
+        <?= campo_gettone() ?>
+        <input type="hidden" name="azione" value="elimina_cliente">
+        <input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
+        <div class="azioni">
+          <button type="submit" class="pericolo">Elimina definitivamente</button>
+          <?= bottone('clienti.php?id=' . (int) $c['id'], 'Lascia stare', 'neutro') ?>
+        </div>
+      </form>
+    <?php else: ?>
+      <p>Attenzione: a questo cliente sono collegati <b><?= h(descrivi_collegati($conti)) ?></b>.
+        Eliminando lui spariscono anche quelli, <b>rapportini compresi</b>, e non si torna
+        indietro.</p>
+      <p class="sotto">Se ti serve solo toglierlo di mezzo senza perdere lo storico, non
+        eliminarlo: togli la spunta <i>Cliente attivo</i> qui sopra e salva. Resta
+        nell'archivio ma non compare piu' fra quelli da seguire.</p>
+      <form method="post"
+            onsubmit="return confirm('Elimino il cliente e tutto quello che ha sotto. Confermi?')">
+        <?= campo_gettone() ?>
+        <input type="hidden" name="azione" value="elimina_cliente_tutto">
+        <input type="hidden" name="id" value="<?= (int) $c['id'] ?>">
+        <div class="azioni">
+          <button type="submit" class="pericolo">Elimina il cliente e tutto il collegato</button>
+          <?= bottone('clienti.php?id=' . (int) $c['id'], 'Lascia stare', 'neutro') ?>
+        </div>
+      </form>
+    <?php endif ?>
+  </div>
+<?php endif ?>
 
 <?php if (!$nuovo): ?>
 
@@ -208,11 +300,12 @@ intestazione($nuovo ? 'Nuovo cliente' : (string) $c['ragione_sociale']);
     <?php endforeach ?>
 
     <form method="post" style="margin-top:12px">
-      <?= campo_gettone() ?>
+      <?= campo_gettone() ?><?= campo_invio() ?>
       <input type="hidden" name="azione" value="sede">
       <input type="hidden" name="cliente_id" value="<?= (int) $c['id'] ?>">
       <div class="campi">
-        <div><label>Nome della sede</label><input type="text" name="nome" placeholder="Negozio di via Roma"></div>
+        <div><label>Nome della sede</label>
+          <input type="text" name="nome" placeholder="Negozio di via Roma" required></div>
         <div><label>Indirizzo</label><input type="text" name="indirizzo"></div>
         <div><label>Citta'</label><input type="text" name="citta"></div>
         <div><label>Referente</label><input type="text" name="referente"></div>

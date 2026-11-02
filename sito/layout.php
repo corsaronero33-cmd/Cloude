@@ -70,6 +70,47 @@ function piede(): void
 <?php
 }
 
+/**
+ * Il riquadro rosso che chiede conferma prima di cancellare.
+ *
+ * Due casi soli: o si puo' fare, e c'e' il pulsante; oppure c'e' qualcosa che
+ * lo impedisce, e allora si dice che cos'e' e che cosa fare al posto suo.
+ * Uguale in tutte le pagine, cosi' si riconosce al volo.
+ */
+function riquadro_elimina(
+  string $titolo,
+  string $azione,
+  int $id,
+  string $ritorno,
+  string $conferma,
+  ?string $impedimento = null,
+  ?string $alternativa = null,
+): void {
+  ?>
+  <div class="scheda" id="elimina" style="border-color:#fecaca">
+    <h2 style="margin-top:0;color:#b91c1c"><?= h($titolo) ?></h2>
+
+    <?php if ($impedimento !== null): ?>
+      <p><?= h($impedimento) ?></p>
+      <?php if ($alternativa !== null): ?><p class="sotto"><?= h($alternativa) ?></p><?php endif ?>
+      <div class="azioni"><?= bottone($ritorno, 'Torna indietro', 'neutro') ?></div>
+    <?php else: ?>
+      <p>Non si torna indietro.</p>
+      <?php if ($alternativa !== null): ?><p class="sotto"><?= h($alternativa) ?></p><?php endif ?>
+      <form method="post" onsubmit="return confirm(<?= h(json_encode($conferma)) ?>)">
+        <?= campo_gettone() ?>
+        <input type="hidden" name="azione" value="<?= h($azione) ?>">
+        <input type="hidden" name="id" value="<?= $id ?>">
+        <div class="azioni">
+          <button type="submit" class="pericolo">Elimina definitivamente</button>
+          <?= bottone($ritorno, 'Lascia stare', 'neutro') ?>
+        </div>
+      </form>
+    <?php endif ?>
+  </div>
+  <?php
+}
+
 /** Un pulsante-link, per non ripetere le classi a mano. */
 function bottone(string $url, string $testo, string $tipo = ''): string
 {

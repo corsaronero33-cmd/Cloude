@@ -111,7 +111,35 @@
     }
   }
 
-  // --- 3. la bozza del rapportino ------------------------------------------
+  // --- 3. un invio solo per form -------------------------------------------
+  //
+  // Il doppio clic su Salva mandava due richieste prima che arrivasse la
+  // risposta della prima, e nel database finivano due righe. Il server adesso
+  // si difende da solo (vedi `campo_invio` in comune.php), ma la difesa che si
+  // vede e' meglio di quella che si subisce: il pulsante diventa "Salvo..." e
+  // smette di rispondere al clic.
+  //
+  // Non si usa `disabled`: un pulsante disabilitato non manda il proprio
+  // valore, e qualche form ci conta.
+
+  Array.prototype.forEach.call(document.querySelectorAll('form[method=post]'), function (form) {
+    var inviato = false;
+    form.addEventListener('submit', function (e) {
+      // Un `onsubmit` che ha risposto "no" (le conferme di eliminazione) ha
+      // gia' annullato l'invio: qui non si tocca niente.
+      if (e.defaultPrevented) return;
+      if (inviato) { e.preventDefault(); return; }
+      inviato = true;
+
+      Array.prototype.forEach.call(form.querySelectorAll('button[type=submit]'), function (b) {
+        b.textContent = 'Salvo…';
+        b.style.opacity = '0.6';
+        b.style.pointerEvents = 'none';
+      });
+    });
+  });
+
+  // --- 4. la bozza del rapportino ------------------------------------------
   //
   // Il form dell'intervento ha  data-bozza="chiave" . Ogni due secondi quello
   // che c'e' scritto finisce nella memoria del browser. Se la linea cade

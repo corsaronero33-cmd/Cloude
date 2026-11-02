@@ -11,6 +11,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/comune.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/avvisi.php';
+require_once __DIR__ . '/eliminazioni.php';
 
 richiedi_amministratore();
 
@@ -34,6 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if ($azione === 'nuovo_utente') {
+    $gia = invio_gia_fatto();
+    if ($gia !== null) { avvisa('Era gia\' stato creato.'); reindirizza('impostazioni.php'); }
+
     $nome = p('nome');
     $email = strtolower(p('email'));
     $pw = p('password');
@@ -52,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'attivo'        => 1,
         'creato_il'     => date('Y-m-d H:i:s'),
       ]);
+      invio_registra($email);
       avvisa("Utente $nome creato. Comunicagli email e password.");
     }
     reindirizza('impostazioni.php');
@@ -72,6 +77,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         avvisa('Utente aggiornato.');
       }
     }
+    if (p('cosa') === 'elimina') {
+      if ($idU === (int) utente()['id']) {
+        avvisa('Non puoi eliminare il tuo stesso accesso.');
+      } else {
+        $firmati = interventi_del_tecnico($idU);
+        if ($firmati > 0) {
+          // Il nome del tecnico sta sui rapportini gia' consegnati: toglierlo
+          // dal database significherebbe stamparli senza firma.
+          avvisa("Non l'ho eliminato: ha $firmati "
+            . ($firmati === 1 ? 'rapportino' : 'rapportini') . " a suo nome. "
+            . 'Disattivalo: non entra piu\', ma lo storico resta leggibile.');
+        } else {
+          q('delete from utenti where id = ?', [$idU]);
+          avvisa('Utente eliminato.');
+        }
+      }
+      reindirizza('impostazioni.php');
+    }
+
     if (p('cosa') === 'password') {
       $pw = p('password_nuova');
       if (strlen($pw) < 8) {
@@ -178,6 +202,16 @@ intestazione('Impostazioni');
             <input type="hidden" name="cosa" value="attiva">
             <button type="submit" class="neutro"><?= $u['attivo'] ? 'Disattiva' : 'Riattiva' ?></button>
           </form>
+          <?php if ((int) $u['id'] !== (int) utente()['id']): ?>
+            <form method="post" style="margin-top:6px"
+                  onsubmit="return confirm('Eliminare questo utente? Si puo\' fare solo se non ha rapportini a suo nome.')">
+              <?= campo_gettone() ?>
+              <input type="hidden" name="azione" value="cambia_utente">
+              <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
+              <input type="hidden" name="cosa" value="elimina">
+              <button type="submit" class="pericolo">Elimina</button>
+            </form>
+          <?php endif ?>
           <form method="post" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
             <?= campo_gettone() ?>
             <input type="hidden" name="azione" value="cambia_utente">
@@ -192,9 +226,16 @@ intestazione('Impostazioni');
     <?php endforeach ?>
   </table>
 
+  <p class="sotto">
+    <b>Disattiva</b> toglie l'accesso ma lascia il nome sui rapportini gia' fatti: e' quello
+    che serve quasi sempre, per esempio quando un tecnico se ne va.
+    <b>Elimina</b> funziona solo su un utente senza rapportini a suo nome, cioe' su un
+    accesso creato per sbaglio.
+  </p>
+
   <h3 style="font-size:14px;margin-top:20px">Aggiungi un tecnico</h3>
   <form method="post">
-    <?= campo_gettone() ?>
+    <?= campo_gettone() ?><?= campo_invio() ?>
     <input type="hidden" name="azione" value="nuovo_utente">
     <div class="campi">
       <div><label>Nome e cognome</label><input type="text" name="nome" required></div>

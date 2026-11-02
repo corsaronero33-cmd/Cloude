@@ -114,7 +114,19 @@ function salva_riga(string $tabella, array $campi, ?int $id = null): int
 
 // --- impostazioni salvate nel database --------------------------------------
 
-function impostazione(string $chiave, string $difetto = ''): string
+/**
+ * Tutte le impostazioni, lette dal database una volta sola per richiesta.
+ *
+ * Restituita per riferimento di proposito: chi scrive deve poter aggiornare
+ * anche questa copia. Prima non lo faceva, e dentro la stessa richiesta chi
+ * rileggeva un'impostazione appena scritta si ritrovava il valore vecchio --
+ * un errore che non si vede quasi mai, perche' di solito dopo un salvataggio
+ * la pagina viene ricaricata, e che invece salta fuori appena una funzione
+ * scrive e rilegge (il contatore dei rapportini, per esempio).
+ *
+ * @return array<string, string>
+ */
+function &impostazioni_in_memoria(): array
 {
   static $cache = null;
   if ($cache === null) {
@@ -123,6 +135,12 @@ function impostazione(string $chiave, string $difetto = ''): string
       $cache[$r['chiave']] = $r['valore'];
     }
   }
+  return $cache;
+}
+
+function impostazione(string $chiave, string $difetto = ''): string
+{
+  $cache = &impostazioni_in_memoria();
   return $cache[$chiave] ?? $difetto;
 }
 
@@ -135,6 +153,9 @@ function imposta(string $chiave, string $valore): void
   } else {
     q('insert into impostazioni (chiave, valore) values (?, ?)', [$chiave, $valore]);
   }
+
+  $cache = &impostazioni_in_memoria();
+  $cache[$chiave] = $valore;
 }
 
 function mesi_verifica(): int { return max(1, (int) impostazione('mesi_verifica', '24')); }
@@ -224,6 +245,52 @@ function verifica_gettone(): void
   if ($dato === '' || !hash_equals($_SESSION['gettone'] ?? '', $dato)) {
     http_response_code(400);
     exit('Richiesta non valida (gettone mancante). Torna indietro e riprova.');
+  }
+}
+
+// --- un invio, una volta sola -----------------------------------------------
+
+/**
+ * Il problema: si preme Salva due volte (o parte un doppio clic, o si torna
+ * indietro col browser e si risalva) e la riga viene scritta due volte.
+ *
+ * Il reindirizzamento dopo il salvataggio non basta: due clic rapidi mandano
+ * due richieste prima che la prima risposta arrivi.
+ *
+ * La difesa: ogni form che crea qualcosa porta un codice usa-e-getta. Quando
+ * la richiesta arriva, il codice viene segnato; se ne arriva una seconda con
+ * lo stesso codice, non si scrive niente e si va a vedere quello che era gia'
+ * stato salvato.
+ *
+ * Funziona anche con due richieste in parallelo, perche' PHP tiene la sessione
+ * bloccata per una richiesta alla volta: la seconda aspetta, e quando tocca a
+ * lei il codice risulta gia' usato.
+ */
+function campo_invio(): string
+{
+  return '<input type="hidden" name="invio" value="' . h(bin2hex(random_bytes(8))) . '">';
+}
+
+/** Quello che era stato salvato con questo stesso invio, se c'e' gia' stato. */
+function invio_gia_fatto(): ?string
+{
+  avvia_sessione();
+  $id = (string) ($_POST['invio'] ?? '');
+  if ($id === '') return null;
+  return $_SESSION['invii'][$id] ?? null;
+}
+
+/** Segna questo invio come fatto, ricordando che cosa ne e' uscito. */
+function invio_registra(string $risultato): void
+{
+  avvia_sessione();
+  $id = (string) ($_POST['invio'] ?? '');
+  if ($id === '') return;
+  $_SESSION['invii'][$id] = $risultato;
+  // Non serve ricordarli per sempre: bastano gli ultimi, il tempo di coprire
+  // un doppio clic o un ritorno indietro col browser.
+  if (count($_SESSION['invii']) > 40) {
+    $_SESSION['invii'] = array_slice($_SESSION['invii'], -40, null, true);
   }
 }
 

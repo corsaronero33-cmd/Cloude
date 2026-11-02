@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/comune.php';
 require_once __DIR__ . '/scadenze.php';
+require_once __DIR__ . '/eliminazioni.php';
 require_once __DIR__ . '/layout.php';
 
 richiedi_accesso();
@@ -21,6 +22,25 @@ $id = g('id');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   verifica_gettone();
   $adesso = date('Y-m-d H:i:s');
+
+  if (p('azione') === 'elimina') {
+    richiedi_amministratore();
+    $idApp = (int) p('id');
+    $usato = (int) valore('select count(*) from interventi where apparecchio_id = ?', [$idApp]);
+    if ($usato > 0) {
+      avvisa("Non l'ho eliminato: ci sono $usato interventi collegati.");
+      reindirizza('apparecchi.php?id=' . $idApp . '&elimina=1');
+    }
+    q('delete from apparecchi where id = ?', [$idApp]);
+    avvisa('Apparecchio eliminato.');
+    reindirizza('apparecchi.php');
+  }
+
+  $gia = invio_gia_fatto();
+  if ($gia !== null) {
+    avvisa('Era gia\' stato salvato: questo e\' l\'apparecchio, non un doppione.');
+    reindirizza('apparecchi.php?id=' . $gia);
+  }
 
   $campi = [
     'cliente_id'           => (int) p('cliente_id'),
@@ -49,6 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $idApp = p('id') === '' ? null : (int) p('id');
   if ($idApp === null) $campi['creato_il'] = $adesso;
   $idApp = salva_riga('apparecchi', $campi, $idApp);
+  invio_registra((string) $idApp);
 
   avvisa('Apparecchio salvato.');
   reindirizza('apparecchi.php?id=' . $idApp);
@@ -153,7 +174,7 @@ if ($prossima !== null):
 
 <div class="scheda">
   <form method="post">
-    <?= campo_gettone() ?>
+    <?= campo_gettone() ?><?= campo_invio() ?>
     <input type="hidden" name="id" value="<?= $nuovo ? '' : (int) $a['id'] ?>">
 
     <div class="campi">
@@ -219,10 +240,34 @@ if ($prossima !== null):
       <?= bottone('apparecchi.php', 'Torna all\'elenco', 'neutro') ?>
       <?php if (!$nuovo): ?>
         <?= bottone('interventi.php?id=nuovo&cliente_id=' . (int) $a['cliente_id'] . '&apparecchio_id=' . (int) $a['id'], 'Nuovo intervento', 'neutro') ?>
+        <?php if (e_amministratore()): ?>
+          <?= bottone('apparecchi.php?id=' . (int) $a['id'] . '&elimina=1#elimina', 'Elimina', 'pericolo') ?>
+        <?php endif ?>
       <?php endif ?>
     </div>
   </form>
 </div>
+
+<?php
+if (!$nuovo && e_amministratore() && g('elimina') === '1') {
+  $usato = (int) valore('select count(*) from interventi where apparecchio_id = ?', [(int) $a['id']]);
+  riquadro_elimina(
+    'Eliminare la matricola ' . $a['matricola'],
+    'elimina',
+    (int) $a['id'],
+    'apparecchi.php?id=' . (int) $a['id'],
+    'Eliminare questo apparecchio?',
+    $usato > 0
+      ? "A questo apparecchio sono collegati $usato interventi: finche' ci sono, non lo elimino."
+      : null,
+    $usato > 0
+      ? 'Se l\'apparecchio e\' uscito di servizio non serve eliminarlo: metti lo stato su '
+        . '"Dismesso" e sparisce dallo scadenzario, ma i rapportini restano.'
+      : 'Per un apparecchio uscito di servizio conviene lo stato "Dismesso": sparisce dallo '
+        . 'scadenzario e lo storico resta.',
+  );
+}
+?>
 
 <?php if ($interventi !== []): ?>
   <h2>Interventi su questo apparecchio</h2>

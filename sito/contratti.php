@@ -10,6 +10,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/comune.php';
+require_once __DIR__ . '/eliminazioni.php';
 require_once __DIR__ . '/layout.php';
 
 richiedi_accesso();
@@ -19,6 +20,13 @@ $id = g('id');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   verifica_gettone();
   $adesso = date('Y-m-d H:i:s');
+
+  if (p('azione') === 'elimina') {
+    richiedi_amministratore();
+    q('delete from contratti where id = ?', [(int) p('id')]);
+    avvisa('Contratto eliminato.');
+    reindirizza('contratti.php');
+  }
 
   if (p('azione') === 'rinnova') {
     $t = riga('select * from contratti where id = ?', [(int) p('id')]);
@@ -30,6 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       [$nuova, $adesso, (int) $t['id']]);
     avvisa('Rinnovato fino al ' . data_it($nuova) . '.');
     reindirizza('contratti.php?id=' . (int) $t['id']);
+  }
+
+  $gia = invio_gia_fatto();
+  if ($gia !== null) {
+    avvisa('Era gia\' stato salvato: questo e\' il contratto, non un doppione.');
+    reindirizza('contratti.php?id=' . $gia);
   }
 
   $campi = [
@@ -47,14 +61,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     'aggiornato_il'      => $adesso,
   ];
 
-  if ($campi['cliente_id'] === 0) {
-    avvisa('Serve il cliente.');
+  // Senza descrizione il contratto nell'elenco non si distingue dagli altri, e
+  // senza scadenza non entra mai nello scadenzario: due modi per avere una
+  // riga che non serve a niente.
+  if ($campi['cliente_id'] === 0 || $campi['descrizione'] === '') {
+    avvisa($campi['cliente_id'] === 0
+      ? 'Serve il cliente.'
+      : 'Serve una descrizione: e\' il nome con cui riconoscerai questo contratto.');
     reindirizza('contratti.php?id=' . urlencode(p('id') ?: 'nuovo'));
   }
 
   $idCon = p('id') === '' ? null : (int) p('id');
   if ($idCon === null) $campi['creato_il'] = $adesso;
   $idCon = salva_riga('contratti', $campi, $idCon);
+  invio_registra((string) $idCon);
 
   avvisa('Contratto salvato.');
   reindirizza('contratti.php?id=' . $idCon);
@@ -122,7 +142,7 @@ intestazione($nuovo ? 'Nuovo contratto' : (string) ($t['descrizione'] ?: 'Contra
 
 <div class="scheda">
   <form method="post">
-    <?= campo_gettone() ?>
+    <?= campo_gettone() ?><?= campo_invio() ?>
     <input type="hidden" name="id" value="<?= $nuovo ? '' : (int) $t['id'] ?>">
     <div class="campi">
       <div><label>Cliente</label>
@@ -142,7 +162,8 @@ intestazione($nuovo ? 'Nuovo contratto' : (string) ($t['descrizione'] ?: 'Contra
         </select>
       </div>
       <div class="larga"><label>Descrizione</label>
-        <input type="text" name="descrizione" value="<?= $v('descrizione') ?>" placeholder="Canone software gestionale"></div>
+        <input type="text" name="descrizione" value="<?= $v('descrizione') ?>"
+               placeholder="Canone software gestionale" required></div>
       <div><label>Numero di licenza</label><input type="text" name="licenza" value="<?= $v('licenza') ?>"></div>
       <div><label>Importo <span class="aiuto">In euro</span></label>
         <input type="text" name="importo" value="<?= h($t['importo'] !== null ? number_format((float) $t['importo'], 2, ',', '') : '') ?>"></div>
@@ -170,9 +191,27 @@ intestazione($nuovo ? 'Nuovo contratto' : (string) ($t['descrizione'] ?: 'Contra
     <div class="azioni">
       <button type="submit">Salva</button>
       <?= bottone('contratti.php', 'Torna all\'elenco', 'neutro') ?>
+      <?php if (!$nuovo && e_amministratore()): ?>
+        <?= bottone('contratti.php?id=' . (int) $t['id'] . '&elimina=1#elimina', 'Elimina', 'pericolo') ?>
+      <?php endif ?>
     </div>
   </form>
 </div>
+
+<?php
+if (!$nuovo && e_amministratore() && g('elimina') === '1') {
+  riquadro_elimina(
+    'Eliminare "' . ($t['descrizione'] ?: 'contratto') . '"',
+    'elimina',
+    (int) $t['id'],
+    'contratti.php?id=' . (int) $t['id'],
+    'Eliminare questo contratto?',
+    null,
+    'Per un contratto finito conviene lo stato "Chiuso": sparisce dallo scadenzario ma '
+      . 'resta la traccia di quello che il cliente aveva.',
+  );
+}
+?>
 
 <?php if (!$nuovo): ?>
   <div class="scheda">

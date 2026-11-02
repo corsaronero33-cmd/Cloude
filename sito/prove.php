@@ -29,6 +29,7 @@ require_once __DIR__ . '/comune.php';
 require_once __DIR__ . '/schema.php';
 require_once __DIR__ . '/scadenze.php';
 require_once __DIR__ . '/avvisi.php';
+require_once __DIR__ . '/eliminazioni.php';
 
 // --- il minimo indispensabile per contare i successi e gli errori ----------
 
@@ -96,6 +97,14 @@ foreach (impostazioni_di_partenza() as $k => $v) {
 }
 
 prova('impostazione di partenza', 24, mesi_verifica());
+
+// Scrivere e rileggere nella stessa richiesta: sembra ovvio, e per un po' non
+// ha funzionato (la copia in memoria non veniva aggiornata).
+imposta('mesi_verifica', '36');
+prova('un\'impostazione appena scritta si rilegge subito', 36, mesi_verifica());
+prova('e anche direttamente', '36', impostazione('mesi_verifica'));
+imposta('mesi_verifica', '24');
+prova('rimessa com\'era', 24, mesi_verifica());
 
 $adesso = date('Y-m-d H:i:s');
 $cliente = salva_riga('clienti', [
@@ -167,7 +176,33 @@ prova('un POS da collegare', 1, count(pos_da_collegare()));
 
 // --- il numero del rapportino ----------------------------------------------
 
-require_once __DIR__ . '/interventi_numero_prova.php';
+// --- il numero del rapportino ----------------------------------------------
+
+require_once __DIR__ . '/numeri.php';
+
+prova('il primo rapportino dell\'anno', date('Y') . '/001', prossimo_numero());
+prova('poi il secondo', date('Y') . '/002', prossimo_numero());
+
+// Un numero gia' uscito non deve tornare: si crea il 003, lo si cancella, e
+// il prossimo dev'essere il 004 e non di nuovo il 003. E' la ragione per cui
+// il contatore viene memorizzato invece di guardare solo l'archivio.
+$terzo = salva_riga('interventi', [
+  'numero' => prossimo_numero(), 'cliente_id' => $cliente, 'tipo' => 'assistenza',
+  'stato' => 'chiuso', 'data' => oggi(), 'creato_il' => $adesso, 'aggiornato_il' => $adesso,
+]);
+prova('il terzo e\' uscito', date('Y') . '/003',
+  (string) valore('select numero from interventi where id = ?', [$terzo]));
+
+q('delete from interventi where id = ?', [$terzo]);
+prova('cancellato il terzo, il prossimo e\' il quarto', date('Y') . '/004', prossimo_numero());
+
+// L'anno scorso non sposta il contatore di quest'anno.
+salva_riga('interventi', [
+  'numero' => (date('Y') - 1) . '/099', 'cliente_id' => $cliente, 'tipo' => 'assistenza',
+  'stato' => 'chiuso', 'data' => (date('Y') - 1) . '-12-30',
+  'creato_il' => $adesso, 'aggiornato_il' => $adesso,
+]);
+prova('l\'anno scorso non c\'entra', date('Y') . '/005', prossimo_numero());
 
 // --- il messaggio dell'avviso ----------------------------------------------
 
@@ -182,6 +217,87 @@ prova('il conto delle scadute nel messaggio', 1, $m['scadute']);
 
 $vuoto = messaggio_avviso([], [], '', 'X');
 prova_vero('senza scadenze lo dice', str_contains($vuoto['html'], 'Niente in scadenza'));
+
+// --- cancellare ------------------------------------------------------------
+//
+// E' l'unica parte che distrugge dati, quindi si prova due cose: che porti via
+// tutto quello che deve, e che non tocchi niente di quello che non deve.
+
+$conti = collegati_al_cliente($cliente);
+prova('conta le sedi del cliente', 0, $conti['sedi']);
+prova('conta gli apparecchi', 4, $conti['apparecchi']);
+prova('conta i contratti', 2, $conti['contratti']);
+prova_vero('conta anche gli interventi', $conti['interventi'] > 0);
+
+prova('un solo apparecchio si dice al singolare', '1 apparecchio',
+  descrivi_collegati(['sedi' => 0, 'apparecchi' => 1, 'contratti' => 0, 'interventi' => 0]));
+prova('piu\' cose si elencano', '2 apparecchi, 1 contratto',
+  descrivi_collegati(['sedi' => 0, 'apparecchi' => 2, 'contratti' => 1, 'interventi' => 0]));
+prova('niente collegato, niente da dire', '',
+  descrivi_collegati(['sedi' => 0, 'apparecchi' => 0, 'contratti' => 0, 'interventi' => 0]));
+
+// Un secondo cliente, che deve restare intatto quando si cancella il primo.
+$altro = salva_riga('clienti', [
+  'ragione_sociale' => 'Cliente da non toccare',
+  'creato_il' => $adesso, 'aggiornato_il' => $adesso,
+]);
+salva_riga('apparecchi', [
+  'cliente_id' => $altro, 'matricola' => 'ZZZ999', 'tipo' => 'rt',
+  'verifica_trasmessa' => 0, 'collegato_pos' => 0, 'stato' => 'attivo',
+  'creato_il' => $adesso, 'aggiornato_il' => $adesso,
+]);
+
+// Un intervento con due righe, per vedere che spariscano anche quelle.
+$conRighe = salva_riga('interventi', [
+  'numero' => '2026/900', 'cliente_id' => $cliente, 'tipo' => 'assistenza',
+  'stato' => 'chiuso', 'data' => oggi(), 'creato_il' => $adesso, 'aggiornato_il' => $adesso,
+]);
+foreach (['Manodopera', 'Ricambio'] as $voce) {
+  salva_riga('intervento_righe', [
+    'intervento_id' => $conRighe, 'descrizione' => $voce, 'quantita' => 1, 'prezzo' => 10,
+  ]);
+}
+prova('le righe sono state scritte', 2,
+  (int) valore('select count(*) from intervento_righe where intervento_id = ?', [$conRighe]));
+
+elimina_intervento($conRighe);
+prova('l\'intervento e\' sparito', 0,
+  (int) valore('select count(*) from interventi where id = ?', [$conRighe]));
+prova('e con lui le sue righe', 0,
+  (int) valore('select count(*) from intervento_righe where intervento_id = ?', [$conRighe]));
+
+$righePrima = (int) valore('select count(*) from intervento_righe');
+elimina_cliente($cliente);
+
+prova('il cliente e\' sparito', 0, (int) valore('select count(*) from clienti where id = ?', [$cliente]));
+prova('i suoi apparecchi anche', 0, (int) valore('select count(*) from apparecchi where cliente_id = ?', [$cliente]));
+prova('i suoi contratti anche', 0, (int) valore('select count(*) from contratti where cliente_id = ?', [$cliente]));
+prova('i suoi interventi anche', 0, (int) valore('select count(*) from interventi where cliente_id = ?', [$cliente]));
+prova('non restano righe orfane', 0, (int) valore('select count(*) from intervento_righe'));
+
+// La parte che conta di piu': l'altro cliente non e' stato toccato.
+prova('l\'altro cliente e\' ancora li\'', 1, (int) valore('select count(*) from clienti where id = ?', [$altro]));
+prova('e il suo apparecchio pure', 1, (int) valore('select count(*) from apparecchi where cliente_id = ?', [$altro]));
+
+// --- il tecnico che ha firmato dei rapportini ------------------------------
+//
+// Non si cancella: il suo nome sta su documenti gia' consegnati ai clienti.
+
+$tecnico = salva_riga('utenti', [
+  'email' => 'tecnico@prova.it', 'password_hash' => 'x', 'nome' => 'Tecnico di Prova',
+  'ruolo' => 'tecnico', 'attivo' => 1, 'creato_il' => $adesso,
+]);
+prova('un tecnico appena creato non ha rapportini', 0, interventi_del_tecnico($tecnico));
+
+$suo = salva_riga('interventi', [
+  'numero' => '2026/901', 'cliente_id' => $altro, 'tecnico_id' => $tecnico,
+  'tipo' => 'assistenza', 'stato' => 'chiuso', 'data' => oggi(),
+  'creato_il' => $adesso, 'aggiornato_il' => $adesso,
+]);
+prova('dopo un rapportino, ne ha uno', 1, interventi_del_tecnico($tecnico));
+
+elimina_intervento($suo);
+prova('tolto il rapportino, torna a zero', 0, interventi_del_tecnico($tecnico));
 
 // --- conclusione ------------------------------------------------------------
 

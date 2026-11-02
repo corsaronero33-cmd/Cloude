@@ -122,6 +122,8 @@ Ogni pagina è un file. Si apre, si legge, si cambia.
 | `vocabolario.php` | Tipi di apparecchio, di contratto, di intervento: le tendine |
 | `date_it.php` | Date all'italiana e somma dei mesi fatta col calendario |
 | `scadenze.php` | **Le regole dello scadenzario**, in un posto solo |
+| `eliminazioni.php` | **Le regole per cancellare**: che cosa si porta dietro che cosa |
+| `numeri.php` | Il numero progressivo del rapportino |
 | `schema.php` | Le tabelle del database |
 | `installa.php` | Crea le tabelle e il primo accesso |
 | `entra.php`, `esci.php` | Accesso |
@@ -135,8 +137,46 @@ Ogni pagina è un file. Si apre, si legge, si cambia.
 | `esporta.php` | Esportazione CSV per Excel |
 | `avvisi.php` | L'email del mattino (la chiama il cron) |
 | `posta.php` | Il pezzo che parla col server di posta |
-| `prove.php` | Le prove automatiche |
+| `prove.php` | Le prove automatiche (72, `php prove.php`) |
 | `stile.css`, `app.js` | Aspetto e il poco JavaScript che serve |
+
+### Cancellare: chi può e che cosa succede
+
+Cancellare è l'unica cosa che distrugge dati, quindi ha regole sue, tutte in
+`eliminazioni.php`.
+
+**Solo l'amministratore cancella.** Un tecnico può creare e correggere, non
+togliere: un rapportino consegnato al cliente non deve sparire per un tocco
+sbagliato sul telefono. Se ci prova forzando l'indirizzo, riceve un 403.
+
+**Si cancella solo ciò che non è riferito da altro.** Un apparecchio con
+interventi collegati non si elimina: prima si eliminano quelli, oppure — ed è
+quasi sempre la cosa giusta — si mette lo stato su *Dismesso*, che lo toglie
+dallo scadenzario lasciando lo storico. Stessa logica per un contratto
+(*Chiuso*) e per un cliente (togliendo la spunta *attivo*).
+
+**Il cliente ha un'eccezione.** È la radice di tutto, e il caso vero è «l'ho
+creato per sbaglio». Quindi il pulsante normale rifiuta se c'è qualcosa
+attaccato e dice esattamente che cosa; per portare via anche quello serve un
+secondo pulsante, che scrive cosa fa. La cancellazione gira dentro una
+transazione: o sparisce tutto, o non sparisce niente.
+
+**Un utente che ha firmato rapportini non si cancella**, si disattiva.
+Toglierlo dal database significherebbe ristampare quei rapportini senza il
+nome del tecnico. Si elimina solo un accesso creato per sbaglio, cioè senza
+rapportini a suo nome.
+
+### Premere Salva due volte
+
+Non crea due righe. Ogni form che crea qualcosa porta un codice usa-e-getta
+(`campo_invio` in `comune.php`): se arriva una seconda richiesta con lo stesso
+codice, non si scrive niente e si va a vedere quello che era già stato
+salvato. Funziona anche con due richieste in parallelo, perché PHP tiene la
+sessione bloccata per una richiesta alla volta.
+
+Il browser fa la sua parte (`app.js` trasforma il pulsante in «Salvo…» e lo
+rende insensibile al clic), ma è una cortesia verso chi guarda: la difesa vera
+è quella del server.
 
 ### Due regole che vale la pena conoscere
 
@@ -144,6 +184,12 @@ Ogni pagina è un file. Si apre, si legge, si cambia.
 verifica (o, se manca, dalla messa in servizio) sommando i mesi di cadenza che
 stanno in `Impostazioni`. Se la norma cambiasse la cadenza, cambi un numero e
 tutte le scadenze si ricalcolano.
+
+**Un numero di rapportino, una volta uscito, non torna.** Il progressivo non
+si ricava solo guardando l'ultimo in archivio: se ne cancelli uno, l'ultimo
+torna indietro e il prossimo riuserebbe un numero già consegnato a un cliente.
+Il contatore dell'anno è anche memorizzato in `impostazioni`, e il numero nuovo
+è il più alto fra i due più uno.
 
 **Il rapportino non è un PDF generato da una libreria**, è una pagina
 impaginata per l'A4: si stampa o si salva in PDF dal browser. Una cosa in meno
