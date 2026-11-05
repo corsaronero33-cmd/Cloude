@@ -1,0 +1,183 @@
+'
+' Disegno - disegna un layout su una superficie grafica.
+'
+' La superficie e' dichiarata As Object e non As PictureBox o As Printer, e
+' questa e' la scelta portante di tutto il programma: lo stesso layout, con
+' la stessa funzione, finisce sull'anteprima a schermo e sulla stampante,
+' senza duplicare il codice e senza il rischio che l'anteprima mostri
+' qualcosa di diverso da quello che esce dalla stampante.
+'
+' Funziona con qualunque oggetto che offra le proprieta' grafiche classiche:
+' ScaleMode, CurrentX, CurrentY, FontName, FontSize, FontBold, TextWidth,
+' Print e Line. Il Printer e la PictureBox le hanno entrambi.
+'
+' TUTTE le chiamate alla superficie passano da quattro procedure private:
+' ImpostaScala, ImpostaFont, ScriviTesto e RiempiRettangolo. Se la versione
+' di twinBASIC in uso espone queste cose con nomi diversi, sono gli unici
+' quattro punti da adattare, non duecento righe sparse.
+'
+Module Disegno
+
+    Private Const SCALA_MILLIMETRI As Long = 6      ' vbMillimeters
+    Private Const NERO As Long = 0                  ' vbBlack
+
+    ' Disegna il layout. L'offset serve per stampare piu' etichette sullo
+    ' stesso foglio A4: si richiama la funzione spostando l'origine.
+    Public Sub Disegna(ByVal superficie As Object, ByVal layout As LayoutEtichetta, _
+                       Optional ByVal offsetXMm As Double = 0, _
+                       Optional ByVal offsetYMm As Double = 0)
+        Dim i As Long
+        Dim e As ElementoEtichetta
+
+        If superficie Is Nothing Then
+            Err.Raise 5, "Disegno.Disegna", "superficie non puo' essere Nothing"
+        End If
+        If layout Is Nothing Then
+            Err.Raise 5, "Disegno.Disegna", "layout non puo' essere Nothing"
+        End If
+
+        ImpostaScala superficie
+
+        For i = 1 To layout.Conteggio
+            Set e = layout.Elemento(i)
+
+            Select Case e.Tipo
+                Case Grafica.teTesto
+                    DisegnaTesto superficie, layout, e, offsetXMm, offsetYMm
+
+                Case Grafica.teLinea
+                    RiempiRettangolo superficie, _
+                                     offsetXMm + e.XMm, offsetYMm + e.YMm, _
+                                     e.LarghezzaMm, e.SpessoreMm
+
+                Case Grafica.teRettangolo
+                    DisegnaCornice superficie, e, offsetXMm, offsetYMm
+
+                Case Grafica.teBarcode
+                    DisegnaBarcode superficie, e, offsetXMm, offsetYMm
+            End Select
+        Next i
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Elementi
+    ' ------------------------------------------------------------------
+
+    Private Sub DisegnaTesto(ByVal superficie As Object, ByVal layout As LayoutEtichetta, _
+                             ByVal e As ElementoEtichetta, _
+                             ByVal offsetXMm As Double, ByVal offsetYMm As Double)
+        Dim x As Double
+        Dim larghezzaTesto As Double
+
+        ImpostaFont superficie, layout.NomeFont, e.PuntiFont, e.Grassetto
+
+        ' L'allineamento usa la larghezza vera del testo con il font
+        ' impostato, non la stima che serve a mandare a capo: cosi' il testo
+        ' centrato e' centrato davvero.
+        larghezzaTesto = LarghezzaTesto(superficie, e.Testo)
+
+        Select Case e.Allinea
+            Case Grafica.alCentro
+                x = e.XMm + (e.LarghezzaMm - larghezzaTesto) / 2
+            Case Grafica.alDestra
+                x = e.XMm + e.LarghezzaMm - larghezzaTesto
+            Case Else
+                x = e.XMm
+        End Select
+
+        If x < e.XMm Then x = e.XMm     ' un testo troppo lungo resta a sinistra
+
+        ScriviTesto superficie, offsetXMm + x, offsetYMm + e.YMm, e.Testo
+    End Sub
+
+    Private Sub DisegnaCornice(ByVal superficie As Object, ByVal e As ElementoEtichetta, _
+                               ByVal offsetXMm As Double, ByVal offsetYMm As Double)
+        Dim x As Double
+        Dim y As Double
+        Dim s As Double
+
+        x = offsetXMm + e.XMm
+        y = offsetYMm + e.YMm
+        s = e.SpessoreMm
+
+        RiempiRettangolo superficie, x, y, e.LarghezzaMm, s
+        RiempiRettangolo superficie, x, y + e.AltezzaMm - s, e.LarghezzaMm, s
+        RiempiRettangolo superficie, x, y, s, e.AltezzaMm
+        RiempiRettangolo superficie, x + e.LarghezzaMm - s, y, s, e.AltezzaMm
+    End Sub
+
+    ' Le barre sono gli elementi in posizione dispari: il primo elemento e'
+    ' sempre una barra, poi si alternano barra e spazio. Gli spazi non si
+    ' disegnano, si salta avanti.
+    Private Sub DisegnaBarcode(ByVal superficie As Object, ByVal e As ElementoEtichetta, _
+                               ByVal offsetXMm As Double, ByVal offsetYMm As Double)
+        Dim i As Long
+        Dim moduli As Long
+        Dim x As Double
+        Dim larghezza As Double
+
+        x = offsetXMm + e.XMm
+
+        For i = 1 To Len(e.ElementiBarcode)
+            moduli = CLng(Mid$(e.ElementiBarcode, i, 1))
+            larghezza = moduli * e.ModuloMm
+
+            If (i Mod 2) = 1 Then
+                RiempiRettangolo superficie, x, offsetYMm + e.YMm, larghezza, e.AltezzaMm
+            End If
+
+            x += larghezza
+        Next i
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Le quattro chiamate alla superficie
+    ' ------------------------------------------------------------------
+
+    ' Porta la superficie a lavorare in millimetri. Da qui in avanti ogni
+    ' coordinata e' un millimetro vero, a qualunque risoluzione stampi.
+    Private Sub ImpostaScala(ByVal superficie As Object)
+        superficie.ScaleMode = SCALA_MILLIMETRI
+    End Sub
+
+    Private Sub ImpostaFont(ByVal superficie As Object, ByVal nome As String, _
+                            ByVal punti As Double, ByVal grassetto As Boolean)
+        If Len(nome) > 0 Then superficie.FontName = nome
+        superficie.FontSize = punti
+        superficie.FontBold = grassetto
+    End Sub
+
+    ' CurrentY e' il bordo superiore del testo, non la linea di base: e'
+    ' il comportamento di Print sulle superfici VB.
+    Private Sub ScriviTesto(ByVal superficie As Object, ByVal xMm As Double, _
+                            ByVal yMm As Double, ByVal testo As String)
+        superficie.CurrentX = xMm
+        superficie.CurrentY = yMm
+        superficie.Print testo
+    End Sub
+
+    Private Sub RiempiRettangolo(ByVal superficie As Object, ByVal xMm As Double, _
+                                 ByVal yMm As Double, ByVal larghezzaMm As Double, _
+                                 ByVal altezzaMm As Double)
+        If larghezzaMm <= 0 Or altezzaMm <= 0 Then Exit Sub
+        superficie.Line (xMm, yMm)-(xMm + larghezzaMm, yMm + altezzaMm), NERO, BF
+    End Sub
+
+    ' La larghezza del testo con il font corrente. Se la superficie non
+    ' offre TextWidth si ricade sulla stima: un allineamento approssimato e'
+    ' meglio di un errore in fase di stampa.
+    Private Function LarghezzaTesto(ByVal superficie As Object, ByVal testo As String) As Double
+        Dim larghezza As Double
+
+        On Error Resume Next
+        larghezza = superficie.TextWidth(testo)
+        If Err.Number <> 0 Then
+            Err.Clear
+            larghezza = 0
+        End If
+        On Error GoTo 0
+
+        Return larghezza
+    End Function
+
+End Module

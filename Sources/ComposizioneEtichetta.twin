@@ -1,0 +1,307 @@
+'
+' ComposizioneEtichetta - dall'etichetta al layout.
+'
+' Qui si decide cosa va scritto, in che ordine, con che corpo e dove. E' una
+' funzione pura: riceve l'etichetta, restituisce un layout e non tocca nulla
+' di esterno, quindi si puo' provare con i test senza avere una stampante.
+'
+' L'ordine delle righe non e' casuale. Le informazioni obbligatorie del
+' Reg. UE 1169/2011 ci sono tutte, ma la scadenza e' scritta con il corpo
+' piu' grande dopo la denominazione, perche' e' quella che il banconista e il
+' cliente cercano con lo sguardo, e perche' una scadenza illeggibile su un
+' prodotto a base di pesce crudo e' un problema di sicurezza, non di grafica.
+'
+' Se il contenuto non entra nel supporto la composizione viene ritentata con
+' corpi piu' piccoli e meno righe di ingredienti, fino a cinque tentativi.
+' Meglio un'etichetta stretta ma completa che una tagliata a meta'.
+'
+Module ComposizioneEtichetta
+
+    ' Corpi di partenza, in punti tipografici.
+    Private Const PT_DENOMINAZIONE As Double = 9
+    Private Const PT_PROVENIENZA As Double = 5
+    Private Const PT_INGREDIENTI As Double = 5
+    Private Const PT_ALLERGENI As Double = 5.5
+    Private Const PT_AVVISO As Double = 4.5
+    Private Const PT_PESO As Double = 6.5
+    Private Const PT_PRODUZIONE As Double = 6
+    Private Const PT_SCADENZA As Double = 8.5
+    Private Const PT_LOTTO As Double = 6.5
+    Private Const PT_CONSERVAZIONE As Double = 5.5
+    Private Const PT_BARCODE As Double = 4.5
+    Private Const PT_PRODUTTORE As Double = 4.5
+
+    Private Const ALTEZZA_BARCODE_MM As Double = 8
+    Private Const RESPIRO_MM As Double = 0.4
+
+    ' Tetto di righe dell'elenco ingredienti. Non e' un obiettivo da
+    ' raggiungere, e' il punto oltre il quale qualcosa e' andato storto:
+    ' se l'elenco arriva a sei righe l'etichetta e' troppo piccola per
+    ' quel prodotto, e il layout lo segnala.
+    Private Const MASSIMO_RIGHE_INGREDIENTI As Long = 6
+
+    ' ------------------------------------------------------------------
+    ' Interfaccia pubblica
+    ' ------------------------------------------------------------------
+
+    ' Compone il layout, stringendo quanto serve perche' entri nel supporto.
+    Public Function Componi(ByVal etichetta As Etichetta) As LayoutEtichetta
+        Dim layout As LayoutEtichetta
+        Dim tentativo As Long
+        Dim scala As Double
+        Dim righeIngredienti As Long
+        Dim altezzaBarcode As Double
+
+        If etichetta Is Nothing Then
+            Err.Raise 5, "ComposizioneEtichetta.Componi", "etichetta non puo' essere Nothing"
+        End If
+
+        ' Quello che si riduce sono i caratteri, non il testo. Il tetto di
+        ' righe resta alto e fa solo da paracadute, perche' l'elenco degli
+        ' ingredienti e' un'informazione obbligatoria: abbreviarlo e' un
+        ' difetto dell'etichetta, non un modo di guadagnare spazio.
+        '
+        ' Il conto torna anche a favore: un corpo piu' piccolo fa entrare
+        ' piu' caratteri per riga, quindi lo stesso elenco occupa spesso
+        ' MENO righe, non piu'.
+        For tentativo = 1 To 5
+            Select Case tentativo
+                Case 1: scala = 1#:    altezzaBarcode = ALTEZZA_BARCODE_MM
+                Case 2: scala = 0.95:  altezzaBarcode = ALTEZZA_BARCODE_MM
+                Case 3: scala = 0.9:   altezzaBarcode = 7.5
+                Case 4: scala = 0.85:  altezzaBarcode = 7
+                Case 5: scala = 0.8:   altezzaBarcode = 6.5
+            End Select
+            righeIngredienti = MASSIMO_RIGHE_INGREDIENTI
+
+            Set layout = ComponiPasso(etichetta, scala, righeIngredienti, altezzaBarcode)
+            If layout.CiSta() Then
+                If tentativo > 1 Then
+                    layout.Avvisa "Caratteri ridotti al " & _
+                                  Numero.Formatta(scala * 100, 0) & "% per entrare in " & _
+                                  Numero.Formatta(layout.LarghezzaMm, 0) & "x" & _
+                                  Numero.Formatta(layout.AltezzaMm, 0) & " mm."
+                End If
+                Return layout
+            End If
+        Next tentativo
+
+        ' Nemmeno al minimo ci sta: si restituisce comunque l'ultimo, con
+        ' l'avviso. Decide l'operatore se stampare o cambiare supporto.
+        layout.Avvisa "Il contenuto esce di " & _
+                      Numero.Formatta(layout.Sforamento(), 1) & " mm dal supporto: " & _
+                      "serve un'etichetta piu' alta oppure meno testo."
+        Return layout
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Un singolo tentativo
+    ' ------------------------------------------------------------------
+
+    Private Function ComponiPasso(ByVal etichetta As Etichetta, ByVal scala As Double, _
+                                  ByVal massimoRigheIngredienti As Long, _
+                                  ByVal altezzaBarcodeMm As Double) As LayoutEtichetta
+        Dim layout As LayoutEtichetta
+        Dim scheda As Prodotto
+        Dim negozio As Azienda
+        Dim x As Double
+        Dim y As Double
+        Dim larghezza As Double
+        Dim testo As String
+        Dim allergeniPresenti As String
+
+        Set scheda = etichetta.Scheda
+        Set negozio = etichetta.Negozio
+
+        Set layout = New LayoutEtichetta
+        layout.LarghezzaMm = negozio.LarghezzaMm
+        layout.AltezzaMm = negozio.AltezzaMm
+        layout.MargineMm = negozio.MargineMm
+        layout.NomeFont = negozio.NomeFont
+
+        x = negozio.MargineMm
+        y = negozio.MargineMm
+        larghezza = negozio.LarghezzaUtileMm()
+
+        ' --- Denominazione ---------------------------------------------
+        y += layout.AggiungiParagrafo(UCase$(scheda.Denominazione), x, y, larghezza, _
+                                      PT_DENOMINAZIONE * scala, True, 2)
+        y += RESPIRO_MM
+
+        ' --- Provenienza del pesce -------------------------------------
+        ' Specie, nome scientifico, metodo di produzione, zona di cattura e
+        ' attrezzo: quello che il Reg. UE 1379/2013 chiede per i prodotti
+        ' della pesca venduti al consumatore finale.
+        testo = scheda.TestoProvenienza()
+        If Len(testo) > 0 Then
+            y += layout.AggiungiParagrafo(testo, x, y, larghezza, _
+                                          PT_PROVENIENZA * scala, False, 2)
+            y += RESPIRO_MM
+        End If
+
+        ' --- Ingredienti ------------------------------------------------
+        y += layout.AggiungiParagrafo("Ingredienti: " & scheda.IngredientiEvidenziati(), _
+                                      x, y, larghezza, PT_INGREDIENTI * scala, False, _
+                                      massimoRigheIngredienti)
+
+        ' L'elenco completo degli ingredienti e' obbligatorio: se e' stato
+        ' abbreviato l'etichetta non e' a norma e va detto, non nascosto.
+        If layout.UltimoParagrafoTroncato Then
+            layout.Avvisa "ELENCO INGREDIENTI ABBREVIATO: l'elenco completo e' " & _
+                          "obbligatorio, serve un'etichetta piu' grande o una " & _
+                          "ricetta descritta in modo piu' breve."
+        End If
+
+        ' --- Allergeni --------------------------------------------------
+        allergeniPresenti = scheda.AllergeniEffettivi()
+        If Len(allergeniPresenti) > 0 Then
+            y += layout.AggiungiParagrafo("Contiene: " & UCase$(allergeniPresenti), _
+                                          x, y, larghezza, PT_ALLERGENI * scala, True, 2)
+        End If
+
+        ' --- Avviso di abbattimento -------------------------------------
+        If scheda.PesceCrudo And Len(Trim$(negozio.AvvisoAbbattimento)) > 0 Then
+            y += layout.AggiungiParagrafo(negozio.AvvisoAbbattimento, x, y, larghezza, _
+                                          PT_AVVISO * scala, False, 3)
+        End If
+
+        y += RESPIRO_MM
+        y += layout.AggiungiLinea(x, y, larghezza)
+        y += RESPIRO_MM
+
+        ' --- Peso a sinistra, prezzo a destra ---------------------------
+        y += ComponiPesoEPrezzo(layout, etichetta, x, y, larghezza, PT_PESO * scala)
+
+        ' --- Date e lotto ------------------------------------------------
+        y += layout.AggiungiTesto(etichetta.TestoProduzione(), x, y, larghezza, _
+                                  PT_PRODUZIONE * scala)
+        y += layout.AggiungiTesto(etichetta.TestoScadenza(True), x, y, larghezza, _
+                                  PT_SCADENZA * scala, True)
+        y += layout.AggiungiTesto(etichetta.TestoLotto(), x, y, larghezza, _
+                                  PT_LOTTO * scala, True)
+        y += layout.AggiungiTesto(scheda.TestoConservazione(True), x, y, larghezza, _
+                                  PT_CONSERVAZIONE * scala)
+
+        ' --- Codice a barre -----------------------------------------------
+        If negozio.MostraBarcode Then
+            y += RESPIRO_MM
+            y += ComponiBarcode(layout, etichetta, x, y, larghezza, _
+                                altezzaBarcodeMm, PT_BARCODE * scala)
+        End If
+
+        ' --- Produttore ----------------------------------------------------
+        testo = negozio.RigaProduttore()
+        If Len(testo) > 0 Then
+            y += layout.AggiungiParagrafo(testo, x, y, larghezza, _
+                                          PT_PRODUTTORE * scala, False, 2)
+        End If
+
+        ' --- Nota libera ----------------------------------------------------
+        If Len(Trim$(scheda.Note)) > 0 Then
+            y += layout.AggiungiParagrafo(Trim$(scheda.Note), x, y, larghezza, _
+                                          PT_PRODUTTORE * scala, False, 1)
+        End If
+
+        Return layout
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Blocchi
+    ' ------------------------------------------------------------------
+
+    ' Peso netto a sinistra e prezzo a destra sulla stessa riga. Con il
+    ' prezzo al chilo valorizzato aggiunge anche quello, perche' la vendita a
+    ' peso lo richiede.
+    Private Function ComponiPesoEPrezzo(ByVal layout As LayoutEtichetta, _
+                                        ByVal etichetta As Etichetta, _
+                                        ByVal x As Double, ByVal y As Double, _
+                                        ByVal larghezza As Double, _
+                                        ByVal punti As Double) As Double
+        Dim scheda As Prodotto
+        Dim sinistra As String
+        Dim destra As String
+        Dim altezza As Double
+
+        Set scheda = etichetta.Scheda
+
+        If etichetta.PesoGrammi() > 0 Then
+            sinistra = "Peso netto " & Numero.FormattaPeso(etichetta.PesoGrammi())
+        End If
+
+        If etichetta.PrezzoEuro() > 0 Then
+            destra = Numero.FormattaEuro(etichetta.PrezzoEuro())
+            If scheda.PrezzoKgEuro > 0 Then
+                destra = Numero.FormattaEuro(scheda.PrezzoKgEuro) & "/kg   " & destra
+            End If
+        End If
+
+        If Len(sinistra) = 0 And Len(destra) = 0 Then Return 0
+
+        altezza = layout.AggiungiTesto(sinistra, x, y, larghezza, punti)
+        If Len(destra) > 0 Then
+            altezza = layout.AggiungiTesto(destra, x, y, larghezza, punti, True, _
+                                           Grafica.alDestra)
+        End If
+        Return altezza
+    End Function
+
+    ' Il codice a barre e, sotto, la stessa informazione in chiaro.
+    '
+    ' La larghezza del modulo viene calcolata perche' il codice occupi tutto
+    ' lo spazio disponibile, con due limiti: non si allarga oltre mezzo
+    ' millimetro, che e' inutile, e se scende sotto il minimo impostato il
+    ' layout lo segnala, perche' un codice troppo fitto per la risoluzione
+    ' della stampante si stampa benissimo e non si legge.
+    Private Function ComponiBarcode(ByVal layout As LayoutEtichetta, _
+                                    ByVal etichetta As Etichetta, _
+                                    ByVal x As Double, ByVal y As Double, _
+                                    ByVal larghezza As Double, _
+                                    ByVal altezzaMm As Double, _
+                                    ByVal punti As Double) As Double
+        Dim negozio As Azienda
+        Dim elementi As String
+        Dim leggibile As String
+        Dim moduli As Long
+        Dim moduloMm As Double
+        Dim larghezzaBarcode As Double
+        Dim usata As Double
+
+        Set negozio = etichetta.Negozio
+
+        On Error Resume Next
+        elementi = Code128.ElementiGs1(etichetta.Scadenza(), etichetta.CodiceLotto(), _
+                                       etichetta.DataOraProduzione, _
+                                       negozio.BarcodeIncludeDataProduzione)
+        leggibile = Code128.Gs1Leggibile(etichetta.Scadenza(), etichetta.CodiceLotto(), _
+                                         etichetta.DataOraProduzione, _
+                                         negozio.BarcodeIncludeDataProduzione)
+        If Err.Number <> 0 Then
+            layout.Avvisa "Codice a barre non generato: " & Err.Description
+            Err.Clear
+            On Error GoTo 0
+            Return 0
+        End If
+        On Error GoTo 0
+
+        moduli = Code128.LarghezzaInModuli(elementi)
+        If moduli <= 0 Then Return 0
+
+        moduloMm = larghezza / moduli
+        If moduloMm > 0.5 Then moduloMm = 0.5
+
+        If moduloMm < negozio.ModuloBarcodeMinimoMm Then
+            layout.Avvisa "Il codice a barre ha un modulo di " & _
+                          Numero.Formatta(moduloMm, 2) & " mm, sotto il minimo di " & _
+                          Numero.Formatta(negozio.ModuloBarcodeMinimoMm, 2) & _
+                          " mm: accorciare il lotto o allargare l'etichetta."
+        End If
+
+        larghezzaBarcode = moduli * moduloMm
+        usata = layout.AggiungiBarcode(elementi, x + (larghezza - larghezzaBarcode) / 2, _
+                                       y, moduloMm, altezzaMm)
+        usata += layout.AggiungiTesto(leggibile, x, y + usata, larghezza, punti, False, _
+                                      Grafica.alCentro)
+        Return usata
+    End Function
+
+End Module

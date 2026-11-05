@@ -1,0 +1,381 @@
+'
+' Code128 - generatore di codici a barre Code 128 e GS1-128.
+'
+' Non serve nessun font speciale e nessun controllo ActiveX: la funzione
+' restituisce la sequenza delle larghezze delle barre e degli spazi, e il
+' modulo di disegno le trasforma in rettangoli. Un codice disegnato si stampa
+' identico su qualunque stampante, mentre un font per codici a barre deve
+' essere installato sul PC e cambia aspetto se non lo e'.
+'
+' La sequenza restituita e' una stringa di cifre da 1 a 4: ogni cifra e' la
+' larghezza in moduli di un elemento, e gli elementi si alternano cominciando
+' da una barra. "211412..." vuol dire barra larga 2, spazio largo 1, barra
+' larga 1, spazio largo 4, e cosi' via.
+'
+' Perche' GS1-128 e non EAN-13: in un EAN-13 ci stanno tredici cifre e nulla
+' piu', mentre il GS1-128 porta dentro il codice a barre il lotto e la data di
+' scadenza, che sono esattamente i dati che servono per la tracciabilita'. Gli
+' identificatori usati qui sono:
+'
+'   (11) data di produzione, aammgg
+'   (17) data di scadenza, aammgg
+'   (10) numero di lotto, fino a venti caratteri
+'
+' Il lotto va per ultimo perche' e' l'unico a lunghezza variabile: messo in
+' fondo non ha bisogno del separatore FNC1 che lo chiuderebbe.
+'
+Module Code128
+
+    Private Const VALORE_FNC1 As Long = 102
+    Private Const VALORE_CODE_B As Long = 100
+    Private Const VALORE_CODE_C As Long = 99
+    Private Const VALORE_START_B As Long = 104
+    Private Const VALORE_START_C As Long = 105
+    Private Const VALORE_STOP As Long = 106
+
+    Private Const MODULI_STOP As String = "2331112"
+
+    Private mTabella As String      ' 106 motivi da 6 cifre, concatenati
+
+    ' ------------------------------------------------------------------
+    ' Interfaccia pubblica
+    ' ------------------------------------------------------------------
+
+    ' Codifica un testo qualunque (caratteri ASCII da 32 a 126) scegliendo da
+    ' sola fra sottoinsieme B e sottoinsieme C, che comprime le cifre a coppie.
+    Public Function Elementi(ByVal dati As String) As String
+        Dim valori() As Long
+        Dim quanti As Long
+
+        If Len(dati) = 0 Then
+            Err.Raise 5, "Code128.Elementi", "dati non puo' essere vuoto"
+        End If
+
+        quanti = ValoriDaTesto(dati, valori)
+        Return ElementiDaValori(valori, quanti)
+    End Function
+
+    ' Codifica un GS1-128 con data di scadenza e lotto, e in piu' la data di
+    ' produzione se richiesta. Il primo carattere dopo lo start e' FNC1, che
+    ' e' quello che dice al lettore "questo e' un GS1-128".
+    Public Function ElementiGs1(ByVal dataScadenza As Date, ByVal lotto As String, _
+                                Optional ByVal dataProduzione As Variant, _
+                                Optional ByVal includiProduzione As Boolean = False) As String
+        Dim valori() As Long
+        Dim quanti As Long
+
+        lotto = Trim$(UCase$(lotto))
+        If Len(lotto) = 0 Then
+            Err.Raise 5, "Code128.ElementiGs1", "il lotto non puo' essere vuoto"
+        End If
+        If Len(lotto) > 20 Then
+            Err.Raise 5, "Code128.ElementiGs1", _
+                      "l'identificatore 10 ammette al massimo venti caratteri"
+        End If
+
+        ReDim valori(0 To 80)
+        quanti = 0
+
+        ' Start C: si parte con le cifre, che sono la parte piu' lunga.
+        valori(quanti) = VALORE_START_C: quanti += 1
+        valori(quanti) = VALORE_FNC1: quanti += 1
+
+        If includiProduzione Then
+            If IsMissing(dataProduzione) Then
+                Err.Raise 5, "Code128.ElementiGs1", _
+                          "includiProduzione richiede dataProduzione"
+            End If
+            AggiungiCoppie "11" & DateUtil.FormattaAaMmGg(CDate(dataProduzione)), valori, quanti
+        End If
+
+        AggiungiCoppie "17" & DateUtil.FormattaAaMmGg(dataScadenza), valori, quanti
+
+        ' L'identificatore 10 e' numerico, il suo contenuto no: le due cifre
+        ' del codice stanno ancora in sottoinsieme C, poi si passa a B.
+        AggiungiCoppie "10", valori, quanti
+        valori(quanti) = VALORE_CODE_B: quanti += 1
+        AggiungiCaratteriB lotto, valori, quanti
+
+        Return ElementiDaValori(valori, quanti)
+    End Function
+
+    ' La stessa informazione in chiaro, da stampare sotto le barre perche'
+    ' un operatore possa leggerla e digitarla a mano.
+    Public Function Gs1Leggibile(ByVal dataScadenza As Date, ByVal lotto As String, _
+                                 Optional ByVal dataProduzione As Variant, _
+                                 Optional ByVal includiProduzione As Boolean = False) As String
+        Dim risultato As String
+
+        If includiProduzione And Not IsMissing(dataProduzione) Then
+            risultato = "(11)" & DateUtil.FormattaAaMmGg(CDate(dataProduzione))
+        End If
+        risultato = risultato & "(17)" & DateUtil.FormattaAaMmGg(dataScadenza)
+        risultato = risultato & "(10)" & Trim$(UCase$(lotto))
+        Return risultato
+    End Function
+
+    ' Quanti moduli occupa in tutto una sequenza di elementi. Serve a
+    ' calcolare la larghezza del modulo in millimetri perche' il codice
+    ' entri nello spazio disponibile.
+    Public Function LarghezzaInModuli(ByVal elementi As String) As Long
+        Dim i As Long
+        Dim totale As Long
+
+        For i = 1 To Len(elementi)
+            totale += CLng(Mid$(elementi, i, 1))
+        Next i
+        Return totale
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Controllo della tabella
+    ' ------------------------------------------------------------------
+
+    ' La tabella dei motivi e' centosei righe di sei cifre battute a mano:
+    ' un errore di battitura produrrebbe un codice che si stampa benissimo e
+    ' che nessun lettore riesce a leggere. Queste due proprieta' valgono per
+    ' costruzione in Code 128 e un errore le rompe quasi sempre:
+    '
+    '   la somma delle sei cifre di ogni motivo fa 11
+    '   la somma delle sole barre (cifre in posizione 1, 3, 5) e' pari
+    '
+    ' La suite di test chiama questa funzione, quindi una tabella sbagliata
+    ' viene scoperta al primo avvio e non in negozio.
+    Public Function TabellaValida() As Boolean
+        Dim valore As Long
+        Dim motivo As String
+        Dim i As Long
+        Dim somma As Long
+        Dim barre As Long
+
+        PreparaTabella
+
+        If Len(mTabella) <> 106 * 6 Then Return False
+
+        For valore = 0 To 105
+            motivo = Motivo(valore)
+            somma = 0
+            barre = 0
+            For i = 1 To 6
+                somma += CLng(Mid$(motivo, i, 1))
+                If (i Mod 2) = 1 Then barre += CLng(Mid$(motivo, i, 1))
+            Next i
+            If somma <> 11 Then Return False
+            If (barre Mod 2) <> 0 Then Return False
+        Next valore
+
+        If LarghezzaInModuli(MODULI_STOP) <> 13 Then Return False
+        Return True
+    End Function
+
+    ' Il carattere di controllo di una stringa di valori: somma pesata
+    ' modulo 103, dove lo start pesa 1 e i caratteri successivi pesano la
+    ' loro posizione. Pubblica perche' i test la verificano con vettori
+    ' calcolati a mano.
+    Public Function CarattereDiControllo(ByRef valori() As Long, ByVal quanti As Long) As Long
+        Dim totale As Long
+        Dim i As Long
+
+        If quanti < 1 Then
+            Err.Raise 5, "Code128.CarattereDiControllo", "serve almeno lo start"
+        End If
+
+        totale = valori(0)                  ' lo start pesa 1
+        For i = 1 To quanti - 1
+            totale = (totale + i * valori(i)) Mod 103
+        Next i
+        Return totale Mod 103
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Costruzione dei valori
+    ' ------------------------------------------------------------------
+
+    ' Traduce un testo in valori Code 128, passando fra sottoinsieme B e C
+    ' quando conviene. La regola: si usa il C quando ci sono almeno quattro
+    ' cifre di fila, oppure quando le cifre rimaste sono tutte quelle che
+    ' restano e sono in numero pari.
+    Private Function ValoriDaTesto(ByVal dati As String, ByRef valori() As Long) As Long
+        Dim quanti As Long
+        Dim posizione As Long
+        Dim inSottoinsiemeC As Boolean
+        Dim cifre As Long
+        Dim codice As Long
+
+        ReDim valori(0 To Len(dati) * 2 + 8)
+        quanti = 0
+        posizione = 1
+
+        inSottoinsiemeC = ConvieneIlC(dati, 1)
+        If inSottoinsiemeC Then
+            valori(quanti) = VALORE_START_C
+        Else
+            valori(quanti) = VALORE_START_B
+        End If
+        quanti += 1
+
+        Do While posizione <= Len(dati)
+            If inSottoinsiemeC Then
+                cifre = CifreDiFila(dati, posizione)
+                If cifre >= 2 And (cifre >= 4 Or _
+                                   (posizione + cifre - 1 = Len(dati) And (cifre Mod 2) = 0)) Then
+                    valori(quanti) = CLng(Mid$(dati, posizione, 2))
+                    quanti += 1
+                    posizione += 2
+                Else
+                    valori(quanti) = VALORE_CODE_B
+                    quanti += 1
+                    inSottoinsiemeC = False
+                End If
+            Else
+                If ConvieneIlC(dati, posizione) Then
+                    valori(quanti) = VALORE_CODE_C
+                    quanti += 1
+                    inSottoinsiemeC = True
+                Else
+                    codice = AscW(Mid$(dati, posizione, 1)) And &HFFFF&
+                    If codice < 32 Or codice > 126 Then
+                        Err.Raise 5, "Code128.Elementi", _
+                                  "il carattere '" & Mid$(dati, posizione, 1) & _
+                                  "' non si puo' mettere in un Code 128: " & _
+                                  "sono ammessi i caratteri ASCII da 32 a 126"
+                    End If
+                    valori(quanti) = codice - 32
+                    quanti += 1
+                    posizione += 1
+                End If
+            End If
+        Loop
+
+        Return quanti
+    End Function
+
+    ' Vero se da questa posizione conviene passare al sottoinsieme C: sei
+    ' cifre di fila ripagano il carattere di passaggio, oppure le cifre
+    ' arrivano fino alla fine e sono in numero pari.
+    Private Function ConvieneIlC(ByVal dati As String, ByVal posizione As Long) As Boolean
+        Dim cifre As Long
+
+        cifre = CifreDiFila(dati, posizione)
+        If cifre >= 6 Then Return True
+        If cifre >= 4 And posizione + cifre - 1 = Len(dati) And (cifre Mod 2) = 0 Then
+            Return True
+        End If
+        If posizione = 1 And cifre = Len(dati) And cifre >= 2 And (cifre Mod 2) = 0 Then
+            Return True
+        End If
+        Return False
+    End Function
+
+    Private Function CifreDiFila(ByVal dati As String, ByVal posizione As Long) As Long
+        Dim quante As Long
+        Dim ch As String
+
+        Do While posizione + quante <= Len(dati)
+            ch = Mid$(dati, posizione + quante, 1)
+            If ch < "0" Or ch > "9" Then Exit Do
+            quante += 1
+        Loop
+        Return quante
+    End Function
+
+    ' Aggiunge una stringa di cifre in numero pari come valori del
+    ' sottoinsieme C, due cifre per volta.
+    Private Sub AggiungiCoppie(ByVal cifre As String, ByRef valori() As Long, _
+                               ByRef quanti As Long)
+        Dim i As Long
+
+        If (Len(cifre) Mod 2) <> 0 Then
+            Err.Raise 5, "Code128.AggiungiCoppie", _
+                      "il sottoinsieme C vuole un numero pari di cifre: '" & cifre & "'"
+        End If
+
+        For i = 1 To Len(cifre) Step 2
+            valori(quanti) = CLng(Mid$(cifre, i, 2))
+            quanti += 1
+        Next i
+    End Sub
+
+    Private Sub AggiungiCaratteriB(ByVal testo As String, ByRef valori() As Long, _
+                                   ByRef quanti As Long)
+        Dim i As Long
+        Dim codice As Long
+
+        For i = 1 To Len(testo)
+            codice = AscW(Mid$(testo, i, 1)) And &HFFFF&
+            If codice < 32 Or codice > 126 Then
+                Err.Raise 5, "Code128.AggiungiCaratteriB", _
+                          "il carattere '" & Mid$(testo, i, 1) & "' non e' ammesso " & _
+                          "in un Code 128: usare solo caratteri ASCII da 32 a 126"
+            End If
+            valori(quanti) = codice - 32
+            quanti += 1
+        Next i
+    End Sub
+
+    ' Mette in fila i motivi dello start, dei dati, del carattere di
+    ' controllo e dello stop.
+    Private Function ElementiDaValori(ByRef valori() As Long, ByVal quanti As Long) As String
+        Dim risultato As String
+        Dim i As Long
+
+        PreparaTabella
+
+        For i = 0 To quanti - 1
+            risultato = risultato & Motivo(valori(i))
+        Next i
+        risultato = risultato & Motivo(CarattereDiControllo(valori, quanti))
+        risultato = risultato & MODULI_STOP
+
+        Return risultato
+    End Function
+
+    Private Function Motivo(ByVal valore As Long) As String
+        If valore = VALORE_STOP Then Return MODULI_STOP
+        If valore < 0 Or valore > 105 Then
+            Err.Raise 5, "Code128.Motivo", _
+                      "valore " & CStr(valore) & " fuori dalla tabella Code 128"
+        End If
+        Return Mid$(mTabella, valore * 6 + 1, 6)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' La tabella
+    ' ------------------------------------------------------------------
+
+    ' I centosei motivi dello standard, diciotto per riga. La tabella viene
+    ' composta la prima volta che serve e poi resta in memoria.
+    Private Sub PreparaTabella()
+        Dim t As String
+
+        If Len(mTabella) > 0 Then Exit Sub
+
+        '          0      1      2      3      4      5      6      7      8
+        t = t & "212222" & "222122" & "222221" & "121223" & "121322" & "131222"
+        t = t & "122213" & "122312" & "132212" & "221213" & "221312" & "231212"
+        t = t & "112232" & "122132" & "122231" & "113222" & "123122" & "123221"
+        '          18 ... 35
+        t = t & "223211" & "221132" & "221231" & "213212" & "223112" & "312131"
+        t = t & "311222" & "321122" & "321221" & "312212" & "322112" & "322211"
+        t = t & "212123" & "212321" & "232121" & "111323" & "131123" & "131321"
+        '          36 ... 53
+        t = t & "112313" & "132113" & "132311" & "211313" & "231113" & "231311"
+        t = t & "112133" & "112331" & "132131" & "113123" & "113321" & "133121"
+        t = t & "313121" & "211331" & "231131" & "213113" & "213311" & "213131"
+        '          54 ... 71
+        t = t & "311123" & "311321" & "331121" & "312113" & "312311" & "332111"
+        t = t & "314111" & "221411" & "431111" & "111224" & "111422" & "121124"
+        t = t & "121421" & "141122" & "141221" & "112214" & "112412" & "122114"
+        '          72 ... 89
+        t = t & "122411" & "142112" & "142211" & "241211" & "221114" & "413111"
+        t = t & "241112" & "134111" & "111242" & "121142" & "121241" & "114212"
+        t = t & "124112" & "124211" & "411212" & "421112" & "421211" & "212141"
+        '          90 ... 105 (103 START A, 104 START B, 105 START C)
+        t = t & "214121" & "412121" & "111143" & "111341" & "131141" & "114113"
+        t = t & "114311" & "411113" & "411311" & "113141" & "114131" & "311141"
+        t = t & "411131" & "211412" & "211214" & "211232"
+
+        mTabella = t
+    End Sub
+
+End Module

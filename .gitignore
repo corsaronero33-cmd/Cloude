@@ -18,3 +18,6 @@ build/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Registro delle stampe, generato a runtime
+Dati/registro.csv

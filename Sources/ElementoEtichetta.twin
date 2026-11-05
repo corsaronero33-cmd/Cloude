@@ -1,0 +1,50 @@
+'
+' ElementoEtichetta - una cosa da disegnare sull'etichetta.
+'
+' Il layout e' una lista di questi elementi, ognuno con la sua posizione in
+' millimetri rispetto all'angolo in alto a sinistra del supporto. Da qui
+' deriva il vantaggio di tutta la struttura: la stessa lista viene disegnata
+' dalla stampante, dall'anteprima sullo schermo e dall'anteprima a caratteri
+' sulla console, senza che nessuna delle tre debba sapere come e' fatta
+' un'etichetta.
+'
+Class ElementoEtichetta
+
+    Public Tipo As Grafica.TipoElemento
+
+    ' Posizione e ingombro, in millimetri dall'angolo in alto a sinistra.
+    Public XMm As Double
+    Public YMm As Double
+    Public LarghezzaMm As Double
+    Public AltezzaMm As Double
+
+    ' Per gli elementi di testo.
+    Public Testo As String
+    Public PuntiFont As Double
+    Public Grassetto As Boolean
+    Public Allinea As Grafica.Allineamento
+
+    ' Per i codici a barre: la sequenza delle larghezze restituita da
+    ' Code128, e la larghezza di un modulo in millimetri.
+    Public ElementiBarcode As String
+    Public ModuloMm As Double
+
+    ' Per linee e rettangoli.
+    Public SpessoreMm As Double
+
+    Private Sub Class_Initialize()
+        PuntiFont = 6
+        SpessoreMm = 0.2
+        Allinea = Grafica.alSinistra
+    End Sub
+
+    ' Il bordo inferiore: serve a sapere quanto spazio ha occupato il layout.
+    Public Function FondoMm() As Double
+        Return YMm + AltezzaMm
+    End Function
+
+    Public Function DestraMm() As Double
+        Return XMm + LarghezzaMm
+    End Function
+
+End Class

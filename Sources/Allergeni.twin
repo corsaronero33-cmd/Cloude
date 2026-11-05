@@ -1,0 +1,293 @@
+'
+' Allergeni - i quattordici allergeni dell'Allegato II del Reg. UE 1169/2011.
+'
+' Il regolamento chiede due cose diverse, e qui sono due funzioni diverse:
+'
+'   Rileva      elenca gli allergeni presenti, per la riga "Allergeni: ..."
+'   Evidenzia   mette in maiuscolo le parole dell'elenco ingredienti che
+'               sono allergeni, perche' l'articolo 21 vuole che risaltino
+'               rispetto al resto dell'elenco
+'
+' Il riconoscimento e' per parole chiave, con controllo dei confini di parola:
+' "noce" dentro "nocepesca" non conta, "alga nori" conta come due parole. Le
+' parole chiave coprono il vocabolario di una sushiteria, nomi giapponesi
+' compresi (unagi, tamago, tobiko, surimi).
+'
+' ATTENZIONE: il riconoscimento automatico e' un aiuto alla compilazione, non
+' una garanzia. La riga degli allergeni di ogni prodotto va letta e confermata
+' da chi produce, e il campo Allergeni della scheda prodotto, se compilato a
+' mano, vince sempre su quello calcolato.
+'
+Module Allergeni
+
+    Public Const QUANTI As Long = 14
+
+    ' I nomi come vanno scritti in etichetta, nell'ordine dell'Allegato II.
+    Public Function Nome(ByVal indice As Long) As String
+        Select Case indice
+            Case 1:  Return "Glutine"
+            Case 2:  Return "Crostacei"
+            Case 3:  Return "Uova"
+            Case 4:  Return "Pesce"
+            Case 5:  Return "Arachidi"
+            Case 6:  Return "Soia"
+            Case 7:  Return "Latte"
+            Case 8:  Return "Frutta a guscio"
+            Case 9:  Return "Sedano"
+            Case 10: Return "Senape"
+            Case 11: Return "Sesamo"
+            Case 12: Return "Solfiti"
+            Case 13: Return "Lupini"
+            Case 14: Return "Molluschi"
+            Case Else
+                Err.Raise 5, "Allergeni.Nome", _
+                          "indice deve essere compreso fra 1 e " & CStr(QUANTI)
+        End Select
+    End Function
+
+    ' Le parole chiave di un allergene, separate da virgola. Sono tutte in
+    ' minuscolo: il confronto avviene sempre su testo abbassato.
+    Private Function ParoleChiave(ByVal indice As Long) As String
+        Select Case indice
+            Case 1:  Return "glutine,grano,frumento,farina,semola,segale,orzo,avena," & _
+                            "spelta,kamut,pane,pangrattato,panko,tempura,seitan," & _
+                            "malto,couscous,bulgur,birra,salsa di soia,shoyu,teriyaki"
+            Case 2:  Return "crostacei,gambero,gamberi,gamberetto,gamberetti," & _
+                            "mazzancolla,mazzancolle,granchio,granseola,astice," & _
+                            "aragosta,scampo,scampi,ebi,amaebi,kani"
+            Case 3:  Return "uovo,uova,albume,tuorlo,maionese,tamago,frittata,kewpie"
+            Case 4:  Return "pesce,salmone,tonno,maguro,toro,branzino,spigola," & _
+                            "orata,ricciola,hamachi,anguilla,unagi,sgombro,saba," & _
+                            "acciuga,acciughe,alice,alici,sardina,sardine,pesce spada," & _
+                            "halibut,merluzzo,baccala,platessa,surimi,tobiko,masago," & _
+                            "ikura,bonito,katsuobushi,dashi,colatura,garum"
+            Case 5:  Return "arachide,arachidi,burro di arachidi"
+            Case 6:  Return "soia,salsa di soia,shoyu,tamari,edamame,tofu,miso," & _
+                            "teriyaki,lecitina di soia,germogli di soia,yuba"
+            Case 7:  Return "latte,lattosio,formaggio,formaggi,burro,panna,yogurt," & _
+                            "mascarpone,philadelphia,ricotta,caseina,siero di latte," & _
+                            "cream cheese"
+            Case 8:  Return "frutta a guscio,mandorla,mandorle,nocciola,nocciole," & _
+                            "noce,noci,anacardo,anacardi,pistacchio,pistacchi," & _
+                            "macadamia,noce pecan,noce del brasile,ginkgo"
+            Case 9:  Return "sedano,sedano rapa"
+            Case 10: Return "senape,mostarda,karashi,wasabi ricostituito"
+            Case 11: Return "sesamo,semi di sesamo,gomasio,tahina,tahin," & _
+                            "olio di sesamo,goma"
+            Case 12: Return "solfiti,solfito,anidride solforosa,metabisolfito," & _
+                            "e220,e221,e222,e223,e224,e226,e227,e228"
+            Case 13: Return "lupino,lupini,farina di lupino"
+            Case 14: Return "molluschi,polpo,polpi,tako,calamaro,calamari,ika," & _
+                            "seppia,seppie,totano,capasanta,capesante,hotate," & _
+                            "cozza,cozze,vongola,vongole,ostrica,ostriche," & _
+                            "lumache di mare,abalone,awabi"
+            Case Else
+                Err.Raise 5, "Allergeni.ParoleChiave", _
+                          "indice deve essere compreso fra 1 e " & CStr(QUANTI)
+        End Select
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Rilevamento
+    ' ------------------------------------------------------------------
+
+    ' Vero se l'elenco ingredienti contiene l'allergene numero indice.
+    Public Function Contiene(ByVal ingredienti As String, ByVal indice As Long) As Boolean
+        Dim parole() As String
+        Dim i As Long
+        Dim testo As String
+
+        testo = Normalizza(ingredienti)
+        If Len(testo) = 0 Then Return False
+
+        parole = Split(ParoleChiave(indice), ",")
+        For i = LBound(parole) To UBound(parole)
+            If TrovaParolaIntera(testo, parole(i), 1) > 0 Then Return True
+        Next i
+        Return False
+    End Function
+
+    ' Elenco degli allergeni presenti, separati da virgola e nell'ordine
+    ' dell'Allegato II. Stringa vuota se non ne riconosce nessuno.
+    Public Function Rileva(ByVal ingredienti As String) As String
+        Dim risultato As String
+        Dim i As Long
+
+        For i = 1 To QUANTI
+            If Contiene(ingredienti, i) Then
+                If Len(risultato) > 0 Then risultato = risultato & ", "
+                risultato = risultato & Nome(i)
+            End If
+        Next i
+        Return risultato
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Evidenziazione
+    ' ------------------------------------------------------------------
+
+    ' Rende maiuscole, dentro l'elenco ingredienti, le parole che sono
+    ' allergeni, lasciando intatto tutto il resto. Scorre il testo una volta
+    ' sola e a ogni posizione prova le parole chiave dalla piu' lunga alla
+    ' piu' corta, cosi' "salsa di soia" vince su "soia" e viene evidenziata
+    ' per intero.
+    Public Function Evidenzia(ByVal ingredienti As String) As String
+        Dim elenco() As String
+        Dim quante As Long
+        Dim testoBasso As String
+        Dim risultato As String
+        Dim posizione As Long
+        Dim i As Long
+        Dim lunghezza As Long
+        Dim trovata As Long
+
+        If Len(ingredienti) = 0 Then Return ""
+
+        quante = RaccogliParoleChiave(elenco)
+        OrdinaPerLunghezzaDecrescente elenco, quante
+        testoBasso = Normalizza(ingredienti)
+
+        posizione = 1
+        Do While posizione <= Len(ingredienti)
+            trovata = 0
+
+            For i = 0 To quante - 1
+                lunghezza = Len(elenco(i))
+                If posizione + lunghezza - 1 <= Len(testoBasso) Then
+                    If Mid$(testoBasso, posizione, lunghezza) = elenco(i) Then
+                        If ConfineAProva(testoBasso, posizione, lunghezza) Then
+                            trovata = lunghezza
+                            Exit For
+                        End If
+                    End If
+                End If
+            Next i
+
+            If trovata > 0 Then
+                risultato = risultato & UCase$(Mid$(ingredienti, posizione, trovata))
+                posizione += trovata
+            Else
+                risultato = risultato & Mid$(ingredienti, posizione, 1)
+                posizione += 1
+            End If
+        Loop
+
+        Return risultato
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    ' Abbassa il testo e riduce le accentate alla lettera base, cosi' che
+    ' "BACCALA'" e "baccala" vengano riconosciuti dalla stessa parola chiave.
+    ' La lunghezza non cambia mai: Evidenzia usa le posizioni trovate sul
+    ' testo normalizzato per tagliare il testo originale.
+    Private Function Normalizza(ByVal testo As String) As String
+        Return SostituisciAccenti(LCase$(testo))
+    End Function
+
+    Private Function SostituisciAccenti(ByVal testo As String) As String
+        Dim i As Long
+        Dim risultato As String
+        Dim ch As String
+
+        For i = 1 To Len(testo)
+            ch = Mid$(testo, i, 1)
+            Select Case AscW(ch)
+                Case &HE0& To &HE5&:    risultato = risultato & "a"
+                Case &HE8& To &HEB&:    risultato = risultato & "e"
+                Case &HEC& To &HEF&:    risultato = risultato & "i"
+                Case &HF2& To &HF6&:    risultato = risultato & "o"
+                Case &HF9& To &HFC&:    risultato = risultato & "u"
+                Case &HE7&:             risultato = risultato & "c"
+                Case &HF1&:             risultato = risultato & "n"
+                Case Else:              risultato = risultato & ch
+            End Select
+        Next i
+        Return risultato
+    End Function
+
+    ' Cerca needle dentro testo, ma solo come parola intera.
+    Private Function TrovaParolaIntera(ByVal testo As String, ByVal needle As String, _
+                                       ByVal da As Long) As Long
+        Dim posizione As Long
+
+        needle = Trim$(needle)
+        If Len(needle) = 0 Then Return 0
+
+        posizione = InStr(da, testo, needle, vbBinaryCompare)
+        Do While posizione > 0
+            If ConfineAProva(testo, posizione, Len(needle)) Then Return posizione
+            posizione = InStr(posizione + 1, testo, needle, vbBinaryCompare)
+        Loop
+        Return 0
+    End Function
+
+    ' Vero se il tratto che inizia a posizione e dura lunghezza caratteri non
+    ' e' incollato ad altre lettere: cosi' "noce" non scatta dentro
+    ' "nocepesca" e "soia" non scatta dentro "soiata".
+    Private Function ConfineAProva(ByVal testo As String, ByVal posizione As Long, _
+                                   ByVal lunghezza As Long) As Boolean
+        If posizione > 1 Then
+            If EAlfabetico(Mid$(testo, posizione - 1, 1)) Then Return False
+        End If
+        If posizione + lunghezza <= Len(testo) Then
+            If EAlfabetico(Mid$(testo, posizione + lunghezza, 1)) Then Return False
+        End If
+        Return True
+    End Function
+
+    Private Function EAlfabetico(ByVal ch As String) As Boolean
+        Dim codice As Long
+
+        If Len(ch) = 0 Then Return False
+        codice = AscW(ch) And &HFFFF&
+        If codice >= 97 And codice <= 122 Then Return True      ' a-z
+        If codice >= 65 And codice <= 90 Then Return True       ' A-Z
+        If codice >= &HE0& And codice <= &HFF& Then Return True ' accentate
+        Return False
+    End Function
+
+    ' Mette in un solo array tutte le parole chiave dei quattordici
+    ' allergeni. Restituisce quante ne ha messe.
+    Private Function RaccogliParoleChiave(ByRef elenco() As String) As Long
+        Dim i As Long
+        Dim k As Long
+        Dim parole() As String
+        Dim quante As Long
+
+        ReDim elenco(0 To 511)
+
+        For i = 1 To QUANTI
+            parole = Split(ParoleChiave(i), ",")
+            For k = LBound(parole) To UBound(parole)
+                elenco(quante) = Trim$(parole(k))
+                quante += 1
+            Next k
+        Next i
+
+        ReDim Preserve elenco(0 To quante - 1)
+        Return quante
+    End Function
+
+    ' Ordinamento a bolle sulla lunghezza. Le parole chiave sono poche
+    ' centinaia e l'ordinamento avviene una volta per chiamata a Evidenzia,
+    ' quindi non vale la pena di qualcosa di piu' elaborato.
+    Private Sub OrdinaPerLunghezzaDecrescente(ByRef elenco() As String, ByVal quante As Long)
+        Dim i As Long
+        Dim k As Long
+        Dim scambio As String
+
+        For i = 0 To quante - 2
+            For k = 0 To quante - 2 - i
+                If Len(elenco(k)) < Len(elenco(k + 1)) Then
+                    scambio = elenco(k)
+                    elenco(k) = elenco(k + 1)
+                    elenco(k + 1) = scambio
+                End If
+            Next k
+        Next i
+    End Sub
+
+End Module

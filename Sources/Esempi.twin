@@ -1,0 +1,198 @@
+'
+' Esempi - un catalogo e un negozio di prova.
+'
+' Serve a due cose: far partire la dimostrazione senza dover prima compilare
+' i file di dati, e dare ai test dei dati realistici su cui lavorare. Gli
+' elenchi degli ingredienti sono scritti come vanno scritti in etichetta,
+' cioe' in ordine di peso decrescente e con gli ingredienti composti seguiti
+' dai loro componenti fra parentesi.
+'
+' I nomi, l'indirizzo e la partita IVA sono inventati.
+'
+Module Esempi
+
+    Public Function AziendaEsempio() As Azienda
+        Dim a As Azienda
+        Set a = New Azienda
+
+        a.RagioneSociale = "Sakura Sushi di Mario Rossi"
+        a.Indirizzo = "Via Giuseppe Verdi 14"
+        a.Cap = "20121"
+        a.Citta = "Milano"
+        a.Provincia = "MI"
+        a.PartitaIva = "01234567890"
+        a.MarchioIdentificazione = "IT 1234 CE"
+        a.Telefono = "02 1234567"
+
+        a.LarghezzaMm = 70
+        a.AltezzaMm = 50
+        a.MargineMm = 2
+
+        a.PrefissoLotto = "L"
+        a.FormatoCodiceLotto = Lotto.lfCompatto
+
+        a.MostraBarcode = True
+        a.BarcodeIncludeDataProduzione = False
+
+        Return a
+    End Function
+
+    ' Il catalogo di prova: cinque prodotti che coprono i casi diversi fra
+    ' loro, cioe' pesce crudo e pesce cotto, peso fisso e vendita a peso,
+    ' validita' di un giorno e di tre.
+    Public Function CatalogoEsempio() As Catalogo
+        Dim c As Catalogo
+        Set c = New Catalogo
+
+        c.Aggiungi NigiriSalmone()
+        c.Aggiungi MakiCalifornia()
+        c.Aggiungi SashimiTonno()
+        c.Aggiungi PokeSalmone()
+        c.Aggiungi SushiMisto()
+
+        Return c
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' I singoli prodotti
+    ' ------------------------------------------------------------------
+
+    Public Function NigiriSalmone() As Prodotto
+        Dim p As Prodotto
+        Set p = New Prodotto
+
+        p.Codice = "NIG-SAL"
+        p.Denominazione = "Nigiri di salmone 6 pezzi"
+        p.Ingredienti = "Riso (riso, aceto di riso, zucchero, sale), " & _
+                        "salmone (Salmo salar)"
+        p.PesoNettoGrammi = 150
+        p.PrezzoPezzoEuro = 7.5
+        p.ValiditaOre = 24
+        p.TemperaturaMin = 0
+        p.TemperaturaMax = 4
+        p.PesceCrudo = True
+        p.SpecieCommerciale = "Salmone atlantico"
+        p.NomeScientifico = "Salmo salar"
+        p.MetodoProduzione = "Allevato"
+        p.ZonaCattura = "Norvegia"
+
+        Return p
+    End Function
+
+    Public Function MakiCalifornia() As Prodotto
+        Dim p As Prodotto
+        Set p = New Prodotto
+
+        p.Codice = "MAKI-CAL"
+        p.Denominazione = "Maki california 8 pezzi"
+        p.Ingredienti = "Riso (riso, aceto di riso, zucchero, sale), " & _
+                        "surimi (pesce, amido, albume d'uovo), alga nori, " & _
+                        "avocado, maionese (uova, olio di semi di girasole, aceto), " & _
+                        "semi di sesamo"
+        p.PesoNettoGrammi = 220
+        p.PrezzoPezzoEuro = 8.9
+        p.ValiditaOre = 48
+        p.TemperaturaMin = 0
+        p.TemperaturaMax = 4
+        p.PesceCrudo = False
+
+        Return p
+    End Function
+
+    Public Function SashimiTonno() As Prodotto
+        Dim p As Prodotto
+        Set p = New Prodotto
+
+        p.Codice = "SASH-TON"
+        p.Denominazione = "Sashimi di tonno"
+        p.Ingredienti = "Tonno pinne gialle (Thunnus albacares)"
+        p.PesoNettoGrammi = 0           ' si pesa al momento
+        p.PrezzoKgEuro = 89
+        p.ValiditaOre = 24
+        p.TemperaturaMin = 0
+        p.TemperaturaMax = 2
+        p.PesceCrudo = True
+        p.SpecieCommerciale = "Tonno pinne gialle"
+        p.NomeScientifico = "Thunnus albacares"
+        p.MetodoProduzione = "Pescato"
+        p.ZonaCattura = "FAO 51 - Oceano Indiano occidentale"
+        p.AttrezzoPesca = "Reti da circuizione"
+
+        Return p
+    End Function
+
+    Public Function PokeSalmone() As Prodotto
+        Dim p As Prodotto
+        Set p = New Prodotto
+
+        p.Codice = "POKE-SAL"
+        p.Denominazione = "Poke bowl salmone e avocado"
+        p.Ingredienti = "Riso, salmone (Salmo salar), avocado, edamame (soia), " & _
+                        "salsa di soia (acqua, soia, grano, sale), " & _
+                        "semi di sesamo, cipolla fritta"
+        p.PesoNettoGrammi = 380
+        p.PrezzoPezzoEuro = 11.5
+        p.ValiditaOre = 24
+        p.TemperaturaMin = 0
+        p.TemperaturaMax = 4
+        p.PesceCrudo = True
+        p.SpecieCommerciale = "Salmone atlantico"
+        p.NomeScientifico = "Salmo salar"
+        p.MetodoProduzione = "Allevato"
+        p.ZonaCattura = "Norvegia"
+
+        Return p
+    End Function
+
+    Public Function SushiMisto() As Prodotto
+        Dim p As Prodotto
+        Set p = New Prodotto
+
+        p.Codice = "MISTO-12"
+        p.Denominazione = "Sushi misto 12 pezzi"
+        p.Ingredienti = "Riso (riso, aceto di riso, zucchero, sale), " & _
+                        "salmone (Salmo salar), tonno (Thunnus albacares), " & _
+                        "gamberi (Litopenaeus vannamei), alga nori, avocado, " & _
+                        "surimi (pesce, amido, albume d'uovo), semi di sesamo, " & _
+                        "salsa di soia (acqua, soia, grano, sale)"
+        p.PesoNettoGrammi = 420
+        p.PrezzoPezzoEuro = 16.9
+        p.ValiditaOre = 24
+        p.TemperaturaMin = 0
+        p.TemperaturaMax = 4
+        p.PesceCrudo = True
+        p.Note = "Prodotto confezionato in atmosfera protettiva."
+
+        Return p
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Un'etichetta pronta
+    ' ------------------------------------------------------------------
+
+    ' Etichetta di prova con una data fissa, non Now: cosi' la dimostrazione
+    ' e i test stampano sempre lo stesso risultato e si possono confrontare.
+    Public Function EtichettaEsempio(Optional ByVal codice As String = "MISTO-12") As Etichetta
+        Dim e As Etichetta
+        Dim catalogo As Catalogo
+        Dim scheda As Prodotto
+
+        Set catalogo = CatalogoEsempio()
+        Set scheda = catalogo.PerCodice(codice)
+        If scheda Is Nothing Then
+            Err.Raise 5, "Esempi.EtichettaEsempio", "codice " & codice & " non nel catalogo"
+        End If
+
+        Set e = New Etichetta
+        e.Prepara scheda, AziendaEsempio(), DataDiProva(), 3
+        e.Copie = 1
+
+        Return e
+    End Function
+
+    ' Giovedi' 5 novembre 2026, alle 10 e mezza.
+    Public Function DataDiProva() As Date
+        Return DateSerial(2026, 11, 5) + TimeSerial(10, 30, 0)
+    End Function
+
+End Module

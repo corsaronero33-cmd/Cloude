@@ -1,0 +1,151 @@
+'
+' Numero - formattazione e lettura di numeri indipendenti dalla lingua.
+'
+' Stesso problema delle date: CStr e Format$ usano il separatore decimale
+' delle impostazioni internazionali, quindi su un PC configurato in inglese
+' un prezzo diventerebbe "12.50" invece di "12,50". Qui le cifre vengono
+' composte a mano e il separatore e' un parametro.
+'
+' In lettura invece si accettano entrambi i separatori, perche' l'operatore
+' digita la virgola ma un file importato da un gestionale puo' avere il punto.
+'
+Module Numero
+
+    Public Const VIRGOLA As String = ","
+
+    ' Il simbolo dell'euro per codice, non come carattere letterale: cosi' il
+    ' sorgente resta leggibile in qualunque codifica venga riaperto.
+    ' Non puo' essere una Const perche' una Const non ammette chiamate.
+    Public Function Euro() As String
+        Return ChrW$(8364)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Formattazione
+    ' ------------------------------------------------------------------
+
+    ' Numero con un numero fisso di decimali e la virgola come separatore.
+    ' L'arrotondamento e' per eccesso a partire dal mezzo (12,345 -> 12,35),
+    ' che e' quello che si aspetta chi guarda un prezzo, non quello
+    ' "bancario" di Round() che arrotonda al pari piu' vicino.
+    Public Function Formatta(ByVal valore As Double, ByVal decimali As Long, _
+                             Optional ByVal separatore As String = VIRGOLA) As String
+        Dim negativo As Boolean
+        Dim scalato As Double
+        Dim cifre As String
+        Dim parteIntera As String
+        Dim parteDecimale As String
+        Dim i As Long
+
+        If decimali < 0 Or decimali > 9 Then
+            Err.Raise 5, "Numero.Formatta", "decimali deve essere compreso fra 0 e 9"
+        End If
+        negativo = (valore < -0.0000000001)
+        valore = Abs(valore)
+
+        scalato = valore
+        For i = 1 To decimali
+            scalato = scalato * 10
+        Next i
+        ' Il mezzo piu' un epsilon: moltiplicare per dieci piu' volte di
+        ' fila lascia un errore in virgola mobile, e un prezzo che vale
+        ' 1234,4999999999 invece di 1234,5 verrebbe arrotondato per difetto.
+        ' L'epsilon e' mille volte piu' piccolo dell'ultimo centesimo, quindi
+        ' non sposta nessun valore che un operatore possa digitare.
+        scalato = Int(scalato + 0.5 + 0.0000001)
+
+        If scalato >= 1E+15 Then
+            Err.Raise 6, "Numero.Formatta", _
+                      "valore troppo grande per essere formattato con " & _
+                      CStr(decimali) & " decimali"
+        End If
+
+        ' Qui scalato e' un intero sotto il milione di miliardi: CStr lo
+        ' stampa cifra per cifra, senza esponente e senza separatore
+        ' decimale, quindi il risultato non dipende dalla lingua.
+        cifre = CStr(scalato)
+
+        If Len(cifre) < decimali + 1 Then
+            cifre = String$(decimali + 1 - Len(cifre), "0") & cifre
+        End If
+
+        If decimali = 0 Then
+            parteIntera = cifre
+        Else
+            parteIntera = Left$(cifre, Len(cifre) - decimali)
+            parteDecimale = Right$(cifre, decimali)
+        End If
+
+        ' Lo zero non porta il segno meno: -0,004 arrotondato e' "0,00".
+        If negativo And CDbl(cifre) = 0 Then negativo = False
+
+        If decimali = 0 Then
+            Return SegnoMeno(negativo) & parteIntera
+        End If
+        Return SegnoMeno(negativo) & parteIntera & separatore & parteDecimale
+    End Function
+
+    ' Prezzo con il simbolo dell'euro davanti: "12,50 EUR" diventa
+    ' il carattere euro seguito dallo spazio e dal numero.
+    Public Function FormattaEuro(ByVal valore As Double) As String
+        Return Euro() & " " & Formatta(valore, 2)
+    End Function
+
+    ' Peso leggibile: sotto il chilo in grammi, sopra in chili con un
+    ' decimale. "220 g", "1,2 kg".
+    Public Function FormattaPeso(ByVal grammi As Double) As String
+        If grammi <= 0 Then Return ""
+        If grammi < 1000 Then Return Formatta(grammi, 0) & " g"
+        Return Formatta(grammi / 1000, 1) & " kg"
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Lettura
+    ' ------------------------------------------------------------------
+
+    ' Legge un numero scritto in qualunque modo ragionevole: "12,50",
+    ' "12.50", "1.234,56", "EUR 12,50", " 12,50 g ". Un testo senza cifre
+    ' vale zero.
+    Public Function Interpreta(ByVal testo As String) As Double
+        Dim pulito As String
+        Dim i As Long
+        Dim ch As String
+        Dim hasPunto As Boolean
+        Dim hasVirgola As Boolean
+
+        ' Tiene solo cifre, segni e separatori.
+        For i = 1 To Len(testo)
+            ch = Mid$(testo, i, 1)
+            If (ch >= "0" And ch <= "9") Or ch = "." Or ch = "," Or ch = "-" Then
+                pulito = pulito & ch
+            End If
+        Next i
+
+        If Len(pulito) = 0 Then Return 0
+
+        hasPunto = (InStr(pulito, ".") > 0)
+        hasVirgola = (InStr(pulito, ",") > 0)
+
+        If hasPunto And hasVirgola Then
+            ' "1.234,56": il punto separa le migliaia, la virgola i decimali.
+            pulito = Replace$(pulito, ".", "")
+            pulito = Replace$(pulito, ",", ".")
+        ElseIf hasVirgola Then
+            pulito = Replace$(pulito, ",", ".")
+        End If
+
+        ' Val vuole il punto e ignora quello che non riesce a leggere,
+        ' qualunque sia la lingua del sistema.
+        Return Val(pulito)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function SegnoMeno(ByVal negativo As Boolean) As String
+        If negativo Then Return "-"
+        Return ""
+    End Function
+
+End Module

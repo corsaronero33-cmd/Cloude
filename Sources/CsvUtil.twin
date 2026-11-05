@@ -1,0 +1,149 @@
+'
+' CsvUtil - lettura e scrittura di CSV con il punto e virgola.
+'
+' Il separatore predefinito e' il punto e virgola e non la virgola, perche'
+' su un Windows italiano Excel apre con un doppio clic solo i CSV separati da
+' punto e virgola, e un elenco di ingredienti e' pieno di virgole.
+'
+' I campi che contengono il separatore, una virgoletta doppia o un a capo
+' vengono racchiusi fra virgolette, e le virgolette interne raddoppiate: la
+' convenzione di RFC 4180. Un a capo dentro un campo non e' supportato in
+' lettura, perche' le righe vengono spezzate prima dei campi: nei dati di un
+' prodotto non serve e tenerlo fuori rende il lettore molto piu' semplice.
+'
+Module CsvUtil
+
+    Public Const SEPARATORE As String = ";"
+
+    ' ------------------------------------------------------------------
+    ' Scrittura
+    ' ------------------------------------------------------------------
+
+    ' Protegge un campo se contiene caratteri che confonderebbero il lettore.
+    Public Function Proteggi(ByVal campo As String, _
+                             Optional ByVal separatore As String = SEPARATORE) As String
+        Dim serve As Boolean
+
+        serve = (InStr(campo, separatore) > 0) Or _
+                (InStr(campo, """") > 0) Or _
+                (InStr(campo, vbCr) > 0) Or _
+                (InStr(campo, vbLf) > 0)
+
+        If Not serve Then Return campo
+        Return """" & Replace$(campo, """", """""") & """"
+    End Function
+
+    ' Compone una riga a partire dai campi.
+    Public Function ComponiRiga(ByRef campi() As String, _
+                                Optional ByVal separatore As String = SEPARATORE) As String
+        Dim risultato As String
+        Dim i As Long
+
+        For i = LBound(campi) To UBound(campi)
+            If i > LBound(campi) Then risultato = risultato & separatore
+            risultato = risultato & Proteggi(campi(i), separatore)
+        Next i
+        Return risultato
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Lettura
+    ' ------------------------------------------------------------------
+
+    ' Spezza una riga nei suoi campi, rispettando le virgolette.
+    Public Function SpezzaRiga(ByVal riga As String, _
+                               Optional ByVal separatore As String = SEPARATORE) As String()
+        Dim campi() As String
+        Dim quanti As Long
+        Dim i As Long
+        Dim ch As String
+        Dim campo As String
+        Dim dentroVirgolette As Boolean
+
+        ReDim campi(0 To Len(riga) + 1)
+        i = 1
+
+        Do While i <= Len(riga)
+            ch = Mid$(riga, i, 1)
+
+            If dentroVirgolette Then
+                If ch = """" Then
+                    If Mid$(riga, i + 1, 1) = """" Then
+                        campo = campo & """"       ' virgoletta raddoppiata
+                        i += 1
+                    Else
+                        dentroVirgolette = False
+                    End If
+                Else
+                    campo = campo & ch
+                End If
+            ElseIf ch = """" Then
+                dentroVirgolette = True
+            ElseIf ch = separatore Then
+                campi(quanti) = campo
+                quanti += 1
+                campo = ""
+            Else
+                campo = campo & ch
+            End If
+
+            i += 1
+        Loop
+
+        campi(quanti) = campo
+        quanti += 1
+
+        ReDim Preserve campi(0 To quanti - 1)
+        Return campi
+    End Function
+
+    ' Spezza un testo nelle sue righe, accettando a capo in stile Windows,
+    ' Unix o Mac classico. Le righe vuote e quelle che iniziano con il
+    ' cancelletto vengono scartate: cosi' i file di dati possono avere
+    ' commenti e righe di respiro.
+    Public Function SpezzaRighe(ByVal testo As String) As String()
+        Dim grezze() As String
+        Dim risultato() As String
+        Dim quante As Long
+        Dim i As Long
+        Dim riga As String
+
+        testo = Replace$(testo, vbCrLf, vbLf)
+        testo = Replace$(testo, vbCr, vbLf)
+        grezze = Split(testo, vbLf)
+
+        ReDim risultato(0 To UBound(grezze) - LBound(grezze) + 1)
+
+        For i = LBound(grezze) To UBound(grezze)
+            riga = Trim$(grezze(i))
+            If Len(riga) > 0 And Left$(riga, 1) <> "#" Then
+                risultato(quante) = grezze(i)
+                quante += 1
+            End If
+        Next i
+
+        If quante = 0 Then
+            Dim vuoto() As String
+            Return vuoto
+        End If
+
+        ReDim Preserve risultato(0 To quante - 1)
+        Return risultato
+    End Function
+
+    ' Campo numero indice (da zero) di una riga gia' spezzata, oppure il
+    ' valore di ripiego se quel campo non c'e'. Serve per leggere senza
+    ' rompersi i file scritti da una versione precedente del programma, che
+    ' avevano meno colonne.
+    Public Function Campo(ByRef campi() As String, ByVal indice As Long, _
+                          Optional ByVal seMancante As String = "") As String
+        On Error Resume Next
+        If indice < LBound(campi) Or indice > UBound(campi) Then
+            Err.Clear
+            Return seMancante
+        End If
+        On Error GoTo 0
+        Return Trim$(campi(indice))
+    End Function
+
+End Module

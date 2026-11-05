@@ -1,0 +1,225 @@
+'
+' LayoutEtichetta - l'etichetta ridotta a una lista di elementi da disegnare.
+'
+' E' il risultato della composizione e l'unica cosa che i moduli di disegno
+' conoscono. Porta con se' anche due informazioni che servono a chi la
+' guarda prima di stampare:
+'
+'   Sforamento   di quanti millimetri il contenuto esce dal supporto
+'   Avvisi       i problemi non bloccanti, da mostrare all'operatore
+'
+' Un'etichetta che sfora si stampa comunque, tagliata: meglio dirlo prima.
+'
+Class LayoutEtichetta
+
+    Public LarghezzaMm As Double
+    Public AltezzaMm As Double
+    Public MargineMm As Double
+    Public NomeFont As String
+
+    Private mElementi As Collection
+    Private mAvvisi As Collection
+    Private mUltimoTroncato As Boolean
+
+    Private Sub Class_Initialize()
+        Set mElementi = New Collection
+        Set mAvvisi = New Collection
+        NomeFont = "Arial"
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Elementi
+    ' ------------------------------------------------------------------
+
+    Public Property Get Conteggio() As Long
+        Return mElementi.Count
+    End Property
+
+    Public Function Elemento(ByVal indice As Long) As ElementoEtichetta
+        Return mElementi.Item(indice)
+    End Function
+
+    Public Sub Aggiungi(ByVal elemento As ElementoEtichetta)
+        If elemento Is Nothing Then
+            Err.Raise 5, "LayoutEtichetta.Aggiungi", "elemento non puo' essere Nothing"
+        End If
+        mElementi.Add elemento
+    End Sub
+
+    ' Aggiunge una riga di testo e restituisce l'altezza che ha occupato,
+    ' cosi' chi compone puo' far avanzare il cursore verticale.
+    Public Function AggiungiTesto(ByVal testo As String, _
+                                  ByVal xMm As Double, ByVal yMm As Double, _
+                                  ByVal larghezzaMm As Double, _
+                                  ByVal punti As Double, _
+                                  Optional ByVal grassetto As Boolean = False, _
+                                  Optional ByVal allinea As Grafica.Allineamento = Grafica.alSinistra) As Double
+        Dim e As ElementoEtichetta
+
+        If Len(testo) = 0 Then Return 0
+
+        Set e = New ElementoEtichetta
+        e.Tipo = Grafica.teTesto
+        e.Testo = testo
+        e.XMm = xMm
+        e.YMm = yMm
+        e.LarghezzaMm = larghezzaMm
+        e.AltezzaMm = Grafica.AltezzaRigaMm(punti)
+        e.PuntiFont = punti
+        e.Grassetto = grassetto
+        e.Allinea = allinea
+
+        Aggiungi e
+        Return e.AltezzaMm
+    End Function
+
+    ' Aggiunge un testo mandandolo a capo e restituisce l'altezza totale.
+    ' Oltre massimoRighe il testo viene troncato con i puntini: su
+    ' un'etichetta e' meglio un elenco ingredienti abbreviato che un elenco
+    ' che esce dal supporto e si perde.
+    Public Function AggiungiParagrafo(ByVal testo As String, _
+                                      ByVal xMm As Double, ByVal yMm As Double, _
+                                      ByVal larghezzaMm As Double, _
+                                      ByVal punti As Double, _
+                                      Optional ByVal grassetto As Boolean = False, _
+                                      Optional ByVal massimoRighe As Long = 0) As Double
+        Dim righe() As String
+        Dim quante As Long
+        Dim i As Long
+        Dim usata As Double
+        Dim colonne As Long
+        Dim riga As String
+
+        If Len(Trim$(testo)) = 0 Then Return 0
+
+        colonne = Grafica.CaratteriPerRiga(larghezzaMm, punti)
+        righe = Split(StringUtils.WordWrap(testo, colonne, vbLf), vbLf)
+        quante = UBound(righe) - LBound(righe) + 1
+
+        mUltimoTroncato = (massimoRighe > 0 And quante > massimoRighe)
+
+        If mUltimoTroncato Then
+            quante = massimoRighe
+            riga = righe(LBound(righe) + quante - 1)
+            If Len(riga) > 3 Then
+                righe(LBound(righe) + quante - 1) = Left$(riga, Len(riga) - 3) & "..."
+            Else
+                righe(LBound(righe) + quante - 1) = riga & "..."
+            End If
+        End If
+
+        For i = 0 To quante - 1
+            usata += AggiungiTesto(righe(LBound(righe) + i), xMm, yMm + usata, _
+                                   larghezzaMm, punti, grassetto)
+        Next i
+
+        Return usata
+    End Function
+
+    ' Vero se l'ultima chiamata ad AggiungiParagrafo ha dovuto abbreviare il
+    ' testo. Chi compone lo controlla subito dopo, perche' su un'etichetta
+    ' alimentare un testo abbreviato puo' voler dire un'informazione
+    ' obbligatoria incompleta.
+    Public Property Get UltimoParagrafoTroncato() As Boolean
+        Return mUltimoTroncato
+    End Property
+
+    Public Function AggiungiLinea(ByVal xMm As Double, ByVal yMm As Double, _
+                                  ByVal larghezzaMm As Double, _
+                                  Optional ByVal spessoreMm As Double = 0.2) As Double
+        Dim e As ElementoEtichetta
+
+        Set e = New ElementoEtichetta
+        e.Tipo = Grafica.teLinea
+        e.XMm = xMm
+        e.YMm = yMm
+        e.LarghezzaMm = larghezzaMm
+        e.AltezzaMm = spessoreMm
+        e.SpessoreMm = spessoreMm
+
+        Aggiungi e
+        Return spessoreMm
+    End Function
+
+    Public Function AggiungiBarcode(ByVal elementiBarcode As String, _
+                                    ByVal xMm As Double, ByVal yMm As Double, _
+                                    ByVal moduloMm As Double, _
+                                    ByVal altezzaMm As Double) As Double
+        Dim e As ElementoEtichetta
+
+        Set e = New ElementoEtichetta
+        e.Tipo = Grafica.teBarcode
+        e.ElementiBarcode = elementiBarcode
+        e.ModuloMm = moduloMm
+        e.XMm = xMm
+        e.YMm = yMm
+        e.LarghezzaMm = Code128.LarghezzaInModuli(elementiBarcode) * moduloMm
+        e.AltezzaMm = altezzaMm
+
+        Aggiungi e
+        Return altezzaMm
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Misure e controlli
+    ' ------------------------------------------------------------------
+
+    ' Il bordo inferiore dell'elemento che arriva piu' in basso.
+    Public Function AltezzaUsataMm() As Double
+        Dim i As Long
+        Dim massimo As Double
+
+        For i = 1 To mElementi.Count
+            If Elemento(i).FondoMm() > massimo Then massimo = Elemento(i).FondoMm()
+        Next i
+        Return massimo
+    End Function
+
+    Public Function LarghezzaUsataMm() As Double
+        Dim i As Long
+        Dim massimo As Double
+
+        For i = 1 To mElementi.Count
+            If Elemento(i).DestraMm() > massimo Then massimo = Elemento(i).DestraMm()
+        Next i
+        Return massimo
+    End Function
+
+    ' Quanti millimetri il contenuto esce dal supporto, margine compreso.
+    ' Zero o meno vuol dire che ci sta.
+    Public Function Sforamento() As Double
+        Return AltezzaUsataMm() - (AltezzaMm - MargineMm)
+    End Function
+
+    Public Function CiSta() As Boolean
+        Return (Sforamento() <= 0.01)
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Avvisi
+    ' ------------------------------------------------------------------
+
+    Public Sub Avvisa(ByVal messaggio As String)
+        mAvvisi.Add messaggio
+    End Sub
+
+    Public Property Get NumeroAvvisi() As Long
+        Return mAvvisi.Count
+    End Property
+
+    Public Function Avviso(ByVal indice As Long) As String
+        Return mAvvisi.Item(indice)
+    End Function
+
+    Public Function TestoAvvisi() As String
+        Dim risultato As String
+        Dim i As Long
+
+        For i = 1 To mAvvisi.Count
+            If i > 1 Then risultato = risultato & vbCrLf
+            risultato = risultato & mAvvisi.Item(i)
+        Next i
+        Return risultato
+    End Function
+
+End Class
