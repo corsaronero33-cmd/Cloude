@@ -61,8 +61,21 @@ Due maschere, una scheda di lavoro ciascuna. **DDR a fine tappa.**
 Porta con se' tre cose nuove: una **relazione da un campo globale**
 (`RIL|PuntoScelto`) che fa vedere i limiti **prima** di registrare; un formato
 con **una parte sola**, perche' i campi globali nel corpo non si vedrebbero a
-tabella vuota; e due correzioni allo script `20`, che oggi resta sul formato
-tecnico e non dice niente quando il valore e' conforme.
+tabella vuota; e la coda dello script `20` da rifare.
+
+**Montata, e corretta due volte.**
+
+- `archivio/collaudo-015.md` — il pulsante creava un record vuoto e restava
+  sul formato tecnico.
+- `archivio/collaudo-016.md` — <https://claude.ai/artifact/6z2L966mmMiMQz4Vqi1pwG>
+  i due rami dello script non si comportavano allo stesso modo. Causa vera: i
+  due campi del valore sovrapposti **senza** le formule *Nascondi oggetto
+  quando*, per cui su un punto a temperatura il numero non si poteva digitare
+  e l'esito usciva vuoto. Piu' la chiusura dello script scritta due volte, il
+  messaggio del "Registrato" senza il nome del punto, e la finestra della non
+  conformita' che lampeggiava con la propria barra dei menu.
+
+In attesa del DDR con le correzioni del collaudo 016.
 
 ### `D_Rilevazioni elenco` — dopo
 

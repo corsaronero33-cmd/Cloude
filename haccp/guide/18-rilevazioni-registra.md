@@ -60,47 +60,145 @@ come `NCF|OperatoreRilevatore` accanto a `NCF|OperatoreResponsabile`.
 **Una relazione da un campo globale funziona sempre**, anche con la tabella
 vuota e fuori da ogni record.
 
-## Fase 2 — Due correzioni allo script `20`
+## Fase 2 — Lo script `20`, la struttura definitiva
 
-**Prima di tutto, una riga che va messa comunque.** Come **primo passo** dello
-script, prima di `Imposta acquisizione errori`:
+Il `20` nasce dall'importazione e va rifatto in coda. Il principio, che e'
+quello che si sbaglia sempre:
+
+> I due rami **non** devono fare la stessa cosa — uno deve aprire una non
+> conformita'. Ma tutto quello che e' comune va scritto **una volta sola**, e
+> l'unica differenza in fondo deve essere **quello che si dice**.
+
+Scritto in un altro modo: prima si fa il lavoro, poi si riordina, e solo
+alla fine si parla.
 
 ```
+Consenti interruzione utente [ Disattivato ]
+Imposta acquisizione errori [ Attivato ]
 Conferma record/richieste [ Senza finestra di dialogo ]
+
+# 1 - controlli, prima di toccare il database
+Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
+   Mostra finestra personalizzata [ "Manca un dato" ; "Scegli il punto di controllo." ]
+   Esci dallo script [ "" ]
+Fine se
+Se [ If ( RIL|PuntoScelto::Grandezza = "visivo" ;
+          IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ;
+          IsEmpty ( RIL|Rilevazioni::gValore ) ) ]
+   Mostra finestra personalizzata [ "Manca un dato" ; "Scrivi il valore rilevato." ]
+   Esci dallo script [ "" ]
+Fine se
+
+Blocca finestra
+
+# 2 - salva la rilevazione
+Vai al formato [ Z_RIL Rilevazioni ]
+Nuovo record/richiesta
+Imposta campo [ RIL|Rilevazioni::IdPuntoControllo ; RIL|Rilevazioni::gIdPuntoControllo ]
+Imposta campo [ RIL|Rilevazioni::DataOra ; Get ( CurrentTimeStamp ) ]
+Imposta campo [ RIL|Rilevazioni::IdOperatore ; $$UTENTE.Id ]
+Imposta campo [ RIL|Rilevazioni::Valore ; RIL|Rilevazioni::gValore ]
+Imposta campo [ RIL|Rilevazioni::ValoreTesto ; RIL|Rilevazioni::gValoreTesto ]
+Imposta campo [ RIL|Rilevazioni::Note ; RIL|Rilevazioni::gNote ]
+Conferma record/richieste
+Imposta variabile [ $esito ; If ( RIL|PuntiControllo::Grandezza = "visivo" ;
+                        RIL|Rilevazioni::ValoreTesto ;
+                        EsitoRilevazione ( RIL|Rilevazioni::Valore ;
+                                           RIL|PuntiControllo::LimiteMin ;
+                                           RIL|PuntiControllo::LimiteMax ) ) ]
+Imposta campo [ RIL|Rilevazioni::Esito ; $esito ]
+Imposta campo [ RIL|Rilevazioni::Bloccato ; "Si" ]
+Conferma record/richieste
+Imposta variabile [ $idRilevazione ; RIL|Rilevazioni::Id ]
+
+# 3 - tutti i testi, presi adesso che i dati si raggiungono
+Imposta variabile [ $nome ; RIL|PuntiControllo::Descrizione ]
+Imposta variabile [ $descrizione ; "Fuori limite: " & RIL|PuntiControllo::Descrizione &
+                        ". Valore rilevato " & RIL|Rilevazioni::Valore & " " &
+                        RIL|PuntiControllo::UnitaMisura &
+                        ", limiti ammessi da " & RIL|PuntiControllo::LimiteMin &
+                        " a " & RIL|PuntiControllo::LimiteMax & "." ]
+Imposta variabile [ $azione ; RIL|PuntiControllo::AzioneCorrettiva ]
+Imposta variabile [ $gravita ; If ( RIL|PuntiControllo::Tipo = "CCP" ; "alta" ; "media" ) ]
+
+# 4 - solo se fuori limite: apri la non conformita'
+Se [ $esito = "non conforme" ]
+   Vai al formato [ NonConformita ]
+   Nuovo record/richiesta
+   Imposta campo [ NonConformita::Data ; Get ( CurrentDate ) ]
+   Imposta campo [ NonConformita::Origine ; "rilevazione" ]
+   Imposta campo [ NonConformita::IdRilevazione ; $idRilevazione ]
+   Imposta campo [ NonConformita::Descrizione ; $descrizione ]
+   Imposta campo [ NonConformita::AzioneCorrettiva ; $azione ]
+   Imposta campo [ NonConformita::Gravita ; $gravita ]
+   Imposta campo [ NonConformita::IdOperatoreRilevatore ; $$UTENTE.Id ]
+   Conferma record/richieste
+   Imposta variabile [ $idNC ; NonConformita::Id ]
+   Vai al formato [ Z_RIL Rilevazioni ]
+   Imposta campo [ RIL|Rilevazioni::IdNonConformita ; $idNC ]
+   Conferma record/richieste
+Fine se
+
+# 5 - chiusura, identica nei due casi
+Vai al formato [ Formato originale ]
+Imposta campo [ RIL|Rilevazioni::gIdPuntoControllo ; "" ]
+Imposta campo [ RIL|Rilevazioni::gValore ; "" ]
+Imposta campo [ RIL|Rilevazioni::gValoreTesto ; "" ]
+Imposta campo [ RIL|Rilevazioni::gNote ; "" ]
+Conferma record/richieste
+
+# 6 - un messaggio solo, scelto in base all'esito
+Se [ $esito = "non conforme" ]
+   Mostra finestra personalizzata [ "Valore fuori limite" ;
+       $descrizione & "PP Azione correttiva da eseguire: P" & $azione ]
+Altrimenti
+   Mostra finestra personalizzata [ "Registrato" ;
+       "Rilevazione registrata: " & $nome & " - conforme." ]
+Fine se
+
+Vai al campo [ RIL|Rilevazioni::gIdPuntoControllo ]
 ```
 
-Serve a prendere l'ultimo campo digitato: se l'operatore scrive `12` e preme
-**subito** REGISTRA senza uscire dal campo, il cursore e' ancora li' dentro e
-quel valore puo' non essere stato acquisito. Toglie una categoria intera di
+(`P` sta per il segno di paragrafo che FileMaker scrive come pilcrow.)
+
+Sei cose di questo elenco si sbagliano facilmente, e ognuna e' costata un
+collaudo:
+
+**`Conferma record/richieste` come primo passo.** Se l'operatore scrive `12` e
+preme **subito** REGISTRA senza uscire dal campo, il cursore e' ancora li'
+dentro e quel valore non e' stato acquisito. Toglie una categoria intera di
 guasti che si manifestano "a volte si' e a volte no".
 
-**2a.** Il `20` va su `Z_RIL Rilevazioni` e non torna indietro: l'operatore si
-ritroverebbe sul formato tecnico. Va aggiunto `Vai al formato [ Formato
-originale ]` — **prima** del `Se [ $esito = "non conforme" ]**, insieme ai
-quattro `Imposta campo` che svuotano i globali. Se lo si mette in fondo, dopo
-le finestre, il messaggio esce mentre si e' ancora sul formato tecnico e il
-ritorno avviene solo premendo OK.
+**Il secondo controllo chiede il dato giusto per il tipo di punto.** Non
+"o il numero o il testo": su un punto a temperatura un `gValoreTesto` pieno
+farebbe passare il controllo con `Valore` vuoto, e `EsitoRilevazione` di un
+valore vuoto restituisce `""`. Il registro conserverebbe l'esito vuoto.
 
-Spostandoli prima, la finestra del "Registrato" non puo' piu' nominare il
-punto: `RIL|PuntoScelto::Descrizione` si svuota insieme al globale. Si mette
-in una variabile prima di svuotare —
-`Imposta variabile [ $nome ; RIL|PuntoScelto::Descrizione ]` — e nella
-finestra si scrive `$nome`.
+**`Vai al formato [ Formato originale ]` sta nella chiusura comune**, dopo il
+`Fine se` del lavoro e prima del `Se` dei messaggi. In fondo a tutto il
+messaggio esce mentre si e' ancora sul formato tecnico, e il ritorno avviene
+solo premendo OK. Dentro i rami diventa un doppione.
+
+**I quattro svuotamenti stanno nella chiusura comune**, per lo stesso motivo.
+Dentro i rami sono il doppione che ha prodotto il difetto qui sotto.
+
+**`$nome` viene da `RIL|PuntiControllo::Descrizione`, non da
+`RIL|PuntoScelto`.** `RIL|PuntoScelto` parte dal campo globale: svuotato il
+globale, la relazione non ha piu' record e la finestra del "Registrato" esce
+senza il nome del punto. `RIL|PuntiControllo` parte da `IdPuntoControllo`, che
+e' nel record ed e' salvato.
+
+**La non conformita' si apre cambiando formato, non con una finestra nuova.**
+`Nuova finestra` ne apre una in stile Documento, con barra dei menu e barra
+degli strumenti: lampeggia, e alla consegna — con i menu nascosti a tutti gli
+account — comparirebbe con la sua barra. Con `Blocca finestra` in cima, i
+cambi di formato nella stessa finestra non si vedono. Il ritorno su
+`Z_RIL Rilevazioni` prima di scrivere `IdNonConformita` **e' necessario**:
+`Imposta campo` scrive sul record dell'occorrenza del formato, e dal formato
+`NonConformita` quel campo non si raggiunge.
 
 *Formato originale* e non il nome della maschera: cosi' lo stesso script serve
 il desktop e, alla tappa 10, il telefono.
-
-**2b.** Quando il valore e' conforme lo script non dice niente. Al
-`Se [ $esito = "non conforme" ]` va aggiunto un `Altrimenti`:
-
-```
-Mostra finestra di dialogo personalizzata
-    [ "Registrato" ;
-      "Rilevazione registrata: " & RIL|PuntoScelto::Descrizione & " - conforme." ]
-```
-
-Un OK in piu' da premere: in un registro sanitario la cosa peggiore e'
-**credere** di aver registrato.
 
 ## Fase 3 — Il formato
 
@@ -135,12 +233,24 @@ I quattro campi di `RIL|PuntoScelto`: sfondo grigio, **immissione tolta**.
 Sono quello che il punto dice, non quello che l'operatore scrive.
 
 **I due campi del valore si nascondono a vicenda**, stessa tecnica dei
-parametri:
+parametri. Ispettore > scheda **Dati** > riquadro **Comportamento** >
+**Nascondi oggetto quando**:
 
 ```
 gValore        nascondi quando:  RIL|PuntoScelto::Grandezza = "visivo"
 gValoreTesto   nascondi quando:  RIL|PuntoScelto::Grandezza <> "visivo"
 ```
+
+**Queste due formule non sono un abbellimento: senza di loro la maschera non
+funziona.** Sono sovrapposti, quindi senza le formule sono visibili tutti e
+due e davanti sta `gValoreTesto`, che copre l'altro: su un punto a temperatura
+il numero non si puo' digitare, `Valore` nasce vuoto,
+`EsitoRilevazione ( "" ; min ; max )` restituisce `""`, e il registro conserva
+record con `Esito` vuoto mentre lo script dice "conforme". E' il difetto del
+collaudo 016.
+
+Poiche' sono sovrapposti, a clic non si distinguono: aprire
+**Visualizza > Oggetti** e selezionarli dall'elenco.
 
 Diciassette punti su trentatre' sono visivi: "integrita' delle zanzariere" non
 ha un numero da scrivere, ha un esito.
@@ -178,6 +288,24 @@ Quattordici prove. Le tre che contano:
 Se la non conformita' non nasce, controllare che `$esito` valga esattamente
 `non conforme`: la funzione `EsitoRilevazione` lo restituisce in minuscolo e
 `vl_EsitoRilevazione` deve contenere **le stesse identiche parole**.
+
+### Se l'esito esce vuoto, o i due rami si comportano in modo diverso
+
+Diagnosi in `archivio/collaudo-016.md` —
+<https://claude.ai/artifact/6z2L966mmMiMQz4Vqi1pwG>
+
+Due verifiche, in quest'ordine:
+
+1. **Sulla maschera**, scegliere un punto a temperatura: se compare il menu
+   `conforme / non conforme` invece della casella numerica, mancano le due
+   formule *Nascondi oggetto quando* della fase 4. Tutto il resto segue da li'.
+2. **Su `Z_RIL Rilevazioni`**, guardare la colonna `Esito` dei record appena
+   fatti: **un solo `Esito` vuoto e' un difetto**, non una stranezza. Vuol
+   dire che `Valore` e' arrivato vuoto a `EsitoRilevazione`.
+
+Se invece l'esito e' giusto ma il messaggio del "Registrato" non nomina il
+punto, `$nome` sta prendendo da `RIL|PuntoScelto` invece che da
+`RIL|PuntiControllo`: vedi la fase 2.
 
 ### Se il pulsante crea un record vuoto
 
