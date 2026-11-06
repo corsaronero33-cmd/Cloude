@@ -62,9 +62,30 @@ vuota e fuori da ogni record.
 
 ## Fase 2 — Due correzioni allo script `20`
 
+**Prima di tutto, una riga che va messa comunque.** Come **primo passo** dello
+script, prima di `Imposta acquisizione errori`:
+
+```
+Conferma record/richieste [ Senza finestra di dialogo ]
+```
+
+Serve a prendere l'ultimo campo digitato: se l'operatore scrive `12` e preme
+**subito** REGISTRA senza uscire dal campo, il cursore e' ancora li' dentro e
+quel valore puo' non essere stato acquisito. Toglie una categoria intera di
+guasti che si manifestano "a volte si' e a volte no".
+
 **2a.** Il `20` va su `Z_RIL Rilevazioni` e non torna indietro: l'operatore si
-ritroverebbe sul formato tecnico. In fondo, dopo i quattro `Imposta campo` che
-svuotano i globali, va aggiunto `Vai al formato [ Formato originale ]`.
+ritroverebbe sul formato tecnico. Va aggiunto `Vai al formato [ Formato
+originale ]` — **prima** del `Se [ $esito = "non conforme" ]**, insieme ai
+quattro `Imposta campo` che svuotano i globali. Se lo si mette in fondo, dopo
+le finestre, il messaggio esce mentre si e' ancora sul formato tecnico e il
+ritorno avviene solo premendo OK.
+
+Spostandoli prima, la finestra del "Registrato" non puo' piu' nominare il
+punto: `RIL|PuntoScelto::Descrizione` si svuota insieme al globale. Si mette
+in una variabile prima di svuotare —
+`Imposta variabile [ $nome ; RIL|PuntoScelto::Descrizione ]` — e nella
+finestra si scrive `$nome`.
 
 *Formato originale* e non il nome della maschera: cosi' lo stesso script serve
 il desktop e, alla tappa 10, il telefono.
@@ -157,6 +178,21 @@ Quattordici prove. Le tre che contano:
 Se la non conformita' non nasce, controllare che `$esito` valga esattamente
 `non conforme`: la funzione `EsitoRilevazione` lo restituisce in minuscolo e
 `vl_EsitoRilevazione` deve contenere **le stesse identiche parole**.
+
+### Se il pulsante crea un record vuoto
+
+Diagnosi in `archivio/collaudo-015.md` —
+<https://claude.ai/artifact/SJRPNubRK8yEVAfBKNMxTh>
+
+La verifica che decide: compilare la maschera, **uscire dai campi senza
+premere REGISTRA**, e guardare nel `Visualizzatore dati` quanto valgono
+`RIL|Rilevazioni::gIdPuntoControllo` e `gValore`.
+
+- **Vuoti** → sul formato sono finiti i campi **senza la g**. Scrivendoci, i
+  valori non vanno da nessuna parte; i globali restano con quello che c'era
+  dalla prova precedente, i due controlli passano, e i quattro `Imposta campo`
+  copiano globali vuoti in un record nuovo.
+- **Pieni** → i valori ci sono e si perdono dentro lo script: serve il DDR.
 
 ---
 

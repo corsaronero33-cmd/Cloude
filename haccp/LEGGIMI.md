@@ -72,6 +72,7 @@ ognuna parte da dove finisce la precedente.
 | 20 | `guide/17-larghezze.md` | <https://claude.ai/artifact/B1Z6cACD2TLeCmvs4mioqv> |
 | 21 | `archivio/collaudo-014.md` | <https://claude.ai/artifact/BffatSzdHQ4TEkDQ4ZnREn> |
 | 22 | `guide/18-rilevazioni-registra.md` | <https://claude.ai/artifact/EDoUvUjqFjFpL63ceLzBqE> |
+| 23 | `archivio/collaudo-015.md` | <https://claude.ai/artifact/SJRPNubRK8yEVAfBKNMxTh> |
 
 > **Le coordinate delle schede 01 e 02 sono superate.** Costruendo, le misure
 > sono cambiate in meglio. Quelle valide stanno in `09-MASCHERE.md`, sezione
