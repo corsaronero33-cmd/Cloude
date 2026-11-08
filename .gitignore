@@ -1,23 +1,13 @@
-# Output di compilazione twinBASIC
-Build/
-build/
-*.exe
-*.dll
-*.ocx
-*.pdb
-*.tlb
-*.exp
-*.lib
+# Output di compilazione .NET
+bin/
+obj/
+*.user
+*.suo
 
-# Backup e file temporanei dell'IDE
-*.bak
-*.twinproj.bak
-*~
+# Cartelle di Visual Studio
+.vs/
 
 # Sistema
 Thumbs.db
 desktop.ini
 .DS_Store
-
-# Registro delle stampe, generato a runtime
-Dati/registro.csv
