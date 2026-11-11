@@ -1,0 +1,583 @@
+'
+' StampanteEtichette - disegna l'etichetta 60 x 120 mm sulla stampante.
+'
+' Stampa attraverso il driver Windows della stampante (GDI), quindi
+' funziona con la Astra TT come con qualsiasi altra stampante che abbia un
+' driver, e con "Microsoft Print to PDF" per le prove senza carta.
+'
+' Tutte le misure si danno in millimetri e vengono convertite nei punti
+' reali della stampante (203 o 300 dpi tipicamente): il codice a barre
+' viene disegnato con barre di un numero intero di punti, che e' la
+' condizione perche' un EAN-13 stampato in termico si legga al primo colpo.
+'
+' Impaginazione dall'alto: denominazione, ingredienti con gli allergeni in
+' grassetto, peso netto, conservazione, scadenza, lotto, produttore. Il
+' codice a barre e' ancorato in basso. Se gli ingredienti non ci stanno il
+' corpo scende da 8 a 7 punti; se non bastano nemmeno 7 punti la stampa
+' viene rifiutata invece di uscire illeggibile.
+'
+' Nota sul corpo minimo: il Reg. UE 1169/2011 chiede un'altezza della "x"
+' di almeno 1,2 mm. In Arial la x e' circa il 52% del corpo, quindi 7 punti
+' danno 1,28 mm: per questo nessun testo obbligatorio scende sotto 7.
+'
+Class StampanteEtichette
+
+    ' --- API GDI ------------------------------------------------------
+
+    Private Type DOCINFOW
+        cbSize As Long
+        lpszDocName As LongPtr
+        lpszOutput As LongPtr
+        lpszDatatype As LongPtr
+        fwType As Long
+    End Type
+
+    Private Type SIZEL
+        cx As Long
+        cy As Long
+    End Type
+
+    Private Declare PtrSafe Function CreateDCW Lib "gdi32" (ByVal lpszDriver As LongPtr, _
+        ByVal lpszDevice As LongPtr, ByVal lpszOutput As LongPtr, ByVal lpInitData As LongPtr) As LongPtr
+    Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function StartDocW Lib "gdi32" (ByVal hdc As LongPtr, ByRef lpdi As DOCINFOW) As Long
+    Private Declare PtrSafe Function EndDoc Lib "gdi32" (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function AbortDoc Lib "gdi32" (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function StartPage Lib "gdi32" (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function EndPage Lib "gdi32" (ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal index As Long) As Long
+    Private Declare PtrSafe Function CreateFontW Lib "gdi32" (ByVal height As Long, ByVal width As Long, _
+        ByVal escapement As Long, ByVal orientation As Long, ByVal weight As Long, _
+        ByVal italic As Long, ByVal underline As Long, ByVal strikeOut As Long, _
+        ByVal charSet As Long, ByVal outPrecision As Long, ByVal clipPrecision As Long, _
+        ByVal quality As Long, ByVal pitchAndFamily As Long, ByVal faceName As LongPtr) As LongPtr
+    Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hdc As LongPtr, ByVal hObject As LongPtr) As LongPtr
+    Private Declare PtrSafe Function DeleteObject Lib "gdi32" (ByVal hObject As LongPtr) As Long
+    Private Declare PtrSafe Function SetBkMode Lib "gdi32" (ByVal hdc As LongPtr, ByVal mode As Long) As Long
+    Private Declare PtrSafe Function TextOutW Lib "gdi32" (ByVal hdc As LongPtr, ByVal x As Long, _
+        ByVal y As Long, ByVal text As LongPtr, ByVal length As Long) As Long
+    Private Declare PtrSafe Function GetTextExtentPoint32W Lib "gdi32" (ByVal hdc As LongPtr, _
+        ByVal text As LongPtr, ByVal length As Long, ByRef size As SIZEL) As Long
+    Private Declare PtrSafe Function PatBlt Lib "gdi32" (ByVal hdc As LongPtr, ByVal x As Long, _
+        ByVal y As Long, ByVal width As Long, ByVal height As Long, ByVal rop As Long) As Long
+
+    Private Const HORZRES As Long = 8
+    Private Const VERTRES As Long = 10
+    Private Const LOGPIXELSX As Long = 88
+    Private Const LOGPIXELSY As Long = 90
+    Private Const PHYSICALOFFSETX As Long = 112
+    Private Const PHYSICALOFFSETY As Long = 113
+
+    Private Const FW_NORMAL As Long = 400
+    Private Const FW_BOLD As Long = 700
+    Private Const DEFAULT_CHARSET As Long = 1
+    Private Const NONANTIALIASED_QUALITY As Long = 3   ' niente grigi: in termico diventano puntini
+    Private Const TRANSPARENT As Long = 1
+    Private Const BLACKNESS As Long = &H42
+
+    ' --- corpi del testo in punti ---------------------------------------
+
+    Private Const PT_TITLE As Double = 11
+    Private Const PT_WEIGHT As Double = 9
+    Private Const PT_BODY As Double = 7
+    Private Const PT_EXPIRY As Double = 8
+    Private Const PT_MIN As Double = 7
+
+    ' EAN-13: modulo nominale 0,33 mm, zone di rispetto di 11 e 7 moduli.
+    Private Const EAN_NOMINAL_MODULE_MM As Double = 0.33
+    Private Const EAN_QUIET_LEFT As Long = 11
+    Private Const EAN_QUIET_RIGHT As Long = 7
+
+    ' --- impostazioni -------------------------------------------------
+
+    Public PrinterName As String
+    Public LabelWidthMm As Double
+    Public LabelHeightMm As Double
+    Public MarginMm As Double
+    Public OffsetXMm As Double         ' taratura: sposta tutto a destra
+    Public OffsetYMm As Double         ' taratura: sposta tutto in basso
+    Public BarHeightMm As Double
+    Public FontName As String
+
+    ' --- stato durante la stampa --------------------------------------
+
+    Private mDc As LongPtr
+    Private mDpiX As Long
+    Private mDpiY As Long
+    Private mOriginX As Long           ' angolo dell'etichetta in punti stampante
+    Private mOriginY As Long
+
+    Private Sub Class_Initialize()
+        LabelWidthMm = 60
+        LabelHeightMm = 120
+        MarginMm = 2.5
+        BarHeightMm = 15
+        FontName = "Arial"
+    End Sub
+
+    Private Sub Class_Terminate()
+        ReleaseDc
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Interfaccia pubblica
+    ' ------------------------------------------------------------------
+
+    ' Stampa copies etichette uguali in un solo lavoro di stampa.
+    Public Sub PrintLabels(ByVal data As DatiEtichetta, ByVal copies As Long)
+        Dim ingredientsPt As Double
+        Dim info As DOCINFOW
+        Dim docName As String
+        Dim docStarted As Boolean
+        Dim i As Long
+
+        If copies < 1 Then Err.Raise 5, "StampanteEtichette.PrintLabels", "Numero di copie non valido"
+
+        AcquireDc
+        On Error GoTo Failed
+
+        ' Si decide l'impaginazione prima di aprire il lavoro: se il testo
+        ' non ci sta, in coda di stampa non arriva nemmeno una pagina bianca.
+        ingredientsPt = ChooseIngredientsSize(data)
+        If ingredientsPt = 0 Then
+            Err.Raise 5, "StampanteEtichette.PrintLabels", _
+                      "Il testo di '" & data.Denominazione & "' non entra nell'etichetta " & _
+                      "nemmeno a " & CStr(PT_MIN) & " punti. Accorciare ingredienti o conservazione."
+        End If
+
+        docName = "Etichetta " & data.Denominazione
+        info.cbSize = LenB(info)
+        info.lpszDocName = StrPtr(docName)
+        If StartDocW(mDc, info) <= 0 Then
+            Err.Raise 5, "StampanteEtichette.PrintLabels", "La stampante '" & PrinterName & "' ha rifiutato il lavoro"
+        End If
+        docStarted = True
+
+        For i = 1 To copies
+            StartPage mDc
+            SetBkMode mDc, TRANSPARENT
+            Layout data, ingredientsPt, True
+            If Len(data.Ean) > 0 Then DrawEan13 data.Ean, BarcodeTop()
+            EndPage mDc
+        Next i
+
+        EndDoc mDc
+        docStarted = False
+        ReleaseDc
+        Exit Sub
+
+    Failed:
+        Dim number As Long, source As String, description As String
+        number = Err.Number: source = Err.Source: description = Err.Description
+        If docStarted Then AbortDoc mDc
+        ReleaseDc
+        Err.Raise number, source, description
+    End Sub
+
+    ' Controllo senza stampare, per la maschera: stringa vuota se
+    ' l'etichetta si puo' stampare, altrimenti il motivo.
+    Public Function CheckLabel(ByVal data As DatiEtichetta) As String
+        Dim result As String
+
+        On Error GoTo Failed
+        AcquireDc
+        If ChooseIngredientsSize(data) = 0 Then
+            result = "Il testo non entra nell'etichetta nemmeno a " & CStr(PT_MIN) & " punti."
+        ElseIf Len(data.Ean) > 0 And BarcodeTotalDots() > LenX(LabelWidthMm) Then
+            result = "Il codice a barre e' piu' largo dell'etichetta."
+        End If
+        ReleaseDc
+        Return result
+
+    Failed:
+        result = Err.Description
+        ReleaseDc
+        Return result
+    End Function
+
+    ' Larghezza stampabile dichiarata dal driver, in mm. Se e' minore della
+    ' larghezza dell'etichetta il formato carta del driver va sistemato.
+    Public Function PrintableWidthMm() As Double
+        AcquireDc
+        PrintableWidthMm = GetDeviceCaps(mDc, HORZRES) * 25.4 / mDpiX
+        ReleaseDc
+    End Function
+
+    Public Function PrintableHeightMm() As Double
+        AcquireDc
+        PrintableHeightMm = GetDeviceCaps(mDc, VERTRES) * 25.4 / mDpiY
+        ReleaseDc
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Impaginazione
+    ' ------------------------------------------------------------------
+
+    ' Il corpo piu' grande, da 8 a 7 punti, con cui tutto il testo sta
+    ' sopra il codice a barre. Zero se non ci sta.
+    Private Function ChooseIngredientsSize(ByVal data As DatiEtichetta) As Double
+        Dim size As Double
+        Dim limit As Long
+
+        limit = BarcodeTop() - LenY(1.5)
+        If Len(data.Ean) = 0 Then limit = mOriginY + LenY(LabelHeightMm - MarginMm)
+
+        size = 8
+        Do While size >= PT_MIN
+            If Layout(data, size, False) <= limit Then Return size
+            size -= 0.5
+        Loop
+        Return 0
+    End Function
+
+    ' Dispone (e se draw e' vero disegna) tutti i testi. Ritorna la
+    ' coordinata verticale, in punti stampante, dove finisce l'ultimo.
+    Private Function Layout(ByVal data As DatiEtichetta, ByVal ingredientsPt As Double, _
+                            ByVal draw As Boolean) As Long
+        Dim x As Long
+        Dim y As Long
+        Dim width As Long
+        Dim runs As Collection
+        Dim producerLines() As String
+        Dim i As Long
+
+        x = mOriginX + LenX(MarginMm)
+        y = mOriginY + LenY(MarginMm)
+        width = LenX(LabelWidthMm - 2 * MarginMm)
+
+        y = DrawRuns(PlainRuns(data.Denominazione, True), x, y, width, PT_TITLE, True, draw)
+        y += LenY(1.2)
+
+        If Len(data.Ingredienti) > 0 Then
+            Set runs = Allergeni.Parse(data.Ingredienti)
+            If runs.Count = 0 Then
+                runs.Add MakeRun("Ingredienti: ", True)
+            Else
+                runs.Add MakeRun("Ingredienti: ", True), , 1
+            End If
+            y = DrawRuns(runs, x, y, width, ingredientsPt, False, draw)
+            y += LenY(1.2)
+        End If
+
+        If Len(data.PesoNetto) > 0 Then
+            Set runs = PlainRuns("Peso netto: ", False)
+            runs.Add MakeRun(data.PesoNetto, True)
+            y = DrawRuns(runs, x, y, width, PT_WEIGHT, False, draw)
+        End If
+
+        If Len(data.Conservazione) > 0 Then
+            y = DrawRuns(PlainRuns(data.Conservazione, False), x, y, width, PT_BODY, False, draw)
+        End If
+        y += LenY(0.8)
+
+        y = DrawRuns(PlainRuns(data.DicituraScadenza, True), x, y, width, PT_EXPIRY, False, draw)
+        y = DrawRuns(PlainRuns("Lotto: " & data.Lotto, True), x, y, width, PT_EXPIRY, False, draw)
+
+        If Len(data.Produttore) > 0 Then
+            y += LenY(0.8)
+            producerLines = Split(Replace(data.Produttore, vbCrLf, vbLf), vbLf)
+            For i = 0 To UBound(producerLines)
+                If Len(producerLines(i)) > 0 Then
+                    y = DrawRuns(PlainRuns(producerLines(i), False), x, y, width, PT_BODY, False, draw)
+                End If
+            Next i
+        End If
+
+        Return y
+    End Function
+
+    ' Disegna un paragrafo fatto di tratti normali e grassetto, andando a
+    ' capo sugli spazi. Due tratti senza spazio in mezzo ("frumento" + ",")
+    ' restano incollati sulla stessa riga. Ritorna la y sotto il paragrafo.
+    Private Function DrawRuns(ByVal runs As Collection, ByVal x As Long, ByVal y As Long, _
+                              ByVal width As Long, ByVal pointSize As Double, _
+                              ByVal centered As Boolean, ByVal draw As Boolean) As Long
+        Dim fontNormal As LongPtr
+        Dim fontBold As LongPtr
+        Dim previousFont As LongPtr
+        Dim lineHeight As Long
+        Dim spaceWidth As Long
+
+        Dim tokText() As String
+        Dim tokBold() As Boolean
+        Dim tokSpace() As Boolean        ' c'e' uno spazio prima del token
+        Dim tokWidth() As Long
+        Dim count As Long
+
+        Dim run As TextRun
+        Dim current As String
+        Dim currentSpace As Boolean
+        Dim pendingSpace As Boolean
+        Dim ch As String
+        Dim i As Long
+        Dim j As Long
+        Dim wordWidth As Long
+        Dim lineStart As Long
+        Dim lineWidth As Long
+        Dim lineHasContent As Boolean
+
+        ' --- tokenizzazione: parole intere, ciascuna con il suo stile ---
+        ReDim tokText(0 To 15)
+        ReDim tokBold(0 To 15)
+        ReDim tokSpace(0 To 15)
+
+        For Each run In runs
+            For i = 1 To Len(run.Text)
+                ch = Mid$(run.Text, i, 1)
+                If ch = " " Or ch = vbTab Or ch = vbCr Or ch = vbLf Then
+                    If Len(current) > 0 Then
+                        PushToken tokText, tokBold, tokSpace, count, current, run.Bold, currentSpace
+                        current = ""
+                    End If
+                    pendingSpace = True
+                Else
+                    If Len(current) = 0 Then
+                        currentSpace = pendingSpace
+                        pendingSpace = False
+                    End If
+                    current = current & ch
+                End If
+            Next i
+            If Len(current) > 0 Then
+                PushToken tokText, tokBold, tokSpace, count, current, run.Bold, currentSpace
+                current = ""
+            End If
+        Next run
+
+        If count = 0 Then Return y
+
+        ' --- misure ---
+        fontNormal = MakeFont(pointSize, False)
+        fontBold = MakeFont(pointSize, True)
+        previousFont = SelectObject(mDc, fontNormal)
+        spaceWidth = TextWidth(" ")
+        lineHeight = CLng(pointSize * mDpiY / 72 * 1.18)
+
+        ReDim tokWidth(0 To count - 1)
+        For i = 0 To count - 1
+            If tokBold(i) Then SelectObject mDc, fontBold Else SelectObject mDc, fontNormal
+            tokWidth(i) = TextWidth(tokText(i))
+        Next i
+
+        ' --- a capo parola per parola ---
+        i = 0
+        Do While i < count
+            j = i
+            wordWidth = 0
+            Do
+                wordWidth += tokWidth(j)
+                j += 1
+            Loop While j < count And Not tokSpace(j)
+
+            If lineHasContent And lineWidth + spaceWidth + wordWidth > width Then
+                If draw Then EmitLine tokText, tokBold, tokSpace, tokWidth, lineStart, i - 1, _
+                                      x, y, width, lineWidth, spaceWidth, centered, fontNormal, fontBold
+                y += lineHeight
+                lineStart = i
+                lineWidth = wordWidth
+            ElseIf lineHasContent Then
+                lineWidth += spaceWidth + wordWidth
+            Else
+                lineWidth = wordWidth
+            End If
+            lineHasContent = True
+            i = j
+        Loop
+
+        If draw Then EmitLine tokText, tokBold, tokSpace, tokWidth, lineStart, count - 1, _
+                              x, y, width, lineWidth, spaceWidth, centered, fontNormal, fontBold
+        y += lineHeight
+
+        SelectObject mDc, previousFont
+        DeleteObject fontNormal
+        DeleteObject fontBold
+        Return y
+    End Function
+
+    Private Sub EmitLine(ByRef tokText() As String, ByRef tokBold() As Boolean, ByRef tokSpace() As Boolean, _
+                         ByRef tokWidth() As Long, ByVal first As Long, ByVal last As Long, _
+                         ByVal x As Long, ByVal y As Long, ByVal width As Long, ByVal lineWidth As Long, _
+                         ByVal spaceWidth As Long, ByVal centered As Boolean, _
+                         ByVal fontNormal As LongPtr, ByVal fontBold As LongPtr)
+        Dim cx As Long
+        Dim k As Long
+
+        cx = x
+        If centered And lineWidth < width Then cx = x + (width - lineWidth) \ 2
+
+        For k = first To last
+            If k > first And tokSpace(k) Then cx += spaceWidth
+            If tokBold(k) Then SelectObject mDc, fontBold Else SelectObject mDc, fontNormal
+            TextOutW mDc, cx, y, StrPtr(tokText(k)), Len(tokText(k))
+            cx += tokWidth(k)
+        Next k
+    End Sub
+
+    Private Sub PushToken(ByRef tokText() As String, ByRef tokBold() As Boolean, ByRef tokSpace() As Boolean, _
+                          ByRef count As Long, ByVal text As String, ByVal bold As Boolean, _
+                          ByVal spaceBefore As Boolean)
+        If count > UBound(tokText) Then
+            ReDim Preserve tokText(0 To count * 2)
+            ReDim Preserve tokBold(0 To count * 2)
+            ReDim Preserve tokSpace(0 To count * 2)
+        End If
+        tokText(count) = text
+        tokBold(count) = bold
+        tokSpace(count) = spaceBefore
+        count += 1
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Codice a barre
+    ' ------------------------------------------------------------------
+
+    ' Larghezza di un modulo in punti stampante: il valore intero piu'
+    ' vicino a 0,33 mm, mai meno di 2 punti. A 203 dpi sono 3 punti
+    ' (0,375 mm, 114%), a 300 dpi 4 punti (0,339 mm, 103%).
+    Private Function ModuleDots() As Long
+        Dim dots As Long
+
+        dots = CLng(EAN_NOMINAL_MODULE_MM * mDpiX / 25.4)
+        If dots < 2 Then dots = 2
+        Return dots
+    End Function
+
+    Private Function BarcodeTotalDots() As Long
+        Return (EAN_QUIET_LEFT + 95 + EAN_QUIET_RIGHT) * ModuleDots()
+    End Function
+
+    ' Altezza del blocco codice: barre, prolungamento delle guardie e cifre.
+    Private Function BarcodeBlockDots() As Long
+        Return LenY(BarHeightMm) + 5 * ModuleDots() + LenY(0.5)
+    End Function
+
+    Private Function BarcodeTop() As Long
+        Return mOriginY + LenY(LabelHeightMm - MarginMm) - BarcodeBlockDots()
+    End Function
+
+    Private Sub DrawEan13(ByVal code As String, ByVal top As Long)
+        Dim bits As String
+        Dim m As Long
+        Dim x0 As Long
+        Dim barHeight As Long
+        Dim guardHeight As Long
+        Dim i As Long
+        Dim start As Long
+        Dim guard As Boolean
+        Dim font As LongPtr
+        Dim previousFont As LongPtr
+        Dim digitPt As Double
+        Dim digitsTop As Long
+        Dim k As Long
+
+        bits = Ean13.Modules(code)
+        m = ModuleDots()
+        x0 = mOriginX + (LenX(LabelWidthMm) - BarcodeTotalDots()) \ 2 + EAN_QUIET_LEFT * m
+        barHeight = LenY(BarHeightMm)
+        guardHeight = barHeight + 5 * m
+
+        ' Barre consecutive dello stesso tipo diventano un solo rettangolo.
+        i = 1
+        Do While i <= 95
+            If Mid$(bits, i, 1) = "1" Then
+                start = i
+                guard = Ean13.IsGuardModule(i)
+                Do While i < 95
+                    If Mid$(bits, i + 1, 1) <> "1" Then Exit Do
+                    If Ean13.IsGuardModule(i + 1) <> guard Then Exit Do
+                    i += 1
+                Loop
+                PatBlt mDc, x0 + (start - 1) * m, top, (i - start + 1) * m, _
+                       IIf(guard, guardHeight, barHeight), BLACKNESS
+            End If
+            i += 1
+        Loop
+
+        ' Cifre leggibili: alte circa 8 moduli, sotto le barre dati e tra le
+        ' guardie, che scendono piu' in basso.
+        digitPt = 8 * m * 72 / mDpiY
+        If digitPt < PT_MIN Then digitPt = PT_MIN
+        font = MakeFont(digitPt, False)
+        previousFont = SelectObject(mDc, font)
+        digitsTop = top + barHeight + m \ 2
+
+        DrawCenteredText Left$(code, 1), x0 - 4 * m, digitsTop
+        For k = 0 To 5
+            DrawCenteredText Mid$(code, 2 + k, 1), x0 + CLng((3 + 7 * k + 3.5) * m), digitsTop
+            DrawCenteredText Mid$(code, 8 + k, 1), x0 + CLng((50 + 7 * k + 3.5) * m), digitsTop
+        Next k
+
+        SelectObject mDc, previousFont
+        DeleteObject font
+    End Sub
+
+    Private Sub DrawCenteredText(ByVal text As String, ByVal centerX As Long, ByVal y As Long)
+        TextOutW mDc, centerX - TextWidth(text) \ 2, y, StrPtr(text), Len(text)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper
+    ' ------------------------------------------------------------------
+
+    Private Sub AcquireDc()
+        If mDc <> 0 Then Exit Sub
+        If Len(PrinterName) = 0 Then Err.Raise 5, "StampanteEtichette", "Nessuna stampante impostata"
+
+        mDc = CreateDCW(0, StrPtr(PrinterName), 0, 0)
+        If mDc = 0 Then
+            Err.Raise 5, "StampanteEtichette", "Stampante non trovata: '" & PrinterName & "'"
+        End If
+
+        mDpiX = GetDeviceCaps(mDc, LOGPIXELSX)
+        mDpiY = GetDeviceCaps(mDc, LOGPIXELSY)
+        ' Le coordinate GDI partono dall'area stampabile, non dal bordo
+        ' fisico del foglio: si compensa il margine non stampabile.
+        mOriginX = LenX(OffsetXMm) - GetDeviceCaps(mDc, PHYSICALOFFSETX)
+        mOriginY = LenY(OffsetYMm) - GetDeviceCaps(mDc, PHYSICALOFFSETY)
+    End Sub
+
+    Private Sub ReleaseDc()
+        If mDc <> 0 Then
+            DeleteDC mDc
+            mDc = 0
+        End If
+    End Sub
+
+    Private Function LenX(ByVal mm As Double) As Long
+        Return CLng(mm * mDpiX / 25.4)
+    End Function
+
+    Private Function LenY(ByVal mm As Double) As Long
+        Return CLng(mm * mDpiY / 25.4)
+    End Function
+
+    Private Function MakeFont(ByVal pointSize As Double, ByVal bold As Boolean) As LongPtr
+        ' Altezza negativa = altezza del carattere esclusa l'interlinea,
+        ' cioe' il "corpo" come lo intende un programma di videoscrittura.
+        Return CreateFontW(-CLng(pointSize * mDpiY / 72), 0, 0, 0, IIf(bold, FW_BOLD, FW_NORMAL), _
+                           0, 0, 0, DEFAULT_CHARSET, 0, 0, NONANTIALIASED_QUALITY, 0, StrPtr(FontName))
+    End Function
+
+    Private Function TextWidth(ByVal text As String) As Long
+        Dim size As SIZEL
+        If Len(text) = 0 Then Return 0
+        GetTextExtentPoint32W mDc, StrPtr(text), Len(text), size
+        Return size.cx
+    End Function
+
+    Private Function PlainRuns(ByVal text As String, ByVal bold As Boolean) As Collection
+        Dim result As Collection
+        Set result = New Collection
+        result.Add MakeRun(text, bold)
+        Set PlainRuns = result
+    End Function
+
+    Private Function MakeRun(ByVal text As String, ByVal bold As Boolean) As TextRun
+        Dim run As TextRun
+        Set run = New TextRun
+        run.Text = text
+        run.Bold = bold
+        Set MakeRun = run
+    End Function
+
+End Class

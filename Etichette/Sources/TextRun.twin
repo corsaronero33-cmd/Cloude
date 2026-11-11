@@ -1,0 +1,12 @@
+'
+' TextRun - un tratto di testo con un solo stile.
+'
+' Un paragrafo con gli allergeni in grassetto diventa una Collection di
+' TextRun: "Farina di " (normale), "frumento" (grassetto), ", acqua" ...
+'
+Class TextRun
+
+    Public Text As String
+    Public Bold As Boolean
+
+End Class

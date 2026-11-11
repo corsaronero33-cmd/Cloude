@@ -1,0 +1,95 @@
+'
+' Etichettatura - i casi d'uso del programma, in un solo posto.
+'
+' La maschera chiama solo queste procedure: aprire l'archivio, stampare un
+' prodotto, leggere e salvare le impostazioni. Cosi' la logica non sta
+' dentro i pulsanti e si puo' provare anche senza interfaccia.
+'
+Module Etichettatura
+
+    ' Cartella dei dati: comune a tutti gli utenti del PC e scrivibile
+    ' (a differenza di Program Files, dove sta l'EXE).
+    Public Const DATA_FOLDER_NAME As String = "EtichetteLab"
+    Public Const DATABASE_FILE As String = "etichette.db"
+    Public Const IMPORT_FILE As String = "prodotti.csv"
+
+    ' Chiavi della tabella impostazioni.
+    Public Const KEY_PRINTER As String = "stampante"
+    Public Const KEY_PRODUCER As String = "produttore"
+    Public Const KEY_WIDTH As String = "etichetta.larghezza_mm"
+    Public Const KEY_HEIGHT As String = "etichetta.altezza_mm"
+    Public Const KEY_MARGIN As String = "etichetta.margine_mm"
+    Public Const KEY_OFFSET_X As String = "etichetta.spostamento_x_mm"
+    Public Const KEY_OFFSET_Y As String = "etichetta.spostamento_y_mm"
+    Public Const KEY_BAR_HEIGHT As String = "etichetta.altezza_barre_mm"
+
+    Public Function DataFolder() As String
+        Dim base As String
+        Dim folder As String
+
+        base = Environ$("ProgramData")
+        If Len(base) = 0 Then base = Environ$("APPDATA")
+        folder = base & "\" & DATA_FOLDER_NAME
+        If Len(Dir$(folder, vbDirectory)) = 0 Then MkDir folder
+        Return folder
+    End Function
+
+    ' Apre (o crea) l'archivio. Al primo avvio, se accanto all'EXE c'e'
+    ' prodotti.csv, lo importa: il listino del cliente si consegna cosi'.
+    Public Function OpenArchive(Optional ByVal path As String = "") As SqliteDb
+        Dim db As SqliteDb
+        Dim seedFile As String
+
+        If Len(path) = 0 Then path = DataFolder() & "\" & DATABASE_FILE
+
+        Set db = New SqliteDb
+        db.OpenFile path
+        Archivio.EnsureSchema db
+
+        If Archivio.ProductCount(db) = 0 Then
+            seedFile = App.Path & "\" & IMPORT_FILE
+            If Len(Dir$(seedFile)) > 0 Then Archivio.ImportCsv db, seedFile
+        End If
+
+        Set OpenArchive = db
+    End Function
+
+    ' La stampante configurata con le misure salvate nelle impostazioni.
+    Public Function CreatePrinter(ByVal db As SqliteDb) As StampanteEtichette
+        Dim labelPrinter As StampanteEtichette
+
+        Set labelPrinter = New StampanteEtichette
+        labelPrinter.PrinterName = Archivio.GetSetting(db, KEY_PRINTER, Stampanti.DefaultPrinter())
+        labelPrinter.LabelWidthMm = Archivio.GetSettingNumber(db, KEY_WIDTH, 60)
+        labelPrinter.LabelHeightMm = Archivio.GetSettingNumber(db, KEY_HEIGHT, 120)
+        labelPrinter.MarginMm = Archivio.GetSettingNumber(db, KEY_MARGIN, 2.5)
+        labelPrinter.OffsetXMm = Archivio.GetSettingNumber(db, KEY_OFFSET_X, 0)
+        labelPrinter.OffsetYMm = Archivio.GetSettingNumber(db, KEY_OFFSET_Y, 0)
+        labelPrinter.BarHeightMm = Archivio.GetSettingNumber(db, KEY_BAR_HEIGHT, 15)
+        Set CreatePrinter = labelPrinter
+    End Function
+
+    Public Function ComposeLabel(ByVal db As SqliteDb, ByVal p As Prodotto, _
+                                 ByVal productionDate As Date) As DatiEtichetta
+        Dim data As DatiEtichetta
+
+        Set data = New DatiEtichetta
+        data.Compose p, productionDate, Archivio.GetSetting(db, KEY_PRODUCER, "")
+        Set ComposeLabel = data
+    End Function
+
+    ' Stampa e registra. La registrazione avviene solo se la stampa e'
+    ' partita: un errore della stampante non lascia righe false nel registro.
+    Public Sub PrintProduct(ByVal db As SqliteDb, ByVal p As Prodotto, _
+                            ByVal productionDate As Date, ByVal copies As Long)
+        Dim labelPrinter As StampanteEtichette
+        Dim data As DatiEtichetta
+
+        Set labelPrinter = CreatePrinter(db)
+        Set data = ComposeLabel(db, p, productionDate)
+
+        labelPrinter.PrintLabels data, copies
+        Archivio.LogPrint db, p, data.Lotto, productionDate, data.Scadenza, copies, labelPrinter.PrinterName
+    End Sub
+
+End Module

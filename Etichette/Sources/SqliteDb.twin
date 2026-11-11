@@ -1,0 +1,151 @@
+'
+' SqliteDb - connessione a un file di database SQLite.
+'
+' Tutto l'accesso ai dati passa da qui, sempre con parametri "?" e mai
+' concatenando valori nell'SQL: cosi' un apostrofo in "Sfogliatella all'arancia"
+' non rompe niente.
+'
+'     Dim db As SqliteDb
+'     Set db = New SqliteDb
+'     db.OpenFile "C:\ProgramData\Etichette\etichette.db"
+'     db.Execute "UPDATE prodotti SET attivo = ? WHERE id = ?", 0, 12
+'
+Class SqliteDb
+
+    Private mDb As LongPtr
+    Private mPath As String
+
+    Private Sub Class_Terminate()
+        CloseFile
+    End Sub
+
+    ' Apre il file, creandolo se non esiste.
+    Public Sub OpenFile(ByVal path As String)
+        Dim rc As Long
+
+        CloseFile
+        rc = sqlite3_open16(StrPtr(path), mDb)
+        If rc <> SQLITE_OK Then
+            ' Anche se l'apertura fallisce SQLite puo' aver allocato un
+            ' handle: si legge il messaggio, si chiude, poi si solleva.
+            Dim message As String
+            If mDb <> 0 Then
+                message = StringFromPtr(sqlite3_errmsg16(mDb))
+                sqlite3_close_v2 mDb
+                mDb = 0
+            End If
+            Err.Raise vbObjectError + 512 + (rc And &HFF), "SqliteDb.OpenFile", _
+                      "Impossibile aprire il database " & path & vbCrLf & message
+        End If
+
+        mPath = path
+        ' Se un secondo PC apre lo stesso file in rete, aspetta invece di
+        ' fallire subito con "database is locked".
+        sqlite3_busy_timeout mDb, 5000
+        Execute "PRAGMA foreign_keys = ON"
+    End Sub
+
+    Public Sub CloseFile()
+        If mDb <> 0 Then
+            sqlite3_close_v2 mDb
+            mDb = 0
+        End If
+    End Sub
+
+    Public Property Get IsOpen() As Boolean
+        Return (mDb <> 0)
+    End Property
+
+    Public Property Get Path() As String
+        Return mPath
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Esecuzione
+    ' ------------------------------------------------------------------
+
+    ' Prepara una sola istruzione SQL senza eseguirla.
+    Public Function Prepare(ByVal sql As String) As SqliteStatement
+        Dim rc As Long
+        Dim stmt As LongPtr
+        Dim result As SqliteStatement
+
+        EnsureOpen
+        rc = sqlite3_prepare16_v2(mDb, StrPtr(sql), LenB(sql), stmt, 0)
+        If rc <> SQLITE_OK Then RaiseError mDb, rc, "SqliteDb.Prepare", sql
+
+        Set result = New SqliteStatement
+        result.Attach mDb, stmt, sql
+        Set Prepare = result
+    End Function
+
+    ' Esegue un'istruzione che non restituisce righe. Ritorna quante righe
+    ' sono state toccate.
+    Public Function Execute(ByVal sql As String, ParamArray params() As Variant) As Long
+        Dim st As SqliteStatement
+        Dim values As Variant
+
+        values = params
+        Set st = Prepare(sql)
+        st.BindAll values
+        st.ExecuteAll
+        st.Finalize
+        Return sqlite3_changes(mDb)
+    End Function
+
+    ' Prepara e lega i parametri; le righe si leggono con NextRow.
+    Public Function Query(ByVal sql As String, ParamArray params() As Variant) As SqliteStatement
+        Dim st As SqliteStatement
+        Dim values As Variant
+
+        values = params
+        Set st = Prepare(sql)
+        st.BindAll values
+        Set Query = st
+    End Function
+
+    ' Primo valore della prima riga, oppure Null se non ci sono righe.
+    Public Function Scalar(ByVal sql As String, ParamArray params() As Variant) As Variant
+        Dim st As SqliteStatement
+        Dim values As Variant
+
+        values = params
+        Set st = Prepare(sql)
+        st.BindAll values
+        If st.NextRow() Then
+            Scalar = st.ColumnValue(0)
+        Else
+            Scalar = Null
+        End If
+        st.Finalize
+    End Function
+
+    Public Property Get LastInsertId() As LongLong
+        EnsureOpen
+        Return sqlite3_last_insert_rowid(mDb)
+    End Property
+
+    ' ------------------------------------------------------------------
+    ' Transazioni
+    ' ------------------------------------------------------------------
+
+    ' Un'importazione di 65 righe in una transazione dura un istante;
+    ' senza, SQLite scrive su disco a ogni riga.
+    Public Sub BeginTransaction()
+        Execute "BEGIN IMMEDIATE"
+    End Sub
+
+    Public Sub Commit()
+        Execute "COMMIT"
+    End Sub
+
+    Public Sub Rollback()
+        On Error Resume Next      ' se la transazione e' gia' chiusa va bene cosi'
+        Execute "ROLLBACK"
+    End Sub
+
+    Private Sub EnsureOpen()
+        If mDb = 0 Then Err.Raise 91, "SqliteDb", "Database non aperto"
+    End Sub
+
+End Class

@@ -1,0 +1,123 @@
+'
+' Csv - lettura dei file CSV esportati da Excel.
+'
+' Excel in italiano salva con il punto e virgola come separatore. Il file
+' puo' essere "CSV UTF-8" oppure il CSV classico in codifica Windows-1252:
+' ReadTextFile prova la prima e, se i byte non sono UTF-8 validi, ripiega
+' sulla seconda, cosi' le lettere accentate arrivano intatte in entrambi i
+' casi.
+'
+Module Csv
+
+    Private Declare PtrSafe Function MultiByteToWideChar Lib "kernel32" ( _
+        ByVal codePage As Long, _
+        ByVal dwFlags As Long, _
+        ByVal lpMultiByteStr As LongPtr, _
+        ByVal cbMultiByte As Long, _
+        ByVal lpWideCharStr As LongPtr, _
+        ByVal cchWideChar As Long) As Long
+
+    Private Const CP_UTF8 As Long = 65001
+    Private Const CP_WINDOWS_1252 As Long = 1252
+    Private Const MB_ERR_INVALID_CHARS As Long = &H8
+
+    ' Divide una riga nei suoi campi. Gestisce i campi tra virgolette, che
+    ' possono contenere il separatore, e le virgolette raddoppiate al loro
+    ' interno ("" diventa "). Gli spazi esterni ai campi vengono tolti.
+    Public Function ParseLine(ByVal textLine As String, Optional ByVal separator As String = ";") As String()
+        Dim fields() As String
+        Dim count As Long
+        Dim current As String
+        Dim inQuotes As Boolean
+        Dim i As Long
+        Dim ch As String
+
+        ReDim fields(0 To 0)
+
+        i = 1
+        Do While i <= Len(textLine)
+            ch = Mid$(textLine, i, 1)
+            If inQuotes Then
+                If ch = """" Then
+                    If Mid$(textLine, i + 1, 1) = """" Then
+                        current = current & """"
+                        i += 1
+                    Else
+                        inQuotes = False
+                    End If
+                Else
+                    current = current & ch
+                End If
+            ElseIf ch = """" Then
+                inQuotes = True
+            ElseIf ch = separator Then
+                ReDim Preserve fields(0 To count)
+                fields(count) = Trim$(current)
+                count += 1
+                current = ""
+            Else
+                current = current & ch
+            End If
+            i += 1
+        Loop
+
+        ReDim Preserve fields(0 To count)
+        fields(count) = Trim$(current)
+        Return fields
+    End Function
+
+    ' Righe del testo, accettando sia CRLF sia LF. Le righe vuote restano,
+    ' cosi' chi chiama puo' riportare il numero di riga esatto in un errore.
+    Public Function SplitLines(ByVal text As String) As String()
+        text = Replace(text, vbCrLf, vbLf)
+        text = Replace(text, vbCr, vbLf)
+        If Right$(text, 1) = vbLf Then text = Left$(text, Len(text) - 1)
+        Return Split(text, vbLf)
+    End Function
+
+    ' Legge tutto il file come testo Unicode.
+    Public Function ReadTextFile(ByVal path As String) As String
+        Dim fileNo As Integer
+        Dim size As Long
+        Dim bytes() As Byte
+        Dim start As Long
+        Dim text As String
+
+        fileNo = FreeFile
+        Open path For Binary Access Read As #fileNo
+        size = CLng(LOF(fileNo))
+        If size = 0 Then
+            Close #fileNo
+            Return ""
+        End If
+        ReDim bytes(0 To size - 1)
+        Get #fileNo, , bytes
+        Close #fileNo
+
+        ' Byte order mark UTF-8 scritto da Excel e dal Blocco note.
+        If size >= 3 Then
+            If bytes(0) = &HEF And bytes(1) = &HBB And bytes(2) = &HBF Then start = 3
+        End If
+        If start = size Then Return ""
+
+        If DecodeBytes(bytes, start, size - start, CP_UTF8, MB_ERR_INVALID_CHARS, text) Then
+            Return text
+        End If
+        DecodeBytes bytes, start, size - start, CP_WINDOWS_1252, 0, text
+        Return text
+    End Function
+
+    Private Function DecodeBytes(ByRef bytes() As Byte, ByVal start As Long, ByVal length As Long, _
+                                 ByVal codePage As Long, ByVal flags As Long, _
+                                 ByRef text As String) As Boolean
+        Dim chars As Long
+
+        chars = MultiByteToWideChar(codePage, flags, VarPtr(bytes(start)), length, 0, 0)
+        If chars = 0 Then Return False
+
+        text = Space$(chars)
+        MultiByteToWideChar codePage, flags, VarPtr(bytes(start)), length, StrPtr(text), chars
+        Return True
+    End Function
+
+End Module

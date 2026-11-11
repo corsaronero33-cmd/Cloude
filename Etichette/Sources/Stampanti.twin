@@ -1,0 +1,81 @@
+'
+' Stampanti - elenco delle stampanti installate e stampante predefinita.
+'
+' Serve a riempire la casella di scelta nelle impostazioni: il nome va
+' scritto esattamente come lo conosce Windows, per esempio "Astra TT" o
+' "Astra TT (Copia 1)" se il driver e' stato installato due volte.
+'
+Module Stampanti
+
+    Private Declare PtrSafe Function EnumPrintersW Lib "winspool.drv" ( _
+        ByVal flags As Long, ByVal name As LongPtr, ByVal level As Long, _
+        ByVal pPrinterEnum As LongPtr, ByVal cbBuf As Long, _
+        ByRef pcbNeeded As Long, ByRef pcReturned As Long) As Long
+
+    Private Declare PtrSafe Function GetDefaultPrinterW Lib "winspool.drv" ( _
+        ByVal pszBuffer As LongPtr, ByRef pcchBuffer As Long) As Long
+
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+        ByVal destination As LongPtr, ByVal source As LongPtr, ByVal length As LongPtr)
+
+    Private Const PRINTER_ENUM_LOCAL As Long = &H2
+    Private Const PRINTER_ENUM_CONNECTIONS As Long = &H4
+
+    ' PRINTER_INFO_4W: nome, server (due puntatori) e un Long di attributi,
+    ' allineato a 8 byte a 64 bit.
+    #If Win64 Then
+        Private Const INFO4_SIZE As Long = 24
+        Private Const PTR_SIZE As Long = 8
+    #Else
+        Private Const INFO4_SIZE As Long = 12
+        Private Const PTR_SIZE As Long = 4
+    #End If
+
+    ' Nomi delle stampanti locali e di rete collegate.
+    Public Function ListPrinters() As Collection
+        Dim result As Collection
+        Dim needed As Long
+        Dim returned As Long
+        Dim buffer() As Byte
+        Dim i As Long
+        Dim namePtr As LongPtr
+        Dim flags As Long
+
+        Set result = New Collection
+        Set ListPrinters = result
+        flags = PRINTER_ENUM_LOCAL Or PRINTER_ENUM_CONNECTIONS
+
+        EnumPrintersW flags, 0, 4, 0, 0, needed, returned
+        If needed = 0 Then Exit Function
+
+        ReDim buffer(0 To needed - 1)
+        If EnumPrintersW(flags, 0, 4, VarPtr(buffer(0)), needed, needed, returned) = 0 Then Exit Function
+
+        For i = 0 To returned - 1
+            CopyMemory VarPtr(namePtr), VarPtr(buffer(i * INFO4_SIZE)), PTR_SIZE
+            result.Add SqliteApi.StringFromPtr(namePtr)
+        Next i
+    End Function
+
+    Public Function DefaultPrinter() As String
+        Dim size As Long
+        Dim buffer As String
+
+        GetDefaultPrinterW 0, size
+        If size = 0 Then Return ""
+
+        buffer = Space$(size)
+        If GetDefaultPrinterW(StrPtr(buffer), size) = 0 Then Return ""
+        Return Left$(buffer, size - 1)      ' size comprende lo zero finale
+    End Function
+
+    Public Function Exists(ByVal printerName As String) As Boolean
+        Dim name As Variant
+
+        For Each name In ListPrinters()
+            If StrComp(CStr(name), printerName, vbTextCompare) = 0 Then Return True
+        Next name
+        Return False
+    End Function
+
+End Module

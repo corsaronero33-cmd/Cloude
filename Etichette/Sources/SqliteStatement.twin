@@ -1,0 +1,235 @@
+'
+' SqliteStatement - una istruzione SQL preparata.
+'
+' Si ottiene da SqliteDb.Query o SqliteDb.Prepare, non con New. Uso tipico:
+'
+'     Dim st As SqliteStatement
+'     Set st = db.Query("SELECT id, denominazione FROM prodotti WHERE attivo = ?", 1)
+'     Do While st.NextRow
+'         Debug.Print st.ColumnLong("id"), st.ColumnText("denominazione")
+'     Loop
+'
+' Le colonne si indicano per nome o per posizione (da 0). L'istruzione
+' viene chiusa da Finalize o, in ogni caso, quando l'oggetto viene distrutto.
+'
+Class SqliteStatement
+
+    Private mDb As LongPtr
+    Private mStmt As LongPtr
+    Private mSql As String
+    Private mColumns As Collection
+
+    Friend Sub Attach(ByVal db As LongPtr, ByVal stmt As LongPtr, ByVal sql As String)
+        mDb = db
+        mStmt = stmt
+        mSql = sql
+    End Sub
+
+    Private Sub Class_Terminate()
+        Finalize
+    End Sub
+
+    Public Sub Finalize()
+        If mStmt <> 0 Then
+            sqlite3_finalize mStmt
+            mStmt = 0
+        End If
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Parametri
+    ' ------------------------------------------------------------------
+
+    ' Lega un valore al parametro ? numero index (da 1). Il tipo SQLite si
+    ' sceglie dal tipo VB: Null e Empty diventano NULL, le date diventano
+    ' testo ISO (aaaa-mm-gg), cosi' si ordinano e si confrontano in SQL.
+    Public Sub Bind(ByVal index As Long, ByVal value As Variant)
+        Dim rc As Long
+        Dim text As String
+
+        EnsureOpen
+
+        Select Case VarType(value)
+            Case vbNull, vbEmpty
+                rc = sqlite3_bind_null(mStmt, index)
+            Case vbBoolean
+                rc = sqlite3_bind_int(mStmt, index, IIf(CBool(value), 1, 0))
+            Case vbByte, vbInteger, vbLong
+                rc = sqlite3_bind_int(mStmt, index, CLng(value))
+            Case vbLongLong
+                rc = sqlite3_bind_int64(mStmt, index, CLngLng(value))
+            Case vbSingle, vbDouble, vbCurrency, vbDecimal
+                rc = sqlite3_bind_double(mStmt, index, CDbl(value))
+            Case vbDate
+                rc = BindText(index, IsoDate(CDate(value)))
+            Case Else
+                text = CStr(value)
+                rc = BindText(index, text)
+        End Select
+
+        If rc <> SQLITE_OK Then RaiseError mDb, rc, "SqliteStatement.Bind", mSql
+    End Sub
+
+    ' Lega in ordine i valori di un array (tipicamente un ParamArray).
+    Public Sub BindAll(ByVal values As Variant)
+        Dim i As Long
+        Dim position As Long
+
+        If Not IsArray(values) Then Exit Sub
+        If UBound(values) < LBound(values) Then Exit Sub
+
+        position = 1
+        For i = LBound(values) To UBound(values)
+            Bind position, values(i)
+            position += 1
+        Next i
+    End Sub
+
+    ' Riporta l'istruzione all'inizio e toglie i parametri, per riusarla
+    ' in un ciclo (per esempio un'importazione) senza ripreparala.
+    Public Sub Rewind()
+        EnsureOpen
+        sqlite3_reset mStmt
+        sqlite3_clear_bindings mStmt
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Esecuzione
+    ' ------------------------------------------------------------------
+
+    ' Avanza di una riga. True se c'e' una riga da leggere.
+    Public Function NextRow() As Boolean
+        Dim rc As Long
+
+        EnsureOpen
+        rc = sqlite3_step(mStmt)
+        If rc = SQLITE_ROW Then Return True
+        If rc = SQLITE_DONE Then Return False
+        RaiseError mDb, rc, "SqliteStatement.NextRow", mSql
+    End Function
+
+    ' Esegue fino in fondo, per INSERT, UPDATE e DELETE.
+    Public Sub ExecuteAll()
+        Do While NextRow()
+        Loop
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Lettura delle colonne
+    ' ------------------------------------------------------------------
+
+    Public Property Get ColumnCount() As Long
+        EnsureOpen
+        Return sqlite3_column_count(mStmt)
+    End Property
+
+    Public Function ColumnName(ByVal index As Long) As String
+        EnsureOpen
+        Return StringFromPtr(sqlite3_column_name16(mStmt, index))
+    End Function
+
+    Public Function IsNullColumn(ByVal column As Variant) As Boolean
+        Return (sqlite3_column_type(mStmt, ColumnIndex(column)) = SQLITE_NULL)
+    End Function
+
+    ' Testo della colonna; NULL diventa stringa vuota.
+    Public Function ColumnText(ByVal column As Variant) As String
+        Dim index As Long
+        Dim pointer As LongPtr
+
+        index = ColumnIndex(column)
+        If sqlite3_column_type(mStmt, index) = SQLITE_NULL Then Return ""
+
+        ' L'ordine conta: prima il puntatore, poi la lunghezza in byte.
+        pointer = sqlite3_column_text16(mStmt, index)
+        Return StringFromPtr(pointer, sqlite3_column_bytes16(mStmt, index))
+    End Function
+
+    ' Intero della colonna; NULL diventa defaultValue.
+    Public Function ColumnLong(ByVal column As Variant, Optional ByVal defaultValue As Long = 0) As Long
+        Dim index As Long
+
+        index = ColumnIndex(column)
+        If sqlite3_column_type(mStmt, index) = SQLITE_NULL Then Return defaultValue
+        Return CLng(sqlite3_column_int64(mStmt, index))
+    End Function
+
+    Public Function ColumnDouble(ByVal column As Variant, Optional ByVal defaultValue As Double = 0) As Double
+        Dim index As Long
+
+        index = ColumnIndex(column)
+        If sqlite3_column_type(mStmt, index) = SQLITE_NULL Then Return defaultValue
+        Return sqlite3_column_double(mStmt, index)
+    End Function
+
+    ' Valore nel tipo VB piu' vicino a quello SQLite: Null, LongLong,
+    ' Double o String. Comodo per Scalar e per le griglie.
+    Public Function ColumnValue(ByVal column As Variant) As Variant
+        Dim index As Long
+
+        index = ColumnIndex(column)
+        Select Case sqlite3_column_type(mStmt, index)
+            Case SQLITE_NULL:    Return Null
+            Case SQLITE_INTEGER: Return sqlite3_column_int64(mStmt, index)
+            Case SQLITE_FLOAT:   Return sqlite3_column_double(mStmt, index)
+            Case Else:           Return ColumnText(index)
+        End Select
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function BindText(ByVal index As Long, ByVal text As String) As Long
+        ' StrPtr di una stringa vuota vale 0 e SQLite lo leggerebbe come NULL:
+        ' per avere davvero '' si passa un puntatore valido con lunghezza 0.
+        Static emptyText As String
+        If Len(text) = 0 Then
+            emptyText = vbNullChar
+            Return sqlite3_bind_text16(mStmt, index, StrPtr(emptyText), 0, SQLITE_TRANSIENT)
+        End If
+        Return sqlite3_bind_text16(mStmt, index, StrPtr(text), LenB(text), SQLITE_TRANSIENT)
+    End Function
+
+    Private Function ColumnIndex(ByVal column As Variant) As Long
+        Dim i As Long
+
+        EnsureOpen
+        If VarType(column) <> vbString Then Return CLng(column)
+
+        ' Le chiavi di una Collection non distinguono le maiuscole, proprio
+        ' come i nomi di colonna in SQL.
+        If mColumns Is Nothing Then
+            Set mColumns = New Collection
+            For i = 0 To sqlite3_column_count(mStmt) - 1
+                On Error Resume Next
+                mColumns.Add i, ColumnName(i)      ' un nome doppio tiene il primo
+                On Error GoTo 0
+            Next i
+        End If
+
+        On Error GoTo NotFound
+        Return CLng(mColumns.Item(CStr(column)))
+
+    NotFound:
+        Err.Raise 5, "SqliteStatement.ColumnIndex", _
+                  "Colonna '" & CStr(column) & "' assente nel risultato di: " & mSql
+    End Function
+
+    Private Function IsoDate(ByVal value As Date) As String
+        If TimeValue(value) = 0 Then
+            Return Format$(Year(value), "0000") & "-" & Format$(Month(value), "00") & "-" & _
+                   Format$(Day(value), "00")
+        End If
+        Return Format$(Year(value), "0000") & "-" & Format$(Month(value), "00") & "-" & _
+               Format$(Day(value), "00") & " " & Format$(Hour(value), "00") & ":" & _
+               Format$(Minute(value), "00") & ":" & Format$(Second(value), "00")
+    End Function
+
+    Private Sub EnsureOpen()
+        If mStmt = 0 Then
+            Err.Raise 91, "SqliteStatement", "Istruzione gia' chiusa: " & mSql
+        End If
+    End Sub
+
+End Class

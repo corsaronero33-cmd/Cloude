@@ -1,0 +1,163 @@
+'
+' Ean13 - cifra di controllo, validazione e codifica a barre EAN-13.
+'
+' Funzioni pure, nessuna dipendenza. La codifica restituisce i 95 moduli
+' del simbolo come stringa di "1" (barra) e "0" (spazio): chi disegna non
+' deve sapere nulla delle tabelle L/G/R.
+'
+Module Ean13
+
+    ' Calcola la cifra di controllo a partire dalle prime 12 cifre.
+    ' Peso 1 sulle posizioni dispari e 3 sulle pari, contando da sinistra.
+    Public Function CheckDigit(ByVal first12 As String) As Long
+        Dim i As Long
+        Dim total As Long
+        Dim digit As Long
+
+        If Len(first12) <> 12 Or Not IsAllDigits(first12) Then
+            Err.Raise 5, "Ean13.CheckDigit", "Servono esattamente 12 cifre: '" & first12 & "'"
+        End If
+
+        For i = 1 To 12
+            digit = CLng(Mid$(first12, i, 1))
+            If (i Mod 2) = 0 Then
+                total += digit * 3
+            Else
+                total += digit
+            End If
+        Next i
+
+        Return (10 - (total Mod 10)) Mod 10
+    End Function
+
+    ' Aggiunge la cifra di controllo a un codice di 12 cifre.
+    Public Function Complete(ByVal first12 As String) As String
+        Return first12 & CStr(CheckDigit(first12))
+    End Function
+
+    ' Vero se il codice ha 13 cifre e la cifra di controllo torna.
+    Public Function IsValid(ByVal code As String) As Boolean
+        If Len(code) <> 13 Then Return False
+        If Not IsAllDigits(code) Then Return False
+        Return (CheckDigit(Left$(code, 12)) = CLng(Right$(code, 1)))
+    End Function
+
+    ' Accetta un codice digitato o importato: toglie spazi e trattini,
+    ' completa un codice di 12 cifre, rifiuta tutto il resto.
+    ' Restituisce il codice a 13 cifre oppure solleva l'errore 5.
+    Public Function Normalize(ByVal code As String) As String
+        Dim cleaned As String
+
+        cleaned = Replace(Replace(Trim$(code), " ", ""), "-", "")
+        If Len(cleaned) = 12 And IsAllDigits(cleaned) Then Return Complete(cleaned)
+        If IsValid(cleaned) Then Return cleaned
+
+        Err.Raise 5, "Ean13.Normalize", "Codice EAN-13 non valido: '" & code & "'"
+    End Function
+
+    ' I 95 moduli del simbolo: guardia, 6 cifre a sinistra, guardia
+    ' centrale, 6 cifre a destra, guardia. La prima cifra non ha barre
+    ' proprie: decide solo la parita' (L o G) del gruppo di sinistra.
+    Public Function Modules(ByVal code As String) As String
+        Dim parity As String
+        Dim result As String
+        Dim i As Long
+
+        If Not IsValid(code) Then
+            Err.Raise 5, "Ean13.Modules", "Codice EAN-13 non valido: '" & code & "'"
+        End If
+
+        parity = ParityPattern(CLng(Left$(code, 1)))
+
+        result = "101"
+        For i = 2 To 7
+            If Mid$(parity, i - 1, 1) = "L" Then
+                result = result & LCode(CLng(Mid$(code, i, 1)))
+            Else
+                result = result & GCode(CLng(Mid$(code, i, 1)))
+            End If
+        Next i
+
+        result = result & "01010"
+        For i = 8 To 13
+            result = result & RCode(CLng(Mid$(code, i, 1)))
+        Next i
+
+        Return result & "101"
+    End Function
+
+    ' Vero se il modulo (da 1 a 95) appartiene a una delle tre guardie,
+    ' che si disegnano piu' lunghe delle barre dati.
+    Public Function IsGuardModule(ByVal position As Long) As Boolean
+        If position <= 3 Then Return True
+        If position >= 46 And position <= 50 Then Return True
+        If position >= 93 Then Return True
+        Return False
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Tabelle
+    ' ------------------------------------------------------------------
+
+    ' Set A (parita' dispari), usato a sinistra.
+    Private Function LCode(ByVal digit As Long) As String
+        Select Case digit
+            Case 0: Return "0001101"
+            Case 1: Return "0011001"
+            Case 2: Return "0010011"
+            Case 3: Return "0111101"
+            Case 4: Return "0100011"
+            Case 5: Return "0110001"
+            Case 6: Return "0101111"
+            Case 7: Return "0111011"
+            Case 8: Return "0110111"
+            Case 9: Return "0001011"
+        End Select
+    End Function
+
+    ' Set C, usato a destra: e' il complemento del set A.
+    Private Function RCode(ByVal digit As Long) As String
+        Dim source As String
+        Dim result As String
+        Dim i As Long
+
+        source = LCode(digit)
+        For i = 1 To 7
+            If Mid$(source, i, 1) = "0" Then result = result & "1" Else result = result & "0"
+        Next i
+        Return result
+    End Function
+
+    ' Set B (parita' pari): il set C letto al contrario.
+    Private Function GCode(ByVal digit As Long) As String
+        Return StrReverse(RCode(digit))
+    End Function
+
+    Private Function ParityPattern(ByVal firstDigit As Long) As String
+        Select Case firstDigit
+            Case 0: Return "LLLLLL"
+            Case 1: Return "LLGLGG"
+            Case 2: Return "LLGGLG"
+            Case 3: Return "LLGGGL"
+            Case 4: Return "LGLLGG"
+            Case 5: Return "LGGLLG"
+            Case 6: Return "LGGGLL"
+            Case 7: Return "LGLGLG"
+            Case 8: Return "LGLGGL"
+            Case 9: Return "LGGLGL"
+        End Select
+    End Function
+
+    Private Function IsAllDigits(ByVal text As String) As Boolean
+        Dim i As Long
+        Dim ch As String
+
+        If Len(text) = 0 Then Return False
+        For i = 1 To Len(text)
+            ch = Mid$(text, i, 1)
+            If ch < "0" Or ch > "9" Then Return False
+        Next i
+        Return True
+    End Function
+
+End Module

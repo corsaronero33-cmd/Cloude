@@ -1,5 +1,9 @@
 # tbToolkit
 
+> Nella cartella [`Etichette/`](Etichette/README.md) c'e' il programma per
+> etichette alimentari (SQLite, EAN-13, stampa 60x120 mm) che usa questa
+> libreria.
+
 Libreria di utilita' per stringhe scritta in **twinBASIC**, con un micro
 framework di test e una suite che la copre.
 

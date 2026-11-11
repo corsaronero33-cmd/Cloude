@@ -1,0 +1,89 @@
+'
+' Avvio - punto di ingresso per le prove senza interfaccia.
+'
+' Senza argomenti esegue i test (tbToolkit + etichette) e mostra dove sta
+' l'archivio e quale SQLite e' stato caricato.
+'
+' Con l'argomento  /prova "Nome stampante"  stampa anche un'etichetta di
+' esempio su quella stampante: con "Microsoft Print to PDF" si vede il
+' risultato senza consumare etichette.
+'
+' Nel programma vero lo Startup Object e' la maschera frmStampa; questo
+' modulo resta nel progetto per lanciare i test quando serve.
+'
+Module Avvio
+
+    Public Sub Main()
+        Dim runner As TestRunner
+        Dim printerName As String
+
+        Set runner = New TestRunner
+        ConsoleOut.WriteHeading "Etichette - test"
+        StringUtilsTests.RunAll runner
+        EtichetteTests.RunAll runner
+        runner.Report
+        ConsoleOut.WriteLine
+
+        ConsoleOut.WriteHeading "Ambiente"
+        ConsoleOut.WriteField "SQLite", SqliteApi.LibraryVersion()
+        ConsoleOut.WriteField "Cartella dati", Etichettatura.DataFolder()
+        ConsoleOut.WriteField "Stampante predefinita", Stampanti.DefaultPrinter()
+
+        printerName = ArgumentAfter("/prova")
+        If Len(printerName) > 0 Then PrintSample printerName
+    End Sub
+
+    Private Sub PrintSample(ByVal printerName As String)
+        Dim p As Prodotto
+        Dim data As DatiEtichetta
+        Dim labelPrinter As StampanteEtichette
+        Dim problem As String
+
+        Set p = New Prodotto
+        p.Codice = "DEMO"
+        p.Denominazione = "Crostata alla marmellata di albicocche"
+        p.Ingredienti = "Farina di *frumento* tipo 00, zucchero, *burro* (*latte*), *uova* fresche " & _
+                        "di categoria A, marmellata di albicocche 25% (albicocche, zucchero, " & _
+                        "succo di limone, gelificante: pectina), sale, aromi naturali. " & _
+                        "Puo' contenere tracce di *frutta a guscio* e *soia*."
+        p.PesoNetto = "400 g"
+        p.Conservazione = "Conservare in luogo fresco e asciutto, lontano da fonti di calore."
+        p.GiorniScadenza = 30
+        p.TipoScad = ScadenzaPreferibilmente
+        p.Ean = "8001234567897"
+
+        Set data = New DatiEtichetta
+        data.Compose p, Date, "Prodotto da: Laboratorio Esempio s.r.l." & vbCrLf & _
+                              "Via Roma 1, 00100 Roma (RM)"
+
+        Set labelPrinter = New StampanteEtichette
+        labelPrinter.PrinterName = printerName
+
+        ConsoleOut.WriteLine
+        ConsoleOut.WriteHeading "Etichetta di prova"
+        ConsoleOut.WriteField "Stampante", printerName
+        ConsoleOut.WriteField "Area stampabile", Format$(labelPrinter.PrintableWidthMm(), "0.0") & " x " & _
+                                                Format$(labelPrinter.PrintableHeightMm(), "0.0") & " mm"
+
+        problem = labelPrinter.CheckLabel(data)
+        If Len(problem) > 0 Then
+            ConsoleOut.WriteField "Esito", "NON STAMPATA - " & problem
+            Exit Sub
+        End If
+
+        labelPrinter.PrintLabels data, 1
+        ConsoleOut.WriteField "Esito", "inviata alla stampante"
+    End Sub
+
+    ' Il testo che segue un'opzione sulla riga di comando, senza virgolette.
+    Private Function ArgumentAfter(ByVal optionName As String) As String
+        Dim args As String
+        Dim position As Long
+
+        args = Trim$(Command$)
+        position = InStr(1, args, optionName, vbTextCompare)
+        If position = 0 Then Return ""
+        Return Trim$(Replace(Mid$(args, position + Len(optionName)), """", ""))
+    End Function
+
+End Module

@@ -1,0 +1,4 @@
+codice;denominazione;ingredienti;peso_netto;conservazione;giorni_scadenza;tipo_scadenza;ean
+P001;Crostata alla marmellata di albicocche;"Farina di *frumento*, zucchero, *burro*, *uova*, marmellata di albicocche 25% (albicocche, zucchero, succo di limone), sale";400 g;Conservare in luogo fresco e asciutto.;30;preferibilmente;800123456789
+P002;Tiramisù;"Mascarpone (*latte*), zucchero, *uova*, savoiardi (farina di *frumento*, zucchero, *uova*), caffè, cacao amaro";500 g;Conservare in frigorifero da 0 a +4 °C.;4;entro;8001234567903
+P003;Cantucci alle mandorle;"Farina di *frumento*, zucchero, *mandorle* 20%, *uova*, *burro*, agenti lievitanti";250 g;Conservare in luogo fresco e asciutto.;90;preferibilmente;

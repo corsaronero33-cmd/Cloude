@@ -1,0 +1,73 @@
+'
+' Allergeni - evidenziazione degli allergeni nell'elenco ingredienti.
+'
+' Il Reg. UE 1169/2011 (art. 21) chiede che le sostanze dell'allegato II
+' siano evidenziate nell'elenco ingredienti. Nel database gli ingredienti si
+' scrivono come testo semplice, racchiudendo l'allergene tra asterischi:
+'
+'     Farina di *frumento*, *uova*, zucchero, *latte* intero
+'
+' Parse trasforma il testo in tratti normali e grassetto per la stampa.
+'
+Module Allergeni
+
+    Private Const MARK As String = "*"
+
+    ' Divide il testo in TextRun alternando normale e grassetto a ogni
+    ' asterisco. Un asterisco senza chiusura solleva l'errore 5: meglio
+    ' fermare la stampa che stampare un'etichetta tutta in grassetto.
+    Public Function Parse(ByVal text As String) As Collection
+        Dim result As Collection
+        Dim parts() As String
+        Dim i As Long
+        Dim run As TextRun
+
+        Set result = New Collection
+        Set Parse = result
+        If Len(text) = 0 Then Exit Function
+
+        If (StringUtils.CountOccurrences(text, MARK) Mod 2) <> 0 Then
+            Err.Raise 5, "Allergeni.Parse", "Asterisco non chiuso negli ingredienti: " & text
+        End If
+
+        parts = Split(text, MARK)
+        For i = 0 To UBound(parts)
+            If Len(parts(i)) > 0 Then
+                Set run = New TextRun
+                run.Text = parts(i)
+                run.Bold = ((i Mod 2) = 1)
+                result.Add run
+            End If
+        Next i
+    End Function
+
+    ' Il testo senza marcatori, utile per le anteprime e le esportazioni.
+    Public Function PlainText(ByVal text As String) As String
+        Return Replace(text, MARK, "")
+    End Function
+
+    ' Elenco degli allergeni marcati, separati da virgola, senza doppioni.
+    ' Serve alla scheda prodotto per un controllo a colpo d'occhio.
+    Public Function ListMarked(ByVal text As String) As String
+        Dim runs As Collection
+        Dim run As TextRun
+        Dim result As String
+        Dim name As String
+
+        Set runs = Parse(text)
+        For Each run In runs
+            If run.Bold Then
+                name = LCase$(Trim$(run.Text))
+                If Len(name) > 0 Then
+                    If InStr(1, ", " & result & ",", ", " & name & ",") = 0 Then
+                        If Len(result) > 0 Then result = result & ", "
+                        result = result & name
+                    End If
+                End If
+            End If
+        Next run
+
+        Return result
+    End Function
+
+End Module

@@ -1,0 +1,213 @@
+'
+' frmStampa - codice della maschera di stampa.
+'
+' Questo file NON si aggiunge al progetto cosi' com'e': il disegno della
+' maschera lo crea l'IDE. Procedura (dettagli nel README):
+'
+'   1. Add > Add Form, nome frmStampa.
+'   2. Disegnare i controlli con ESATTAMENTE questi nomi:
+'
+'        txtCerca           TextBox   ricerca per nome o lettura EAN col lettore
+'        lstProdotti        ListBox   elenco prodotti
+'        lblDettaglio       Label     anteprima testi (alta, multiriga)
+'        txtDataProduzione  TextBox   data di produzione gg/mm/aaaa
+'        txtCopie           TextBox   numero di etichette
+'        cboStampante       ComboBox  Style = 2 (Dropdown List)
+'        txtProduttore      TextBox   MultiLine = True, righe del produttore
+'        cmdStampa          CommandButton  Caption "Stampa"
+'        cmdImporta         CommandButton  Caption "Importa CSV..."
+'
+'   3. Aprire il codice della maschera e incollare tutto quello che sta
+'      sotto la riga "Class frmStampa" generata dall'IDE, al posto del
+'      contenuto vuoto (lasciare intatti gli attributi che l'IDE ha messo
+'      sopra la riga Class).
+'   4. Impostare frmStampa come Startup Object.
+'
+' --------------------------------------------------------------------------
+
+    Private mDb As SqliteDb
+    Private mProducts As Collection          ' tutti i prodotti attivi
+    Private mLoading As Boolean
+
+    Private Sub Form_Load()
+        On Error GoTo Failed
+
+        Me.Caption = "Etichette"
+        Set mDb = Etichettatura.OpenArchive()
+
+        txtDataProduzione.Text = Tracciabilita.DateText(Date)
+        txtCopie.Text = "1"
+
+        mLoading = True
+        LoadPrinters
+        txtProduttore.Text = Archivio.GetSetting(mDb, KEY_PRODUCER, "")
+        mLoading = False
+
+        ReloadProducts
+        Exit Sub
+
+    Failed:
+        MsgBox "Impossibile avviare il programma:" & vbCrLf & Err.Description, vbCritical
+        Unload Me
+    End Sub
+
+    Private Sub Form_Unload(Cancel As Integer)
+        If Not mDb Is Nothing Then mDb.CloseFile
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Elenco e ricerca
+    ' ------------------------------------------------------------------
+
+    Private Sub ReloadProducts()
+        Set mProducts = Archivio.ListProducts(mDb)
+        FillList
+    End Sub
+
+    ' Filtra per testo; se il testo e' un EAN valido e corrisponde a un
+    ' prodotto, lo seleziona direttamente (lettore di codici a barre).
+    Private Sub FillList()
+        Dim p As Prodotto
+        Dim filter As String
+
+        filter = Trim$(txtCerca.Text)
+        lstProdotti.Clear
+        For Each p In mProducts
+            If Len(filter) = 0 _
+               Or InStr(1, p.Denominazione, filter, vbTextCompare) > 0 _
+               Or InStr(1, p.Codice, filter, vbTextCompare) > 0 _
+               Or p.Ean = filter Then
+                lstProdotti.AddItem p.Denominazione & "   [" & p.Codice & "]"
+                lstProdotti.ItemData(lstProdotti.NewIndex) = p.Id
+            End If
+        Next p
+
+        If lstProdotti.ListCount = 1 Then lstProdotti.ListIndex = 0
+        If lstProdotti.ListCount = 0 Then lblDettaglio.Caption = ""
+    End Sub
+
+    Private Sub txtCerca_Change()
+        FillList
+    End Sub
+
+    Private Sub lstProdotti_Click()
+        ShowPreview
+    End Sub
+
+    Private Sub txtDataProduzione_Change()
+        ShowPreview
+    End Sub
+
+    Private Function SelectedProduct() As Prodotto
+        If lstProdotti.ListIndex < 0 Then Exit Function
+        Set SelectedProduct = Archivio.LoadProduct(mDb, lstProdotti.ItemData(lstProdotti.ListIndex))
+    End Function
+
+    ' Mostra in chiaro cosa uscira' sull'etichetta.
+    Private Sub ShowPreview()
+        Dim p As Prodotto
+        Dim data As DatiEtichetta
+        Dim productionDate As Date
+
+        Set p = SelectedProduct()
+        If p Is Nothing Then Exit Sub
+
+        On Error GoTo BadDate
+        productionDate = Tracciabilita.ParseDate(txtDataProduzione.Text)
+        On Error GoTo 0
+
+        Set data = Etichettatura.ComposeLabel(mDb, p, productionDate)
+        lblDettaglio.Caption = data.Denominazione & vbCrLf & vbCrLf & _
+            "Ingredienti: " & Allergeni.PlainText(data.Ingredienti) & vbCrLf & _
+            "Allergeni: " & Allergeni.ListMarked(data.Ingredienti) & vbCrLf & vbCrLf & _
+            "Peso netto: " & data.PesoNetto & vbCrLf & _
+            data.Conservazione & vbCrLf & _
+            data.DicituraScadenza & vbCrLf & _
+            "Lotto: " & data.Lotto & vbCrLf & _
+            "EAN: " & IIf(Len(data.Ean) > 0, data.Ean, "(nessuno)")
+        Exit Sub
+
+    BadDate:
+        lblDettaglio.Caption = "Data di produzione non valida (gg/mm/aaaa)"
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Stampa
+    ' ------------------------------------------------------------------
+
+    Private Sub cmdStampa_Click()
+        Dim p As Prodotto
+        Dim productionDate As Date
+        Dim copies As Long
+
+        Set p = SelectedProduct()
+        If p Is Nothing Then
+            MsgBox "Scegliere un prodotto.", vbExclamation
+            Exit Sub
+        End If
+
+        On Error GoTo Failed
+        productionDate = Tracciabilita.ParseDate(txtDataProduzione.Text)
+        copies = CLng(Val(txtCopie.Text))
+        If copies < 1 Or copies > 999 Then
+            MsgBox "Numero di copie tra 1 e 999.", vbExclamation
+            Exit Sub
+        End If
+
+        Screen.MousePointer = vbHourglass
+        Etichettatura.PrintProduct mDb, p, productionDate, copies
+        Screen.MousePointer = vbDefault
+        Exit Sub
+
+    Failed:
+        Screen.MousePointer = vbDefault
+        MsgBox Err.Description, vbCritical, "Stampa non eseguita"
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Impostazioni
+    ' ------------------------------------------------------------------
+
+    Private Sub LoadPrinters()
+        Dim name As Variant
+        Dim saved As String
+        Dim i As Long
+
+        saved = Archivio.GetSetting(mDb, KEY_PRINTER, Stampanti.DefaultPrinter())
+        cboStampante.Clear
+        For Each name In Stampanti.ListPrinters()
+            cboStampante.AddItem CStr(name)
+            If StrComp(CStr(name), saved, vbTextCompare) = 0 Then i = cboStampante.NewIndex + 1
+        Next name
+        If i > 0 Then cboStampante.ListIndex = i - 1
+    End Sub
+
+    Private Sub cboStampante_Click()
+        If mLoading Then Exit Sub
+        Archivio.SetSetting mDb, KEY_PRINTER, cboStampante.Text
+    End Sub
+
+    Private Sub txtProduttore_LostFocus()
+        Archivio.SetSetting mDb, KEY_PRODUCER, txtProduttore.Text
+        ShowPreview
+    End Sub
+
+    ' Importa prodotti.csv dalla cartella dati. Un codice gia' presente
+    ' aggiorna il prodotto, uno nuovo lo aggiunge.
+    Private Sub cmdImporta_Click()
+        Dim path As String
+        Dim count As Long
+
+        path = InputBox("Percorso del file CSV (separato da punto e virgola):", "Importa prodotti", _
+                        Etichettatura.DataFolder() & "\" & IMPORT_FILE)
+        If Len(path) = 0 Then Exit Sub
+
+        On Error GoTo Failed
+        count = Archivio.ImportCsv(mDb, path)
+        ReloadProducts
+        MsgBox CStr(count) & " prodotti importati.", vbInformation
+        Exit Sub
+
+    Failed:
+        MsgBox Err.Description, vbCritical, "Importazione non eseguita"
+    End Sub

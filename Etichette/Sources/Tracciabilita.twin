@@ -1,0 +1,90 @@
+'
+' Tracciabilita - lotto e termine di consumo.
+'
+' Lotto nel formato "L" + anno a due cifre + giorno dell'anno a tre cifre:
+' L26315 e' la produzione dell'11 novembre 2026. E' la convenzione piu'
+' diffusa nei laboratori; se il cliente ne usa un'altra basta cambiare
+' LotFromDate, il resto del programma tratta il lotto come testo.
+'
+Module Tracciabilita
+
+    Public Enum TipoScadenza
+        ScadenzaEntro = 0              ' "Da consumarsi entro"  (deperibili)
+        ScadenzaPreferibilmente = 1    ' "Da consumarsi preferibilmente entro" (TMC)
+    End Enum
+
+    Public Function LotFromDate(ByVal productionDate As Date) As String
+        Return "L" & Format$(Year(productionDate) Mod 100, "00") & _
+               Format$(DatePart("y", productionDate), "000")
+    End Function
+
+    ' Data di scadenza: data di produzione piu' i giorni di vita del prodotto.
+    Public Function ExpiryDate(ByVal productionDate As Date, ByVal shelfLifeDays As Long) As Date
+        If shelfLifeDays < 0 Then
+            Err.Raise 5, "Tracciabilita.ExpiryDate", "I giorni di scadenza non possono essere negativi"
+        End If
+        Return DateAdd("d", shelfLifeDays, DateValue(productionDate))
+    End Function
+
+    ' La dicitura completa da stampare.
+    Public Function ExpiryText(ByVal kind As TipoScadenza, ByVal expiry As Date) As String
+        Dim prefix As String
+
+        If kind = ScadenzaPreferibilmente Then
+            prefix = "Da consumarsi preferibilmente entro il "
+        Else
+            prefix = "Da consumarsi entro il "
+        End If
+        Return prefix & DateText(expiry)
+    End Function
+
+    ' Legge una data scritta come gg/mm/aaaa (accetta anche - e . come
+    ' separatori e l'anno a due cifre). Non dipende dalle impostazioni
+    ' internazionali: "03/04/2026" e' sempre il 3 aprile. Solleva l'errore 5
+    ' su una data inesistente come 31/02/2026.
+    Public Function ParseDate(ByVal text As String) As Date
+        Dim parts() As String
+        Dim d As Long, m As Long, y As Long
+
+        text = Replace(Replace(Trim$(text), "-", "/"), ".", "/")
+        parts = Split(text, "/")
+        If UBound(parts) <> 2 Then GoTo Invalid
+        If Not IsNumeric(parts(0)) Or Not IsNumeric(parts(1)) Or Not IsNumeric(parts(2)) Then GoTo Invalid
+
+        d = CLng(parts(0)): m = CLng(parts(1)): y = CLng(parts(2))
+        If y < 100 Then y += 2000
+        If m < 1 Or m > 12 Or d < 1 Or d > 31 Then GoTo Invalid
+        If Day(DateSerial(y, m, d)) <> d Then GoTo Invalid
+
+        Return DateSerial(y, m, d)
+
+    Invalid:
+        Err.Raise 5, "Tracciabilita.ParseDate", "Data non valida: '" & text & "' (usare gg/mm/aaaa)"
+    End Function
+
+    ' gg/mm/aaaa costruita a mano: in Format$ il carattere "/" diventa il
+    ' separatore delle impostazioni internazionali di Windows, che su un PC
+    ' configurato male potrebbe essere un punto o un trattino.
+    Public Function DateText(ByVal value As Date) As String
+        Return Format$(Day(value), "00") & "/" & Format$(Month(value), "00") & "/" & CStr(Year(value))
+    End Function
+
+    ' Conversione dal valore salvato nel database ("entro" o
+    ' "preferibilmente"), tollerante su maiuscole e spazi.
+    Public Function ParseTipoScadenza(ByVal text As String) As TipoScadenza
+        Select Case LCase$(Trim$(text))
+            Case "", "entro", "e"
+                Return ScadenzaEntro
+            Case "preferibilmente", "tmc", "p"
+                Return ScadenzaPreferibilmente
+        End Select
+        Err.Raise 5, "Tracciabilita.ParseTipoScadenza", _
+                  "Tipo scadenza sconosciuto: '" & text & "' (usare 'entro' o 'preferibilmente')"
+    End Function
+
+    Public Function TipoScadenzaToText(ByVal kind As TipoScadenza) As String
+        If kind = ScadenzaPreferibilmente Then Return "preferibilmente"
+        Return "entro"
+    End Function
+
+End Module

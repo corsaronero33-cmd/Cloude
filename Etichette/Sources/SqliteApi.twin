@@ -1,0 +1,165 @@
+'
+' SqliteApi - dichiarazioni verso winsqlite3.dll.
+'
+' winsqlite3.dll e' la copia di SQLite che Microsoft installa in System32
+' su ogni Windows 10 e 11. Usandola non c'e' nessuna DLL da distribuire:
+' basta copiare l'EXE. Le funzioni esportate seguono la convenzione stdcall,
+' quella delle normali Declare, quindi non serve CDecl.
+'
+' Si usano le varianti "16" (UTF-16): le stringhe di twinBASIC sono gia'
+' UTF-16 e passano con StrPtr senza conversioni.
+'
+' Se un giorno serve una versione di SQLite piu' recente di quella di
+' Windows, si distribuisce sqlite3.dll accanto all'EXE e qui si cambia
+' Lib "winsqlite3" in Lib "sqlite3" aggiungendo CDecl a ogni Declare.
+'
+Module SqliteApi
+
+    Public Const SQLITE_OK As Long = 0
+    Public Const SQLITE_ROW As Long = 100
+    Public Const SQLITE_DONE As Long = 101
+
+    Public Const SQLITE_INTEGER As Long = 1
+    Public Const SQLITE_FLOAT As Long = 2
+    Public Const SQLITE_TEXT As Long = 3
+    Public Const SQLITE_BLOB As Long = 4
+    Public Const SQLITE_NULL As Long = 5
+
+    ' Chiede a SQLite di copiarsi subito il testo legato a un parametro,
+    ' cosi' la stringa VB puo' sparire appena la chiamata ritorna.
+    Public Const SQLITE_TRANSIENT As LongPtr = -1
+
+    ' --- connessione -------------------------------------------------
+
+    Public Declare PtrSafe Function sqlite3_open16 Lib "winsqlite3" ( _
+        ByVal filename As LongPtr, ByRef ppDb As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_close_v2 Lib "winsqlite3" ( _
+        ByVal db As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_errmsg16 Lib "winsqlite3" ( _
+        ByVal db As LongPtr) As LongPtr
+
+    Public Declare PtrSafe Function sqlite3_busy_timeout Lib "winsqlite3" ( _
+        ByVal db As LongPtr, ByVal ms As Long) As Long
+
+    Public Declare PtrSafe Function sqlite3_changes Lib "winsqlite3" ( _
+        ByVal db As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_last_insert_rowid Lib "winsqlite3" ( _
+        ByVal db As LongPtr) As LongLong
+
+    Public Declare PtrSafe Function sqlite3_libversion Lib "winsqlite3" () As LongPtr
+
+    ' --- istruzioni --------------------------------------------------
+
+    Public Declare PtrSafe Function sqlite3_prepare16_v2 Lib "winsqlite3" ( _
+        ByVal db As LongPtr, ByVal zSql As LongPtr, ByVal nByte As Long, _
+        ByRef ppStmt As LongPtr, ByVal pzTail As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_step Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_reset Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_clear_bindings Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_finalize Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_bind_parameter_count Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_bind_null Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal index As Long) As Long
+
+    Public Declare PtrSafe Function sqlite3_bind_int Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal index As Long, ByVal value As Long) As Long
+
+    Public Declare PtrSafe Function sqlite3_bind_int64 Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal index As Long, ByVal value As LongLong) As Long
+
+    Public Declare PtrSafe Function sqlite3_bind_double Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal index As Long, ByVal value As Double) As Long
+
+    Public Declare PtrSafe Function sqlite3_bind_text16 Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal index As Long, ByVal text As LongPtr, _
+        ByVal nBytes As Long, ByVal destructor As LongPtr) As Long
+
+    ' --- colonne del risultato ---------------------------------------
+
+    Public Declare PtrSafe Function sqlite3_column_count Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr) As Long
+
+    Public Declare PtrSafe Function sqlite3_column_name16 Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal col As Long) As LongPtr
+
+    Public Declare PtrSafe Function sqlite3_column_type Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal col As Long) As Long
+
+    Public Declare PtrSafe Function sqlite3_column_int64 Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal col As Long) As LongLong
+
+    Public Declare PtrSafe Function sqlite3_column_double Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal col As Long) As Double
+
+    Public Declare PtrSafe Function sqlite3_column_text16 Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal col As Long) As LongPtr
+
+    Public Declare PtrSafe Function sqlite3_column_bytes16 Lib "winsqlite3" ( _
+        ByVal stmt As LongPtr, ByVal col As Long) As Long
+
+    ' --- memoria -----------------------------------------------------
+
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" ( _
+        ByVal destination As LongPtr, ByVal source As LongPtr, ByVal length As LongPtr)
+
+    Private Declare PtrSafe Function lstrlenW Lib "kernel32" (ByVal text As LongPtr) As Long
+
+    Private Declare PtrSafe Function lstrlenA Lib "kernel32" (ByVal text As LongPtr) As Long
+
+    ' Copia in una String VB un testo UTF-16 che appartiene a SQLite.
+    ' Con byteLength negativo la lunghezza si cerca fino allo zero finale.
+    Public Function StringFromPtr(ByVal pointer As LongPtr, Optional ByVal byteLength As Long = -1) As String
+        Dim result As String
+
+        If pointer = 0 Then Return ""
+        If byteLength < 0 Then byteLength = lstrlenW(pointer) * 2
+        If byteLength <= 0 Then Return ""
+
+        result = Space$(byteLength \ 2)
+        CopyMemory StrPtr(result), pointer, byteLength
+        Return result
+    End Function
+
+    ' La versione di SQLite caricata, per la finestra "Informazioni" e per
+    ' capire al volo un problema segnalato da un cliente. Il testo e' ASCII.
+    Public Function LibraryVersion() As String
+        Dim pointer As LongPtr
+        Dim length As Long
+        Dim bytes() As Byte
+
+        pointer = sqlite3_libversion()
+        If pointer = 0 Then Return ""
+        length = lstrlenA(pointer)
+        If length = 0 Then Return ""
+
+        ReDim bytes(0 To length - 1)
+        CopyMemory VarPtr(bytes(0)), pointer, length
+        Return StrConv(bytes, vbUnicode)
+    End Function
+
+    ' Solleva un errore con il messaggio di SQLite.
+    Public Sub RaiseError(ByVal db As LongPtr, ByVal resultCode As Long, ByVal source As String, _
+                          Optional ByVal context As String = "")
+        Dim message As String
+
+        message = "SQLite " & CStr(resultCode)
+        If db <> 0 Then message = message & ": " & StringFromPtr(sqlite3_errmsg16(db))
+        If Len(context) > 0 Then message = message & vbCrLf & context
+        Err.Raise vbObjectError + 512 + (resultCode And &HFF), source, message
+    End Sub
+
+End Module

@@ -1,0 +1,33 @@
+'
+' DatiEtichetta - tutto quello che finisce su una etichetta, gia' come testo.
+'
+' Si costruisce con Compose a partire dal prodotto e dalla data di
+' produzione. La stampante disegna solo questi campi e non fa calcoli: cosi'
+' lotto e scadenza sono decisi in un solo punto e lo stesso oggetto si usa
+' anche per il registro stampe.
+'
+Class DatiEtichetta
+
+    Public Denominazione As String
+    Public Ingredienti As String       ' con gli allergeni tra asterischi
+    Public PesoNetto As String
+    Public Conservazione As String
+    Public Scadenza As Date
+    Public DicituraScadenza As String
+    Public Lotto As String
+    Public Produttore As String        ' una o piu' righe separate da vbCrLf
+    Public Ean As String               ' vuoto = niente codice a barre
+
+    Public Sub Compose(ByVal p As Prodotto, ByVal productionDate As Date, ByVal producer As String)
+        Denominazione = p.Denominazione
+        Ingredienti = p.Ingredienti
+        PesoNetto = p.PesoNetto
+        Conservazione = p.Conservazione
+        Scadenza = Tracciabilita.ExpiryDate(productionDate, p.GiorniScadenza)
+        DicituraScadenza = Tracciabilita.ExpiryText(p.TipoScad, Scadenza)
+        Lotto = Tracciabilita.LotFromDate(productionDate)
+        Produttore = producer
+        Ean = p.Ean
+    End Sub
+
+End Class

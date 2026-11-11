@@ -1,0 +1,63 @@
+'
+' Prodotto - una riga della tabella prodotti.
+'
+' Gli ingredienti contengono gli allergeni tra asterischi (vedi Allergeni).
+' Ean e' vuoto per i prodotti senza codice a barre: l'etichetta si stampa
+' lo stesso, senza il simbolo.
+'
+Class Prodotto
+
+    Public Id As Long                  ' 0 finche' non e' salvato
+    Public Codice As String            ' codice interno del laboratorio
+    Public Denominazione As String
+    Public Ingredienti As String
+    Public PesoNetto As String         ' testo libero: "250 g", "1 kg", "6 pezzi"
+    Public Conservazione As String
+    Public GiorniScadenza As Long
+    Public TipoScad As TipoScadenza
+    Public Ean As String
+    Public Attivo As Boolean
+
+    Private Sub Class_Initialize()
+        Attivo = True
+    End Sub
+
+    ' Elenco dei problemi, uno per riga; stringa vuota se e' tutto a posto.
+    ' Ripulisce i campi e normalizza l'EAN: un codice di 12 cifre viene
+    ' completato con la cifra di controllo.
+    Public Function Validate() As String
+        Dim problems As String
+
+        Codice = Trim$(Codice)
+        Denominazione = Trim$(Denominazione)
+        Ean = Trim$(Ean)
+
+        If Len(Codice) = 0 Then problems = problems & "Manca il codice interno." & vbCrLf
+        If Len(Denominazione) = 0 Then problems = problems & "Manca la denominazione." & vbCrLf
+        If GiorniScadenza < 0 Then problems = problems & "I giorni di scadenza non possono essere negativi." & vbCrLf
+        If Not IngredientsAreWellFormed() Then problems = problems & "Ingredienti: c'e' un asterisco non chiuso." & vbCrLf
+
+        If Len(Ean) > 0 Then
+            If Not TryNormalizeEan() Then problems = problems & "EAN non valido: " & Ean & vbCrLf
+        End If
+
+        Return problems
+    End Function
+
+    Private Function TryNormalizeEan() As Boolean
+        On Error GoTo Invalid
+        Ean = Ean13.Normalize(Ean)
+        Return True
+    Invalid:
+        Return False
+    End Function
+
+    Private Function IngredientsAreWellFormed() As Boolean
+        On Error GoTo Invalid
+        Allergeni.Parse Ingredienti
+        Return True
+    Invalid:
+        Return False
+    End Function
+
+End Class

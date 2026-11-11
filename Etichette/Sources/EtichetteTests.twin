@@ -1,0 +1,329 @@
+'
+' EtichetteTests - test della logica senza stampante.
+'
+' I valori attesi dei codici a barre sono stati confrontati con una libreria
+' EAN-13 indipendente. I test del database usano un archivio in memoria
+' (":memory:"), quindi non lasciano file sul disco.
+'
+Module EtichetteTests
+
+    Public Sub RunAll(ByVal runner As TestRunner)
+        TestEanCheckDigit runner
+        TestEanNormalize runner
+        TestEanModules runner
+        TestAllergeni runner
+        TestTracciabilita runner
+        TestCsv runner
+        TestProdottoValidate runner
+        TestArchivio runner
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' EAN-13
+    ' ------------------------------------------------------------------
+
+    Private Sub TestEanCheckDigit(ByVal runner As TestRunner)
+        runner.BeginTest "Cifra di controllo EAN-13"
+        runner.AreEqual 1, Ean13.CheckDigit("400638133393")
+        runner.AreEqual 7, Ean13.CheckDigit("590123412345")
+        runner.AreEqual 7, Ean13.CheckDigit("800123456789")
+        runner.AreEqual 0, Ean13.CheckDigit("000000000000")
+
+        runner.BeginTest "Validazione EAN-13"
+        runner.IsTrue Ean13.IsValid("4006381333931")
+        runner.IsFalse Ean13.IsValid("4006381333932"), "cifra di controllo sbagliata"
+        runner.IsFalse Ean13.IsValid("400638133393"), "solo 12 cifre"
+        runner.IsFalse Ean13.IsValid("40063813339A1"), "lettera"
+
+        runner.BeginTest "CheckDigit rifiuta un input che non e' di 12 cifre"
+        runner.RaisedError 5, ErrorFromCheckDigit("12345")
+    End Sub
+
+    Private Sub TestEanNormalize(ByVal runner As TestRunner)
+        runner.BeginTest "Normalize completa 12 cifre e toglie spazi e trattini"
+        runner.AreEqual "8001234567897", Ean13.Normalize("800123456789")
+        runner.AreEqual "8001234567897", Ean13.Normalize(" 800 1234-56789 7 ")
+
+        runner.BeginTest "Normalize rifiuta un codice con la cifra di controllo sbagliata"
+        runner.RaisedError 5, ErrorFromNormalize("8001234567890")
+    End Sub
+
+    Private Sub TestEanModules(ByVal runner As TestRunner)
+        Dim bits As String
+
+        runner.BeginTest "Moduli EAN-13 confrontati con una libreria indipendente"
+        runner.AreEqual "10100011010100111010111101111010001001011001101010100001010000101000010111010010000101100110101", _
+                        Ean13.Modules("4006381333931")
+        runner.AreEqual "10100010110100111011001100100110111101001110101010110011011011001000010101110010011101000100101", _
+                        Ean13.Modules("5901234123457")
+
+        runner.BeginTest "Il simbolo ha 95 moduli e le guardie al posto giusto"
+        bits = Ean13.Modules("8001234567897")
+        runner.AreEqual 95, Len(bits)
+        runner.AreEqual "101", Left$(bits, 3)
+        runner.AreEqual "01010", Mid$(bits, 46, 5)
+        runner.AreEqual "101", Right$(bits, 3)
+        runner.IsTrue Ean13.IsGuardModule(47)
+        runner.IsFalse Ean13.IsGuardModule(4)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Allergeni
+    ' ------------------------------------------------------------------
+
+    Private Sub TestAllergeni(ByVal runner As TestRunner)
+        Dim runs As Collection
+
+        runner.BeginTest "Parse alterna normale e grassetto agli asterischi"
+        Set runs = Allergeni.Parse("Farina di *frumento*, *uova*, zucchero")
+        runner.AreEqual 4, runs.Count
+        runner.AreEqual "Farina di ", RunText(runs, 1)
+        runner.IsFalse RunBold(runs, 1)
+        runner.AreEqual "frumento", RunText(runs, 2)
+        runner.IsTrue RunBold(runs, 2)
+        runner.AreEqual ", ", RunText(runs, 3)
+        runner.AreEqual "uova", RunText(runs, 4)
+        runner.IsTrue RunBold(runs, 4)
+
+        runner.BeginTest "Un testo che inizia con un allergene"
+        Set runs = Allergeni.Parse("*Latte* intero")
+        runner.AreEqual 2, runs.Count
+        runner.IsTrue RunBold(runs, 1)
+
+        runner.BeginTest "Testo vuoto e testo senza allergeni"
+        runner.AreEqual 0, Allergeni.Parse("").Count
+        runner.AreEqual 1, Allergeni.Parse("acqua, sale").Count
+
+        runner.BeginTest "Asterisco non chiuso"
+        runner.RaisedError 5, ErrorFromParse("farina di *frumento, sale")
+
+        runner.BeginTest "Elenco e testo semplice"
+        runner.AreEqual "frumento, uova", Allergeni.ListMarked("*Frumento*, *uova*, *frumento* integrale")
+        runner.AreEqual "Farina di frumento", Allergeni.PlainText("Farina di *frumento*")
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Lotto e scadenza
+    ' ------------------------------------------------------------------
+
+    Private Sub TestTracciabilita(ByVal runner As TestRunner)
+        runner.BeginTest "Lotto = L + anno + giorno dell'anno"
+        runner.AreEqual "L26315", Tracciabilita.LotFromDate(DateSerial(2026, 11, 11))
+        runner.AreEqual "L24366", Tracciabilita.LotFromDate(DateSerial(2024, 12, 31))
+        runner.AreEqual "L26001", Tracciabilita.LotFromDate(DateSerial(2026, 1, 1))
+
+        runner.BeginTest "Scadenza a cavallo di mese e di anno"
+        runner.AreEqual DateSerial(2026, 12, 1), Tracciabilita.ExpiryDate(DateSerial(2026, 11, 26), 5)
+        runner.AreEqual DateSerial(2027, 1, 3), Tracciabilita.ExpiryDate(DateSerial(2026, 12, 29), 5)
+        runner.AreEqual DateSerial(2026, 11, 11), Tracciabilita.ExpiryDate(DateSerial(2026, 11, 11), 0)
+
+        runner.BeginTest "La scadenza ignora l'ora della data di produzione"
+        runner.AreEqual DateSerial(2026, 11, 14), _
+                        Tracciabilita.ExpiryDate(DateSerial(2026, 11, 11) + TimeSerial(23, 30, 0), 3)
+
+        runner.BeginTest "Diciture di scadenza"
+        runner.AreEqual "Da consumarsi entro il 05/03/2027", _
+                        Tracciabilita.ExpiryText(ScadenzaEntro, DateSerial(2027, 3, 5))
+        runner.AreEqual "Da consumarsi preferibilmente entro il 05/03/2027", _
+                        Tracciabilita.ExpiryText(ScadenzaPreferibilmente, DateSerial(2027, 3, 5))
+
+        runner.BeginTest "Lettura di una data gg/mm/aaaa"
+        runner.AreEqual DateSerial(2026, 4, 3), Tracciabilita.ParseDate("03/04/2026")
+        runner.AreEqual DateSerial(2026, 4, 3), Tracciabilita.ParseDate(" 3-4-26 ")
+        runner.AreEqual "03/04/2026", Tracciabilita.DateText(DateSerial(2026, 4, 3))
+        runner.RaisedError 5, ErrorFromParseDate("31/02/2026")
+        runner.RaisedError 5, ErrorFromParseDate("domani")
+
+        runner.BeginTest "Tipo scadenza dal testo"
+        runner.AreEqual CLng(ScadenzaEntro), CLng(Tracciabilita.ParseTipoScadenza(""))
+        runner.AreEqual CLng(ScadenzaPreferibilmente), CLng(Tracciabilita.ParseTipoScadenza(" TMC "))
+        runner.RaisedError 5, ErrorFromParseTipo("domani")
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' CSV
+    ' ------------------------------------------------------------------
+
+    Private Sub TestCsv(ByVal runner As TestRunner)
+        Dim fields() As String
+        Dim lines() As String
+
+        runner.BeginTest "Campi separati da punto e virgola"
+        fields = Csv.ParseLine("P01; Crostata ;250 g")
+        runner.AreEqual 2, UBound(fields)
+        runner.AreEqual "Crostata", fields(1)
+
+        runner.BeginTest "Virgolette: separatore e virgolette dentro il campo"
+        fields = Csv.ParseLine("P02;""Farina; *uova*"";""Torta """"della nonna""""""")
+        runner.AreEqual "Farina; *uova*", fields(1)
+        runner.AreEqual "Torta ""della nonna""", fields(2)
+
+        runner.BeginTest "Campi vuoti in coda"
+        fields = Csv.ParseLine("P03;;")
+        runner.AreEqual 2, UBound(fields)
+        runner.AreEqual "", fields(2)
+
+        runner.BeginTest "Righe con CRLF e LF"
+        lines = Csv.SplitLines("a" & vbCrLf & "b" & vbLf & "c" & vbCrLf)
+        runner.AreEqual 2, UBound(lines)
+        runner.AreEqual "c", lines(2)
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Prodotto e archivio
+    ' ------------------------------------------------------------------
+
+    Private Sub TestProdottoValidate(ByVal runner As TestRunner)
+        Dim p As Prodotto
+
+        runner.BeginTest "Un prodotto completo e' valido e l'EAN viene completato"
+        Set p = SampleProduct()
+        p.Ean = "800123456789"
+        runner.AreEqual "", p.Validate()
+        runner.AreEqual "8001234567897", p.Ean
+
+        runner.BeginTest "Problemi segnalati"
+        Set p = SampleProduct()
+        p.Codice = "  "
+        p.Ean = "8001234567890"
+        p.Ingredienti = "farina di *frumento"
+        runner.IsTrue StringUtils.Contains(p.Validate(), "codice")
+        runner.IsTrue StringUtils.Contains(p.Validate(), "EAN")
+        runner.IsTrue StringUtils.Contains(p.Validate(), "asterisco")
+    End Sub
+
+    Private Sub TestArchivio(ByVal runner As TestRunner)
+        Dim db As SqliteDb
+        Dim p As Prodotto
+        Dim loaded As Prodotto
+
+        Set db = New SqliteDb
+        db.OpenFile ":memory:"
+        Archivio.EnsureSchema db
+        Archivio.EnsureSchema db           ' la seconda volta non deve fare nulla
+
+        runner.BeginTest "Salvataggio e rilettura con apostrofi e accenti"
+        Set p = SampleProduct()
+        p.Denominazione = "Sfogliatella all'arancia - qualita' 'extra'"
+        p.Conservazione = "Conservare in frigorifero a +4 °C. Città di Napoli"
+        Archivio.SaveProduct db, p
+        runner.IsTrue p.Id > 0
+        Set loaded = Archivio.LoadProduct(db, p.Id)
+        runner.AreEqual p.Denominazione, loaded.Denominazione
+        runner.AreEqual p.Conservazione, loaded.Conservazione
+        runner.AreEqual "8001234567897", loaded.Ean
+        runner.AreEqual CLng(ScadenzaPreferibilmente), CLng(loaded.TipoScad)
+
+        runner.BeginTest "Ricerca per codice ed EAN"
+        runner.AreEqual p.Id, Archivio.FindByCode(db, "p01").Id
+        runner.AreEqual p.Id, Archivio.FindByEan(db, "8001234567897").Id
+        runner.IsTrue Archivio.FindByCode(db, "NON-ESISTE") Is Nothing
+
+        runner.BeginTest "Un prodotto senza EAN si salva con EAN NULL"
+        Set p = SampleProduct()
+        p.Codice = "P02"
+        p.Ean = ""
+        Archivio.SaveProduct db, p
+        runner.IsTrue IsNull(db.Scalar("SELECT ean FROM prodotti WHERE codice = ?", "P02"))
+        runner.AreEqual "", Archivio.LoadProduct(db, p.Id).Ean
+
+        runner.BeginTest "Il database rifiuta un EAN doppio"
+        Set p = SampleProduct()
+        p.Codice = "P03"
+        runner.IsTrue ErrorFromSave(db, p) <> 0
+
+        runner.BeginTest "Stringa vuota salvata come '' e non come NULL"
+        db.Execute "INSERT INTO impostazioni (chiave, valore) VALUES (?, ?)", "vuota", ""
+        runner.AreEqual "", Archivio.GetSetting(db, "vuota", "default")
+
+        runner.BeginTest "Impostazioni numeriche indipendenti dalla virgola"
+        Archivio.SetSettingNumber db, "prova", 2.5
+        runner.AreEqual "2.5", Archivio.GetSetting(db, "prova")
+        runner.AreEqual 2.5, Archivio.GetSettingNumber(db, "prova", 0)
+
+        runner.BeginTest "Registro stampe"
+        Set p = Archivio.FindByCode(db, "P01")
+        Archivio.LogPrint db, p, "L26315", DateSerial(2026, 11, 11), DateSerial(2026, 12, 11), 12, "Astra TT"
+        runner.AreEqual 12, CLng(db.Scalar("SELECT copie FROM stampe WHERE lotto = ?", "L26315"))
+        runner.AreEqual "2026-12-11", db.Scalar("SELECT scadenza FROM stampe WHERE lotto = ?", "L26315")
+
+        runner.BeginTest "Elenco prodotti attivi in ordine alfabetico"
+        runner.AreEqual 2, Archivio.ListProducts(db).Count
+
+        db.CloseFile
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Helper
+    ' ------------------------------------------------------------------
+
+    Private Function SampleProduct() As Prodotto
+        Dim p As Prodotto
+
+        Set p = New Prodotto
+        p.Codice = "P01"
+        p.Denominazione = "Crostata alla marmellata di albicocche"
+        p.Ingredienti = "Farina di *frumento*, zucchero, *burro*, *uova*, marmellata di albicocche"
+        p.PesoNetto = "400 g"
+        p.Conservazione = "Conservare in luogo fresco e asciutto."
+        p.GiorniScadenza = 30
+        p.TipoScad = ScadenzaPreferibilmente
+        p.Ean = "8001234567897"
+        Set SampleProduct = p
+    End Function
+
+    Private Function RunText(ByVal runs As Collection, ByVal index As Long) As String
+        Dim run As TextRun
+        Set run = runs.Item(index)
+        Return run.Text
+    End Function
+
+    Private Function RunBold(ByVal runs As Collection, ByVal index As Long) As Boolean
+        Dim run As TextRun
+        Set run = runs.Item(index)
+        Return run.Bold
+    End Function
+
+    Private Function ErrorFromCheckDigit(ByVal text As String) As Long
+        On Error Resume Next
+        Err.Clear
+        Ean13.CheckDigit text
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromNormalize(ByVal text As String) As Long
+        On Error Resume Next
+        Err.Clear
+        Ean13.Normalize text
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromParse(ByVal text As String) As Long
+        On Error Resume Next
+        Err.Clear
+        Allergeni.Parse text
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromParseTipo(ByVal text As String) As Long
+        On Error Resume Next
+        Err.Clear
+        Tracciabilita.ParseTipoScadenza text
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromParseDate(ByVal text As String) As Long
+        On Error Resume Next
+        Err.Clear
+        Tracciabilita.ParseDate text
+        Return Err.Number
+    End Function
+
+    Private Function ErrorFromSave(ByVal db As SqliteDb, ByVal p As Prodotto) As Long
+        On Error Resume Next
+        Err.Clear
+        Archivio.SaveProduct db, p
+        Return Err.Number
+    End Function
+
+End Module

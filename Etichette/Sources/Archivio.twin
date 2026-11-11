@@ -1,0 +1,338 @@
+'
+' Archivio - schema del database, prodotti, impostazioni e registro stampe.
+'
+' Tre tabelle:
+'   prodotti      l'anagrafica (65 righe per il primo cliente)
+'   impostazioni  coppie chiave/valore: ragione sociale, stampante, tarature
+'   stampe        ogni etichetta stampata, con lotto e scadenza: e' il
+'                 registro che serve in caso di richiamo del prodotto
+'
+' La versione dello schema sta in PRAGMA user_version: quando nelle
+' versioni successive cambiera' qualcosa, EnsureSchema applichera' gli
+' aggiornamenti in ordine senza toccare i dati dei clienti.
+'
+Module Archivio
+
+    Private Const SCHEMA_VERSION As Long = 1
+
+    Private Const PRODUCT_COLUMNS As String = _
+        "id, codice, denominazione, ingredienti, peso_netto, conservazione, " & _
+        "giorni_scadenza, tipo_scadenza, ean, attivo"
+
+    ' ------------------------------------------------------------------
+    ' Schema
+    ' ------------------------------------------------------------------
+
+    Public Sub EnsureSchema(ByVal db As SqliteDb)
+        Dim version As Long
+
+        version = CLng(db.Scalar("PRAGMA user_version"))
+        If version >= SCHEMA_VERSION Then Exit Sub
+
+        db.BeginTransaction
+        On Error GoTo Failed
+
+        If version < 1 Then
+            db.Execute "CREATE TABLE IF NOT EXISTS prodotti (" & _
+                "id              INTEGER PRIMARY KEY, " & _
+                "codice          TEXT    NOT NULL UNIQUE COLLATE NOCASE, " & _
+                "denominazione   TEXT    NOT NULL, " & _
+                "ingredienti     TEXT    NOT NULL DEFAULT '', " & _
+                "peso_netto      TEXT    NOT NULL DEFAULT '', " & _
+                "conservazione   TEXT    NOT NULL DEFAULT '', " & _
+                "giorni_scadenza INTEGER NOT NULL DEFAULT 0 CHECK (giorni_scadenza >= 0), " & _
+                "tipo_scadenza   TEXT    NOT NULL DEFAULT 'entro' " & _
+                "                CHECK (tipo_scadenza IN ('entro', 'preferibilmente')), " & _
+                "ean             TEXT    CHECK (ean IS NULL OR length(ean) = 13), " & _
+                "attivo          INTEGER NOT NULL DEFAULT 1)"
+
+            db.Execute "CREATE UNIQUE INDEX IF NOT EXISTS ix_prodotti_ean " & _
+                       "ON prodotti(ean) WHERE ean IS NOT NULL"
+
+            db.Execute "CREATE TABLE IF NOT EXISTS impostazioni (" & _
+                "chiave TEXT PRIMARY KEY, " & _
+                "valore TEXT NOT NULL)"
+
+            ' Denominazione, ingredienti ed EAN vengono copiati al momento della
+            ' stampa: se domani la ricetta cambia, il registro dice comunque
+            ' che cosa c'era scritto sull'etichetta di quel lotto.
+            db.Execute "CREATE TABLE IF NOT EXISTS stampe (" & _
+                "id              INTEGER PRIMARY KEY, " & _
+                "prodotto_id     INTEGER NOT NULL REFERENCES prodotti(id), " & _
+                "denominazione   TEXT    NOT NULL, " & _
+                "ingredienti     TEXT    NOT NULL, " & _
+                "ean             TEXT, " & _
+                "lotto           TEXT    NOT NULL, " & _
+                "data_produzione TEXT    NOT NULL, " & _
+                "scadenza        TEXT    NOT NULL, " & _
+                "copie           INTEGER NOT NULL CHECK (copie > 0), " & _
+                "stampante       TEXT    NOT NULL DEFAULT '', " & _
+                "stampato_il     TEXT    NOT NULL DEFAULT (datetime('now', 'localtime')))"
+
+            db.Execute "CREATE INDEX IF NOT EXISTS ix_stampe_lotto ON stampe(lotto)"
+        End If
+
+        db.Execute "PRAGMA user_version = " & CStr(SCHEMA_VERSION)
+        db.Commit
+        Exit Sub
+
+    Failed:
+        Dim number As Long, source As String, description As String
+        number = Err.Number: source = Err.Source: description = Err.Description
+        db.Rollback
+        Err.Raise number, source, description
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Impostazioni
+    ' ------------------------------------------------------------------
+
+    Public Function GetSetting(ByVal db As SqliteDb, ByVal key As String, _
+                               Optional ByVal defaultValue As String = "") As String
+        Dim value As Variant
+
+        value = db.Scalar("SELECT valore FROM impostazioni WHERE chiave = ?", key)
+        If IsNull(value) Then Return defaultValue
+        Return CStr(value)
+    End Function
+
+    Public Sub SetSetting(ByVal db As SqliteDb, ByVal key As String, ByVal value As String)
+        db.Execute "INSERT OR REPLACE INTO impostazioni (chiave, valore) VALUES (?, ?)", key, value
+    End Sub
+
+    ' Numero con il punto come separatore decimale, indipendente dalle
+    ' impostazioni internazionali di Windows.
+    Public Function GetSettingNumber(ByVal db As SqliteDb, ByVal key As String, _
+                                     ByVal defaultValue As Double) As Double
+        Dim text As String
+
+        text = GetSetting(db, key, "")
+        If Len(text) = 0 Then Return defaultValue
+        Return Val(Replace(text, ",", "."))
+    End Function
+
+    Public Sub SetSettingNumber(ByVal db As SqliteDb, ByVal key As String, ByVal value As Double)
+        SetSetting db, key, Replace(CStr(value), ",", ".")
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Prodotti
+    ' ------------------------------------------------------------------
+
+    Public Function ProductCount(ByVal db As SqliteDb) As Long
+        Return CLng(db.Scalar("SELECT COUNT(*) FROM prodotti"))
+    End Function
+
+    ' Prodotti in ordine alfabetico. Con onlyActive = False compaiono anche
+    ' quelli tolti dal listino, che non si cancellano mai perche' il
+    ' registro stampe li richiama.
+    Public Function ListProducts(ByVal db As SqliteDb, Optional ByVal onlyActive As Boolean = True) As Collection
+        Dim result As Collection
+        Dim st As SqliteStatement
+        Dim sql As String
+
+        sql = "SELECT " & PRODUCT_COLUMNS & " FROM prodotti"
+        If onlyActive Then sql = sql & " WHERE attivo = 1"
+        sql = sql & " ORDER BY denominazione COLLATE NOCASE"
+
+        Set result = New Collection
+        Set st = db.Query(sql)
+        Do While st.NextRow()
+            result.Add ReadProduct(st)
+        Loop
+        st.Finalize
+        Set ListProducts = result
+    End Function
+
+    ' Nothing se l'id non esiste.
+    Public Function LoadProduct(ByVal db As SqliteDb, ByVal id As Long) As Prodotto
+        Set LoadProduct = LoadOne(db, "id = ?", id)
+    End Function
+
+    Public Function FindByCode(ByVal db As SqliteDb, ByVal code As String) As Prodotto
+        Set FindByCode = LoadOne(db, "codice = ?", Trim$(code))
+    End Function
+
+    ' Utile con un lettore di codici a barre: si spara l'EAN e si trova il
+    ' prodotto.
+    Public Function FindByEan(ByVal db As SqliteDb, ByVal ean As String) As Prodotto
+        Set FindByEan = LoadOne(db, "ean = ?", Trim$(ean))
+    End Function
+
+    ' Inserisce o aggiorna. Solleva l'errore 5 con l'elenco dei problemi se
+    ' il prodotto non e' valido.
+    Public Sub SaveProduct(ByVal db As SqliteDb, ByVal p As Prodotto)
+        Dim problems As String
+        Dim ean As Variant
+
+        problems = p.Validate()
+        If Len(problems) > 0 Then
+            Err.Raise 5, "Archivio.SaveProduct", "Prodotto '" & p.Codice & "' non salvato:" & vbCrLf & problems
+        End If
+
+        If Len(p.Ean) = 0 Then ean = Null Else ean = p.Ean
+
+        If p.Id = 0 Then
+            db.Execute "INSERT INTO prodotti (codice, denominazione, ingredienti, peso_netto, " & _
+                       "conservazione, giorni_scadenza, tipo_scadenza, ean, attivo) " & _
+                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", _
+                       p.Codice, p.Denominazione, p.Ingredienti, p.PesoNetto, p.Conservazione, _
+                       p.GiorniScadenza, TipoScadenzaToText(p.TipoScad), ean, p.Attivo
+            p.Id = CLng(db.LastInsertId)
+        Else
+            db.Execute "UPDATE prodotti SET codice = ?, denominazione = ?, ingredienti = ?, " & _
+                       "peso_netto = ?, conservazione = ?, giorni_scadenza = ?, " & _
+                       "tipo_scadenza = ?, ean = ?, attivo = ? WHERE id = ?", _
+                       p.Codice, p.Denominazione, p.Ingredienti, p.PesoNetto, p.Conservazione, _
+                       p.GiorniScadenza, TipoScadenzaToText(p.TipoScad), ean, p.Attivo, p.Id
+        End If
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Registro stampe
+    ' ------------------------------------------------------------------
+
+    Public Sub LogPrint(ByVal db As SqliteDb, ByVal p As Prodotto, ByVal lot As String, _
+                        ByVal productionDate As Date, ByVal expiry As Date, _
+                        ByVal copies As Long, ByVal printerName As String)
+        Dim ean As Variant
+
+        If Len(p.Ean) = 0 Then ean = Null Else ean = p.Ean
+        db.Execute "INSERT INTO stampe (prodotto_id, denominazione, ingredienti, ean, lotto, " & _
+                   "data_produzione, scadenza, copie, stampante) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", _
+                   p.Id, p.Denominazione, p.Ingredienti, ean, lot, _
+                   DateValue(productionDate), DateValue(expiry), copies, printerName
+    End Sub
+
+    ' ------------------------------------------------------------------
+    ' Importazione da Excel
+    ' ------------------------------------------------------------------
+
+    ' Importa un CSV con la prima riga di intestazione. Le colonne si
+    ' riconoscono dal nome, in qualsiasi ordine:
+    '
+    '   codice; denominazione; ingredienti; peso_netto; conservazione;
+    '   giorni_scadenza; tipo_scadenza; ean
+    '
+    ' Sono obbligatorie solo codice e denominazione. Un codice gia' presente
+    ' aggiorna il prodotto, uno nuovo lo aggiunge. O passano tutte le righe o
+    ' nessuna: al primo errore si annulla e si segnala il numero di riga.
+    ' Ritorna il numero di prodotti importati.
+    Public Function ImportCsv(ByVal db As SqliteDb, ByVal path As String) As Long
+        Dim lines() As String
+        Dim header() As String
+        Dim fields() As String
+        Dim columns As Collection
+        Dim i As Long
+        Dim imported As Long
+        Dim p As Prodotto
+        Dim existing As Prodotto
+        Dim lineNumber As Long
+
+        lines = Csv.SplitLines(Csv.ReadTextFile(path))
+        If UBound(lines) < 0 Then Err.Raise 5, "Archivio.ImportCsv", "Il file e' vuoto: " & path
+
+        header = Csv.ParseLine(lines(0))
+        Set columns = New Collection
+        For i = 0 To UBound(header)
+            On Error Resume Next
+            columns.Add i, LCase$(header(i))
+            On Error GoTo 0
+        Next i
+        If Not HasKey(columns, "codice") Or Not HasKey(columns, "denominazione") Then
+            Err.Raise 5, "Archivio.ImportCsv", _
+                      "La prima riga deve contenere almeno le colonne 'codice' e 'denominazione'"
+        End If
+
+        db.BeginTransaction
+        On Error GoTo Failed
+
+        For i = 1 To UBound(lines)
+            lineNumber = i + 1
+            If Len(Trim$(Replace(lines(i), ";", ""))) > 0 Then
+                fields = Csv.ParseLine(lines(i))
+
+                Set p = New Prodotto
+                p.Codice = CsvField(fields, columns, "codice")
+                p.Denominazione = CsvField(fields, columns, "denominazione")
+                p.Ingredienti = CsvField(fields, columns, "ingredienti")
+                p.PesoNetto = CsvField(fields, columns, "peso_netto")
+                p.Conservazione = CsvField(fields, columns, "conservazione")
+                p.GiorniScadenza = CLng(Val(CsvField(fields, columns, "giorni_scadenza")))
+                p.TipoScad = ParseTipoScadenza(CsvField(fields, columns, "tipo_scadenza"))
+                p.Ean = CsvField(fields, columns, "ean")
+
+                Set existing = FindByCode(db, p.Codice)
+                If Not existing Is Nothing Then
+                    p.Id = existing.Id
+                    p.Attivo = existing.Attivo
+                End If
+
+                SaveProduct db, p
+                imported += 1
+            End If
+        Next i
+
+        db.Commit
+        Return imported
+
+    Failed:
+        Dim number As Long, description As String
+        number = Err.Number: description = Err.Description
+        db.Rollback
+        Err.Raise number, "Archivio.ImportCsv", _
+                  "Riga " & CStr(lineNumber) & " di " & path & ":" & vbCrLf & description
+    End Function
+
+    ' ------------------------------------------------------------------
+    ' Helper privati
+    ' ------------------------------------------------------------------
+
+    Private Function LoadOne(ByVal db As SqliteDb, ByVal condition As String, ByVal value As Variant) As Prodotto
+        Dim st As SqliteStatement
+
+        Set st = db.Query("SELECT " & PRODUCT_COLUMNS & " FROM prodotti WHERE " & condition, value)
+        If st.NextRow() Then
+            Set LoadOne = ReadProduct(st)
+        Else
+            Set LoadOne = Nothing
+        End If
+        st.Finalize
+    End Function
+
+    Private Function ReadProduct(ByVal st As SqliteStatement) As Prodotto
+        Dim p As Prodotto
+
+        Set p = New Prodotto
+        p.Id = st.ColumnLong("id")
+        p.Codice = st.ColumnText("codice")
+        p.Denominazione = st.ColumnText("denominazione")
+        p.Ingredienti = st.ColumnText("ingredienti")
+        p.PesoNetto = st.ColumnText("peso_netto")
+        p.Conservazione = st.ColumnText("conservazione")
+        p.GiorniScadenza = st.ColumnLong("giorni_scadenza")
+        p.TipoScad = ParseTipoScadenza(st.ColumnText("tipo_scadenza"))
+        p.Ean = st.ColumnText("ean")
+        p.Attivo = (st.ColumnLong("attivo") <> 0)
+        Set ReadProduct = p
+    End Function
+
+    Private Function CsvField(ByRef fields() As String, ByVal columns As Collection, ByVal name As String) As String
+        Dim index As Long
+
+        If Not HasKey(columns, name) Then Return ""
+        index = CLng(columns.Item(name))
+        If index > UBound(fields) Then Return ""
+        Return fields(index)
+    End Function
+
+    Private Function HasKey(ByVal items As Collection, ByVal key As String) As Boolean
+        On Error GoTo Missing
+        Dim probe As Variant
+        probe = items.Item(key)
+        Return True
+    Missing:
+        Return False
+    End Function
+
+End Module
