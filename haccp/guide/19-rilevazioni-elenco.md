@@ -5,6 +5,11 @@ piu' recenti in cima, raggruppato per giornata.
 
 <https://claude.ai/artifact/XmgzrxFqHYdJafeuqan71A>
 
+**Il disegno della maschera** sta in `figure/19-rilevazioni-elenco-maschera.svg`
+(come si presenta a video, alle misure vere) e `figure/19-rilevazioni-elenco-parti.svg`
+(le quattro parti: quante volte ognuna viene disegnata). Si rigenerano con
+`python3 figure/genera.py <maschera.svg> <parti.svg>`.
+
 ## Due cose che la rendono diversa dagli altri elenchi
 
 ### 1. Non si apre niente, e non si scrive niente
@@ -137,6 +142,10 @@ Nel **Riepilogo iniziale**:
 | `RIL\|Rilevazioni::Giorno`, grassetto, formato data lungo | 24 | 150 | 500 | 26 |
 | `RIL\|Rilevazioni::ConteggioRilevazioni`, a destra | 760 | 150 | 100 | 26 |
 | testo `rilevazioni` | 866 | 150 | 130 | 26 |
+| **linea** orizzontale, sotto la data | 24 | 181 | 972 | — |
+
+La linea sta **in fondo alla parte** e stacca la testata del giorno dalle sue
+righe. Colore: quello che le da' il tema, non si tocca.
 
 Nel **Pie' di pagina**, copiato dagli altri elenchi: `Record`
 `{{RecordNumber}}` `Di` `{{FoundCount}}` a y **220**.
