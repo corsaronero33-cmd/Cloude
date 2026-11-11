@@ -63,7 +63,7 @@ e nella casella del campo di destinazione scegli
 
 ### 2. Manca un passo nello script 20
 
-Fra `Conferma record/richieste` e `Chiudi finestra`, dentro il blocco della
+Fra `Salva record/richieste` e `Chiudi finestra`, dentro il blocco della
 non conformita', manca:
 
 ```
@@ -79,7 +79,7 @@ quindi la rintracciabilita' non e' persa del tutto, ma dalla rilevazione non si
 arriva piu' alla non conformita'. E' anche il motivo per cui la settima prova
 non poteva tornare del tutto.
 
-**Rimedio:** aggiungi quel passo subito dopo il `Conferma record/richieste`
+**Rimedio:** aggiungi quel passo subito dopo il `Salva record/richieste`
 che sta prima di `Chiudi finestra`. Attenzione all'ordine: deve stare
 **prima** di chiudere la finestra, perche' dopo il record della non
 conformita' non e' piu' raggiungibile.

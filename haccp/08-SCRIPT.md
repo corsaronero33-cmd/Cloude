@@ -243,7 +243,7 @@ Imposta campo [ RIL|Rilevazioni::IdOperatore ; $$UTENTE.Id ]
 Imposta campo [ RIL|Rilevazioni::Valore ; RIL|Rilevazioni::gValore ]
 Imposta campo [ RIL|Rilevazioni::ValoreTesto ; RIL|Rilevazioni::gValoreTesto ]
 Imposta campo [ RIL|Rilevazioni::Note ; RIL|Rilevazioni::gNote ]
-Conferma record/richieste [ Con dialogo: Disattivato ]
+Salva record/richieste [ Con dialogo: Disattivato ]
 
 # --- l'esito, letto dai limiti del punto di controllo ---
 Imposta variabile [ $esito ; Valore:
@@ -255,7 +255,7 @@ Imposta variabile [ $esito ; Valore:
              RIL|PuntiControllo::LimiteMax ) ) ]
 Imposta campo [ RIL|Rilevazioni::Esito ; $esito ]
 Imposta campo [ RIL|Rilevazioni::Bloccato ; "Si" ]
-Conferma record/richieste [ Con dialogo: Disattivato ]
+Salva record/richieste [ Con dialogo: Disattivato ]
 Imposta variabile [ $idRilevazione ; Valore: RIL|Rilevazioni::Id ]
 
 # --- se e' fuori limite, apri la non conformita' ---
@@ -280,12 +280,12 @@ Se [ $esito = "non conforme" ]
     Imposta campo [ NonConformita::AzioneCorrettiva ; $azione ]
     Imposta campo [ NonConformita::Gravita ; $gravita ]
     Imposta campo [ NonConformita::IdOperatoreRilevatore ; $$UTENTE.Id ]
-    Conferma record/richieste [ Con dialogo: Disattivato ]
+    Salva record/richieste [ Con dialogo: Disattivato ]
     Imposta variabile [ $idNC ; Valore: NonConformita::Id ]
     Chiudi finestra [ Finestra corrente ]
 
     Imposta campo [ RIL|Rilevazioni::IdNonConformita ; $idNC ]
-    Conferma record/richieste [ Con dialogo: Disattivato ]
+    Salva record/richieste [ Con dialogo: Disattivato ]
 
     Mostra finestra di dialogo personalizzata [
         "Valore fuori limite" ;
@@ -313,7 +313,7 @@ I campi **globali** (quelli con la `g` davanti) sarebbero l'eccezione, perche'
 hanno un solo valore per tutto il file: si scrivono comunque `RIL|` per non
 doversi chiedere ogni volta quali lo siano.
 
-**Il `Conferma record/richieste` dopo aver scritto `IdPuntoControllo`.**
+**Il `Salva record/richieste` dopo aver scritto `IdPuntoControllo`.**
 Finche' il record non e' confermato la relazione non si aggancia, e
 `RIL|PuntiControllo::LimiteMin` risulta vuoto: l'esito verrebbe sempre
 "conforme". E' l'errore piu' insidioso di tutto il progetto, perche' il
@@ -383,7 +383,7 @@ Se [ not IsEmpty ( $scadenza ) ]
     Imposta campo [ RigheRicevimento::TipoScadenza ; "scadenza" ]
 Fine se
 
-Conferma record/richieste [ Con dialogo: Disattivato ]
+Salva record/richieste [ Con dialogo: Disattivato ]
 
 Se [ IsEmpty ( $lotto ) and IsEmpty ( $scadenza ) ]
     Mostra finestra di dialogo personalizzata [
@@ -500,7 +500,7 @@ la non conformita' con l'azione correttiva gia' dentro, il cuore del sistema
 c'e'.
 
 Se la sesta dice "conforme" con valore 9, il colpevole e' quasi sempre il
-`Conferma record/richieste` prima della lettura dei limiti.
+`Salva record/richieste` prima della lettura dei limiti.
 
 ## Cosa viene dopo
 

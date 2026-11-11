@@ -7,53 +7,65 @@ Osservazione di partenza, textuale: *"non mi piace il comportamento dello
 script 20 non si comporta allo stesso modo se conforme o non conforme, se nei
 limiti o non"*.
 
-**L'osservazione e' giusta, e la causa principale non e' nello script.**
+**L'osservazione e' giusta.** Cinque difetti confermati, tutti nello script.
+
+> **Correzione, dopo la Revisione 16.** La prima stesura di questo collaudo
+> apriva con un sesto rilievo, dato come il piu' grave: le due formule
+> *Nascondi oggetto quando* mancanti sulla maschera. **Era un errore di
+> lettura mio**, non un difetto del file. Vedi il paragrafo 1.
 
 ---
 
-## 1. La causa vera: i due campi del valore sono sovrapposti e sempre visibili
+## 1. RITIRATO — era un errore di lettura mio
 
-Sul formato `D_Rilevazioni registra`:
+> Quello che segue era, nella prima stesura di questo collaudo, il rilievo
+> piu' grave dei sei. **Era un falso allarme**, trovato e corretto con la
+> Revisione 16. Resta scritto qui, e non cancellato, perche' e' l'errore che
+> ha prodotto la regola *"Mai dire manca senza una prova in positivo"* in
+> `CLAUDE.md`.
 
-| Campo | X | Y | Largh. | Visibile | Nascondi oggetto quando |
-|---|---|---|---|---|---|
-| `RIL\|Rilevazioni::gValore` | 184 | 297 | 300 | si' | **nessuna** |
-| `RIL\|Rilevazioni::gValoreTesto` | 184 | 297 | 300 | si' | **nessuna** |
+**Che cosa avevo scritto.** Che su `D_Rilevazioni registra` i due campi
+`gValore` e `gValoreTesto`, sovrapposti alla stessa posizione, erano entrambi
+visibili perche' **nessuno dei due aveva la formula *Nascondi oggetto
+quando***; e che da qui seguiva, a catena, che su un punto a temperatura il
+numero non si poteva digitare, `Valore` nasceva vuoto,
+`EsitoRilevazione ( "" ; min ; max )` restituiva `""`, e il registro
+conservava record con l'esito vuoto mentre lo script diceva "conforme".
 
-La fase 4 della scheda 18 le prevedeva entrambe. Non sono mai state inserite.
-
-Conseguenza a catena, tutta verificabile sul DDR:
-
-1. `gValoreTesto` e' l'ultimo oggetto dell'elenco, quindi sta **davanti** e
-   copre l'altro. Su un punto a temperatura il numero **non si puo' digitare**:
-   si apre il menu `vl_EsitoRilevazione` (`conforme` / `non conforme`).
-2. Il controllo del passo 19 (`IsEmpty ( gValore ) and IsEmpty ( gValoreTesto )`)
-   passa, perche' `gValoreTesto` e' pieno.
-3. `Valore` nasce vuoto. Il punto non e' `visivo`, quindi il passo 38 chiama
-   `EsitoRilevazione ( "" ; min ; max )`, che per il primo ramo del `Case`
-   restituisce `""`.
-4. `$esito` e' vuoto → `Esito` nel record e' **vuoto** → il test
-   `$esito = "non conforme"` e' sempre falso → **ramo "conforme" sempre**.
-
-**Su tutti i punti a temperatura il limite non viene mai valutato, e il
-registro conserva record con l'esito vuoto.** In un registro HACCP e' il
-difetto piu' grave dei sei.
-
-Le due formule, da inserire su Ispettore > Dati > Comportamento:
+**Perche' era falso.** Il mio lettore del DDR cercava un elemento
+`<HideCondition>`, che non esiste. La formula sta in
 
 ```
-gValore        nascondi quando:  RIL|PuntoScelto::Grandezza = "visivo"
-gValoreTesto   nascondi quando:  RIL|PuntoScelto::Grandezza <> "visivo"
+<LayoutObject> <Conditions> <Hide findMode="False"> <Calculation> <Text>
 ```
 
-In piu', per chiudere il buco anche se un domani quelle formule vengono
-toccate, il controllo del passo 19 diventa:
+Letto con il nome giusto, **le due formule c'erano gia' nella Revisione 15**,
+scritte esattamente come la scheda 18 le prescriveva:
+
+| Campo | Nascondi oggetto quando |
+|---|---|
+| `RIL\|Rilevazioni::gValore` | `RIL\|PuntoScelto::Grandezza = "visivo"` |
+| `RIL\|Rilevazioni::gValoreTesto` | `RIL\|PuntoScelto::Grandezza <> "visivo"` |
+
+Quindi la temperatura si digitava, `Esito` si riempiva, e il ramo "non
+conforme" scattava. **Il difetto grave non c'e' mai stato.**
+
+**Che cosa avrebbe dovuto smentirmi subito.** Un controllo in positivo su
+`D_Parametri elenco`, dove due campi sovrapposti con formule opposte erano
+gia' montati e collaudati: lo stesso lettore riportava zero formule anche la',
+dove invece funzionano. L'assenza era nel lettore, non nel file.
+
+**Che cosa resta valido.** Il controllo del valore riscritto come
 
 ```
 If ( RIL|PuntoScelto::Grandezza = "visivo" ;
      IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ;
      IsEmpty ( RIL|Rilevazioni::gValore ) )
 ```
+
+e' un miglioramento a prescindere: chiede il dato giusto per il tipo di punto
+invece di accontentarsi di "o l'uno o l'altro", ed e' stato applicato. I
+cinque rilievi che seguono sono tutti confermati.
 
 ## 2. Il messaggio del ramo conforme esce senza il nome del punto
 
@@ -130,7 +142,7 @@ madre, che era gia' su `D_Rilevazioni registra`.
 Con `Blocca finestra` (passo 53, da spostare in cima) i cambi di formato nella
 stessa finestra non si vedono: lo schermo resta fermo fino al messaggio.
 
-## 5. Manca `Conferma record/richieste` come primo passo
+## 5. Manca `Salva record/richieste` come primo passo
 
 Righe 11 e 12: `Consenti interruzione utente`, `Imposta acquisizione errori`.
 Nessun commit. La fase 2 della scheda 18 lo chiedeva ("una riga che va messa
@@ -171,7 +183,7 @@ comune va scritto una volta, e l'unica differenza in fondo deve essere
 quello che si dice.**
 
 ```
-testa          Consenti interruzione / Acquisizione errori / Conferma record
+testa          Consenti interruzione / Acquisizione errori / Salva record
 controlli      due Se, con la verifica giusta per il tipo di punto
 Blocca finestra
 salvataggio    Z_RIL, Nuovo record, 6 Imposta campo, esito, Bloccato

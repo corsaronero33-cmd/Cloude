@@ -148,7 +148,7 @@ davvero a un cuoco di creare account e' il **set di privilegi**.
 | `← Elenco` | 24 | 117 | c'e' gia' |
 | `+ Nuovo` | 146 | 117 | c'e' gia' |
 | `Elimina` | 268 | 117 | c'e' gia' |
-| **`Salva`** | 390 | 117 | `Conferma record/richieste`, **senza** finestra |
+| **`Salva`** | 390 | 117 | `Salva record/richieste`, **senza** finestra |
 | **`Annulla modifiche`** | 512 | **150** | `Ripristina record/richiesta`, **con** la finestra |
 
 Y **57**, altezza **35**, come tutti gli altri. Si collaudano qui e poi si

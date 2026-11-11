@@ -56,7 +56,7 @@ copiano globali vuoti.
 Primo passo del `20`, prima di `Imposta acquisizione errori`:
 
 ```
-Conferma record/richieste [ Senza finestra di dialogo ]
+Salva record/richieste [ Senza finestra di dialogo ]
 ```
 
 Se l'operatore scrive `12` e preme **subito** REGISTRA senza uscire dal campo,
@@ -72,7 +72,7 @@ campi, e uscendo li si acquisisce.
 
 | | Cosa | Perche' prima |
 |---|---|---|
-| 1 | La riga `Conferma record/richieste` | un passo solo, e potrebbe chiudere tutto |
+| 1 | La riga `Salva record/richieste` | un passo solo, e potrebbe chiudere tutto |
 | 2 | Riprovare a registrare | se funziona, la 3 non serve |
 | 3 | Il Visualizzatore dati | solo se non funziona ancora |
 | 4 | L'ordine dei passi (sintomo 1) | e' cosmetico: dopo che registra |

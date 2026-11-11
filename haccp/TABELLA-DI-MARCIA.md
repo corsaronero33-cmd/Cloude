@@ -75,7 +75,18 @@ tabella vuota; e la coda dello script `20` da rifare.
   messaggio del "Registrato" senza il nome del punto, e la finestra della non
   conformita' che lampeggiava con la propria barra dei menu.
 
-In attesa del DDR con le correzioni del collaudo 016.
+- `archivio/collaudo-017.md` — <https://claude.ai/artifact/BY9HDSVmQ6XWKU9hwwPTvJ>
+  Revisione 16: lo script `20` verificato passo per passo, **tutte le
+  correzioni applicate**. Resta da togliere la copia dello script e un
+  `Blocca finestra` di troppo. E la risposta ai record vuoti sulla maschera:
+  non li crea lo script, li crea il **+** della barra degli strumenti, e non
+  si vedono perche' il formato non ha il Corpo.
+
+**Nota sul collaudo 016:** il suo primo rilievo, dato come il piu' grave, era
+un errore di lettura del DDR ed e' stato **ritirato**. Da li' la regola
+*"Mai dire manca senza una prova in positivo"* in `CLAUDE.md`.
+
+In attesa del DDR con la pulizia del collaudo 017, poi `D_Rilevazioni elenco`.
 
 ### `D_Rilevazioni elenco` — dopo
 

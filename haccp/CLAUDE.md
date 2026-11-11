@@ -243,6 +243,43 @@ I documenti numerati (`01-`, `02-`, ...) restano come riferimento e come
 registro delle decisioni. Le liste di lavoro si pubblicano come pagina web,
 perche' si tengono aperte di fianco a FileMaker e le spunte si salvano.
 
+### Le spunte seguono l'account, non il dispositivo
+
+Il lavoro si fa al computer, davanti a FileMaker, ma la scheda si rilegge dal
+telefono. **Quindi le spunte non si salvano nel browser:** `localStorage` resta
+sul dispositivo dove si e' spuntato, e dal telefono la scheda ripartirebbe da
+zero.
+
+Ogni scheda si pubblica dichiarando `capabilities: {db: {}, user: {}}` e tiene
+le spunte in un documento per utente:
+
+```
+db.collection('data/users/' + id).doc('<nome della scheda>')
+body:  { voci: { "f1.1": true, ... }, aggiornato: "<ISO>" }
+```
+
+Quel sottoalbero e' privato per utente, non va dichiarata nessuna regola, e il
+documento sopravvive alle ripubblicazioni della pagina.
+
+Tre cose da rispettare, perche' sono state tutte e tre causa di guasti noti in
+pagine di questo tipo:
+
+- **`localStorage` resta, come copia di partenza.** `claude.use()` risolve
+  *dopo* il primo disegno, mai durante: la pagina si disegna subito dalla copia
+  locale e il collegamento si accende quando arriva. Se non arriva (pagina
+  aperta fuori da Claude, utente non collegato) la scheda funziona comunque,
+  sul solo dispositivo.
+- **Si scrive solo quando l'utente spunta**, mai dal disegno, mai da un
+  `onSnapshot`, mai da un timer: una scrittura per volta, e la successiva
+  aspetta che la prima torni.
+- **Al primo `onSnapshot`**: se il documento esiste vince il server e la copia
+  locale si allinea (cosi' togliere una spunta si propaga); se non esiste e
+  localmente ci sono spunte, si mandano su.
+
+L'etichetta accanto alla barra di avanzamento dice sempre dove sta il dato:
+*sincronizzato*, *solo qui*, *dati non raggiunti*. Un timer di 10 secondi
+decide la terza, e la pagina non si ricarica mai per riprovare.
+
 ## Leggere un DDR esportato
 
 L'esportazione `Salva come XML` porta i **formati per intero** — ogni oggetto
@@ -255,6 +292,34 @@ i soli figli diretti. Esempio vero: il parametro di un trigger non sta sotto
 `<ScriptTrigger>` ma un livello piu' in fondo, dentro `<ScriptReference>`.
 Cercandolo al primo livello risulta mancante, e si segnala un errore che non
 c'e'.
+
+### Mai dire "manca" senza una prova in positivo
+
+**Prima di scrivere che una cosa non c'e' nel file, trovarla dove si sa che
+c'e'.** Si prende un formato, un campo o uno script dove quella cosa e'
+certamente presente, e si controlla che il lettore la veda. Se non la vede, il
+difetto e' nel lettore.
+
+Costato due volte:
+
+- il parametro di un trigger cercato al primo livello invece che nel
+  sottoalbero;
+- *Nascondi oggetto quando* cercato come elemento `<HideCondition>`, che non
+  esiste: sta in `<Conditions><Hide><Calculation><Text>`. Risultato: segnalato
+  come mancante il difetto piu' grave del collaudo 016, che in realta' era
+  stato fatto. Il controllo in positivo su `D_Parametri elenco`, dove quelle
+  formule funzionano e sono collaudate, lo avrebbe smentito subito.
+
+Un'assenza non e' un'osservazione: e' il non aver trovato. Vale solo dopo che
+il lettore ha dimostrato di saper trovare.
+
+### Nomi dei passi, come li scrive FileMaker 22 italiano
+
+| Inglese | Italiano, nel file |
+|---|---|
+| `Commit Records/Requests` | **`Salva record/richieste`** |
+
+Si scrive il nome che l'utente legge a schermo, non la traduzione a senso.
 
 ## Lingua
 

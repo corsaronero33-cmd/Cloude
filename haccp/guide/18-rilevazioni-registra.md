@@ -75,7 +75,7 @@ alla fine si parla.
 ```
 Consenti interruzione utente [ Disattivato ]
 Imposta acquisizione errori [ Attivato ]
-Conferma record/richieste [ Senza finestra di dialogo ]
+Salva record/richieste [ Senza finestra di dialogo ]
 
 # 1 - controlli, prima di toccare il database
 Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
@@ -100,7 +100,7 @@ Imposta campo [ RIL|Rilevazioni::IdOperatore ; $$UTENTE.Id ]
 Imposta campo [ RIL|Rilevazioni::Valore ; RIL|Rilevazioni::gValore ]
 Imposta campo [ RIL|Rilevazioni::ValoreTesto ; RIL|Rilevazioni::gValoreTesto ]
 Imposta campo [ RIL|Rilevazioni::Note ; RIL|Rilevazioni::gNote ]
-Conferma record/richieste
+Salva record/richieste
 Imposta variabile [ $esito ; If ( RIL|PuntiControllo::Grandezza = "visivo" ;
                         RIL|Rilevazioni::ValoreTesto ;
                         EsitoRilevazione ( RIL|Rilevazioni::Valore ;
@@ -108,7 +108,7 @@ Imposta variabile [ $esito ; If ( RIL|PuntiControllo::Grandezza = "visivo" ;
                                            RIL|PuntiControllo::LimiteMax ) ) ]
 Imposta campo [ RIL|Rilevazioni::Esito ; $esito ]
 Imposta campo [ RIL|Rilevazioni::Bloccato ; "Si" ]
-Conferma record/richieste
+Salva record/richieste
 Imposta variabile [ $idRilevazione ; RIL|Rilevazioni::Id ]
 
 # 3 - tutti i testi, presi adesso che i dati si raggiungono
@@ -132,11 +132,11 @@ Se [ $esito = "non conforme" ]
    Imposta campo [ NonConformita::AzioneCorrettiva ; $azione ]
    Imposta campo [ NonConformita::Gravita ; $gravita ]
    Imposta campo [ NonConformita::IdOperatoreRilevatore ; $$UTENTE.Id ]
-   Conferma record/richieste
+   Salva record/richieste
    Imposta variabile [ $idNC ; NonConformita::Id ]
    Vai al formato [ Z_RIL Rilevazioni ]
    Imposta campo [ RIL|Rilevazioni::IdNonConformita ; $idNC ]
-   Conferma record/richieste
+   Salva record/richieste
 Fine se
 
 # 5 - chiusura, identica nei due casi
@@ -145,7 +145,7 @@ Imposta campo [ RIL|Rilevazioni::gIdPuntoControllo ; "" ]
 Imposta campo [ RIL|Rilevazioni::gValore ; "" ]
 Imposta campo [ RIL|Rilevazioni::gValoreTesto ; "" ]
 Imposta campo [ RIL|Rilevazioni::gNote ; "" ]
-Conferma record/richieste
+Salva record/richieste
 
 # 6 - un messaggio solo, scelto in base all'esito
 Se [ $esito = "non conforme" ]
@@ -164,7 +164,7 @@ Vai al campo [ RIL|Rilevazioni::gIdPuntoControllo ]
 Sei cose di questo elenco si sbagliano facilmente, e ognuna e' costata un
 collaudo:
 
-**`Conferma record/richieste` come primo passo.** Se l'operatore scrive `12` e
+**`Salva record/richieste` come primo passo.** Se l'operatore scrive `12` e
 preme **subito** REGISTRA senza uscire dal campo, il cursore e' ancora li'
 dentro e quel valore non e' stato acquisito. Toglie una categoria intera di
 guasti che si manifestano "a volte si' e a volte no".
@@ -246,11 +246,12 @@ funziona.** Sono sovrapposti, quindi senza le formule sono visibili tutti e
 due e davanti sta `gValoreTesto`, che copre l'altro: su un punto a temperatura
 il numero non si puo' digitare, `Valore` nasce vuoto,
 `EsitoRilevazione ( "" ; min ; max )` restituisce `""`, e il registro conserva
-record con `Esito` vuoto mentre lo script dice "conforme". E' il difetto del
-collaudo 016.
+record con `Esito` vuoto mentre lo script dice "conforme".
 
 Poiche' sono sovrapposti, a clic non si distinguono: aprire
-**Visualizza > Oggetti** e selezionarli dall'elenco.
+**Visualizza > Oggetti** e selezionarli dall'elenco. E per verificarle dal DDR
+si cerca `<Conditions><Hide>`, non `<HideCondition>`, che non esiste: vedi
+`CLAUDE.md`, *Mai dire "manca" senza una prova in positivo*.
 
 Diciassette punti su trentatre' sono visivi: "integrita' delle zanzariere" non
 ha un numero da scrivere, ha un esito.
@@ -297,8 +298,9 @@ Diagnosi in `archivio/collaudo-016.md` —
 Due verifiche, in quest'ordine:
 
 1. **Sulla maschera**, scegliere un punto a temperatura: se compare il menu
-   `conforme / non conforme` invece della casella numerica, mancano le due
-   formule *Nascondi oggetto quando* della fase 4. Tutto il resto segue da li'.
+   `conforme / non conforme` invece della casella numerica, le due formule
+   *Nascondi oggetto quando* della fase 4 non stanno facendo il loro lavoro.
+   Tutto il resto segue da li'.
 2. **Su `Z_RIL Rilevazioni`**, guardare la colonna `Esito` dei record appena
    fatti: **un solo `Esito` vuoto e' un difetto**, non una stranezza. Vuol
    dire che `Valore` e' arrivato vuoto a `EsitoRilevazione`.

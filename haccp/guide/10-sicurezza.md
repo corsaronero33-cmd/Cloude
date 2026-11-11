@@ -256,7 +256,7 @@ Fine se
 
 # --- 4. si collega, si salva, si pulisce ---
 Imposta campo [ OPE|Operatori::AccountFileMaker ; OPE|Operatori::gNomeAccount ]
-Conferma record/richieste [ Senza finestra di dialogo ]
+Salva record/richieste [ Senza finestra di dialogo ]
 Imposta campo [ OPE|Operatori::gPassword ; "" ]
 Imposta campo [ OPE|Operatori::gNomeAccount ; "" ]
 Mostra finestra di dialogo personalizzata
@@ -335,7 +335,7 @@ che non deve premere.
 
 | Pulsante | Azione | Perche' |
 |---|---|---|
-| `Salva` | `Conferma record/richieste`, senza finestra | FileMaker salva da solo cliccando fuori, ma chi non e' pratico non lo sa e resta col dubbio |
+| `Salva` | `Salva record/richieste`, senza finestra | FileMaker salva da solo cliccando fuori, ma chi non e' pratico non lo sa e resta col dubbio |
 | `Annulla modifiche` | `Ripristina record/richiesta`, con la finestra | e' l'unico modo di tornare indietro su una scheda gia' pasticciata |
 
 Si aggiungono nell'intestazione, a destra di `Elimina`: `Salva` a x **390**,
