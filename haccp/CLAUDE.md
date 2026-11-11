@@ -52,7 +52,11 @@ Si scrive un codice colore **solo** dove il tema non arriva, e sono tre casi:
   nostra ad Apex blu;
 - il **testo bianco** sopra quel fondo scuro, perche' il tema lo farebbe
   scuro;
-- il riquadro **bianco** che stacca i campi dallo sfondo del corpo.
+- il riquadro **bianco** che stacca i campi dallo sfondo del corpo;
+- il **rosso `#DD0000`** dei fuori limite, nella formattazione condizionale
+  del campo `Esito` sul registro. E' quel rosso e non un altro perche' e'
+  quello che Apex blu usa gia' per i numeri negativi: il file resta con un
+  rosso solo.
 
 Elencare hex dove il tema gia' provvede fa perdere tempo e, alla prima
 maschera dimenticata, produce due grigi diversi nello stesso file.

@@ -86,11 +86,27 @@ tabella vuota; e la coda dello script `20` da rifare.
 un errore di lettura del DDR ed e' stato **ritirato**. Da li' la regola
 *"Mai dire manca senza una prova in positivo"* in `CLAUDE.md`.
 
-In attesa del DDR con la pulizia del collaudo 017, poi `D_Rilevazioni elenco`.
+- `archivio/collaudo-018.md` — Revisione 19: **niente da correggere**, e
+  `0 record` vuoti. Chiusi anche i quattro punti rimasti dal collaudo 014: le
+  sei etichette di colonna allineate al loro campo, i quattro disallineamenti
+  verticali via.
 
-### `D_Rilevazioni elenco` — dopo
+Resta **una maschera** e la tappa 6 si chiude.
+
+### `D_Rilevazioni elenco` — `guide/19-rilevazioni-elenco.md`
+
+<https://claude.ai/artifact/XmgzrxFqHYdJafeuqan71A>
 
 Il registro: sola lettura, per data decrescente, raggruppato per giorno.
+
+Porta con se' tre cose nuove: una **parte Riepilogo iniziale**, che compare una
+volta per gruppo e **solo se i record sono ordinati sul campo del gruppo**; due
+**campi calcolati memorizzati** (`Giorno`, `Ora`), perche' `DataOra` e' diverso
+su ogni record e quindi non raggruppa; e il **primo colore di allarme** del
+progetto, la formattazione condizionale rossa sui fuori limite.
+
+Nessuna relazione nuova: l'ancora `RIL` ha gia' `PuntiControllo`, `Operatori`,
+`NonConformita`, `Attrezzature` e `PuntoScelto`.
 
 ### Tre cose nuove rispetto alle anagrafiche:
 
@@ -101,9 +117,21 @@ Il registro: sola lettura, per data decrescente, raggruppato per giorno.
 - e' la prima maschera che un **operatore** usera' davvero, quindi la prova
   che conta e' farla usare a qualcuno che non l'ha costruita.
 
-Resta aperto il **debito n. 1**: gli script `01`, `02` e `10` girano ancora
-sui formati nati dall'importazione. Si ripuntano qui, con le occorrenze
-davanti.
+**Debito n. 1, spostato alla tappa 7 con una ragione.** Gli script `01`, `02`
+e `10` girano sui formati nati dall'importazione, e dalla tappa 6 lo fa anche
+lo script `20`, che per creare la non conformita' va sul formato
+`NonConformita`. Quindi il debito e' cresciuto, non diminuito.
+
+Si paga alla tappa 7, non prima, perche' e' la tappa che costruisce la
+maschera delle non conformita': quel formato lo si tocca comunque. Il lavoro e'
+piccolo e vale per tutti e quattro gli script insieme: **rinominare i formati
+di importazione usati dagli script** con il prefisso `Z_` e l'ancora davanti
+(`NonConformita` -> `Z_NCF NonConformita`, e cosi' per quelli di `01`, `02`,
+`10`). FileMaker segue i formati per identificativo interno, quindi i
+riferimenti negli script non si rompono.
+
+Rinominarli adesso, a tappa 6 ancora aperta, vorrebbe dire toccare lo script
+`20` due volte.
 
 ---
 
