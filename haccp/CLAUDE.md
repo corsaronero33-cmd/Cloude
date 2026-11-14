@@ -210,6 +210,21 @@ l'ambito. Se fa una cosa nuova, prende un numero nuovo nella decina giusta.
 
 FileMaker dei numeri non se ne accorge: servono a noi.
 
+## Uno script si crea prima dei pulsanti che lo chiamano
+
+In una scheda di lavoro, l'ordine delle fasi e' l'ordine in cui si costruisce.
+Un pulsante si puo' collegare **solo a uno script che gia' esiste**: la
+finestra `Esegui script` mostra l'elenco di quelli nel file, e se lo script
+non c'e' non c'e' niente da scegliere. Chi segue la scheda tira dritto, e il
+pulsante resta morto senza che niente lo segnali.
+
+Quindi, dentro una scheda: **campi, poi script, poi formato, poi pulsanti, poi
+trigger, poi collaudo.** Un pulsante che chiama uno script gia' fatto (il `90`,
+il `93`) si puo' mettere quando si vuole.
+
+Costato una fase in piu' alla scheda 19: la fase 3 faceva collegare due
+pulsanti allo script `91`, creato dalla fase 6.
+
 ## Una maschera per volta, sempre lo stesso formato
 
 Le schede di lavoro in `guide/` hanno tutte la stessa forma, e non si cambia:

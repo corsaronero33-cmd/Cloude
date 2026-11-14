@@ -91,6 +91,12 @@ Il rettangolo bianco va **mandato indietro**, se no copre le etichette.
 
 ## Fase 3 — I tre pulsanti
 
+> **Fai prima la fase 6.** Due di questi pulsanti chiamano lo script `91`, che
+> la fase 6 crea. Se costruisci nell'ordine scritto, arrivato qui nell'elenco
+> degli script non trovi niente da scegliere e i due pulsanti restano morti.
+> Nella scheda pubblicata questo e' costato una fase in piu', la 8.
+> Solo `← Menu` si puo' fare adesso: lo script `90` esiste gia'.
+
 Tutti a y **57**, alti **35**.
 
 | Pulsante | X | Largh. | Script | Parametro |
@@ -179,8 +185,8 @@ Imposta variabile [ $cosa ; Get ( ParametroScript ) ]
 Mostra tutti i record
 
 Se [ $cosa = "nonconformi" ]
-   Modalita' Trova
-   Imposta campo [ RIL|Rilevazioni::Esito ; "non conforme" ]
+   Modalita' Trova [ Pausa: Disattivato ]
+   Imposta campo [ RIL|Rilevazioni::Esito ; "==non conforme" ]
    Esegui trova
    Se [ Get ( ConteggioTrovati ) = 0 ]
       Mostra tutti i record
@@ -205,6 +211,32 @@ non si vedono.
 
 `Vai al record [ Primo ]` perche' dopo un ordinamento il record corrente puo'
 essere a meta' elenco, e il registro va aperto in cima.
+
+### I tre punti in cui si sbaglia
+
+**`Modalita' Trova` nasce con la Pausa attiva.** Se resta, lo script si ferma
+li' e aspetta che l'utente prema Invio: il pulsante sembra non fare niente.
+Togliere la spunta a *Pausa*.
+
+**Il criterio va scritto `"==non conforme"`**, con due segni di uguale dentro
+le virgolette: dice a FileMaker *"il campo contiene esattamente questo"*. Con
+il solo `non conforme` funziona lo stesso oggi, ma si rompe il giorno in cui
+un esito diventa `non conforme da verificare`.
+
+**Il parametro del pulsante va fra virgolette.** Quel campo e' un calcolo:
+`"nonconformi"`, non `nonconformi`. Senza virgolette FileMaker cerca un campo
+con quel nome, non lo trova e passa vuoto — e il pulsante mostra tutto il
+registro invece di filtrare. E' lo stesso trabocchetto di `"D_Menu"` sullo
+script `90`.
+
+### Come si aggiungono i passi
+
+Nell'Area di lavoro script, a destra c'e' l'elenco dei passi con la casella di
+ricerca. Doppio clic aggiunge il passo **sotto la riga selezionata**: si
+costruisce dall'alto in basso tenendo selezionata l'ultima riga aggiunta. Per
+mettere un passo **dentro** un `Se`, si clicca la riga `Se` e poi si aggiunge.
+I rientri sono l'unico modo di vedere a colpo d'occhio se un passo e' dentro o
+fuori: se non combaciano con l'elenco qui sopra, si trascina la riga.
 
 **Trigger:** Formati > `Imposta trigger di script...` >
 **`OnLayoutEnter`** > `91 - Rilevazioni - Entra nell'elenco`, **senza
