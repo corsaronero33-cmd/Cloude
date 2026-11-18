@@ -332,6 +332,18 @@ Costato due volte:
 Un'assenza non e' un'osservazione: e' il non aver trovato. Vale solo dopo che
 il lettore ha dimostrato di saper trovare.
 
+### `index` e `storeCalculationResults` sono due cose diverse
+
+Su un campo calcolato, nel DDR:
+
+- `storeCalculationResults="True"` -> il risultato e' **memorizzato**, e quindi
+  il campo si puo' usare per **ordinare** e per raggruppare in un Riepilogo;
+- `index="None"` -> l'indice non e' **ancora costruito**. Con
+  `autoIndex="True"` FileMaker lo costruisce la prima volta che serve.
+
+Leggere `index="None"` e dire "non memorizzato" e' sbagliato: sono il secondo
+e il primo. Costato un'affermazione falsa nel collaudo 018.
+
 ### Nomi dei passi, come li scrive FileMaker 22 italiano
 
 | Inglese | Italiano, nel file |

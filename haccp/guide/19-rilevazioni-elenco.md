@@ -156,6 +156,17 @@ righe. Colore: quello che le da' il tema, non si tocca.
 Nel **Pie' di pagina**, copiato dagli altri elenchi: `Record`
 `{{RecordNumber}}` `Di` `{{FoundCount}}` a y **220**.
 
+> **`{{FoundCount}}`, non `{{TotalRecordCount}}`.** Nel menu
+> `Inserisci > Variabile di unione` i due nomi sono vicini e si prendono uno
+> per l'altro. Qui conta piu' che negli altri elenchi, perche' questa e'
+> l'unica maschera con un filtro: premuto `Solo non conformi` il piede deve
+> dire quante righe sono rimaste, non quante ne ha la tabella. Con `Tutte` i
+> due valori coincidono, quindi lo sbaglio **non si vede durante il
+> collaudo**.
+
+Nell'intestazione, come sugli altri elenchi, una **linea** x **0**, y **101**,
+larga **1020**, che stacca i pulsanti dalla fascia bianca.
+
 ## Fase 5 — L'unico colore nuovo del progetto
 
 Sul campo `Esito`: `Formato > Formattazione condizionale`, condizione

@@ -66,8 +66,16 @@ Niente relazioni nuove da costruire: l'ancora `RIL` ha gia' tutto.
 | `RIL\|Rilevazioni::gIdPuntoControllo` | | `RIL\|PuntoScelto::Id` |
 | `RIL\|PuntiControllo::IdAttrezzatura` | | `RIL\|Attrezzature::Id` |
 
-`Operatori::NomeCompleto` esiste gia' (`Cognome & " " & Nome`, non
-memorizzato: va bene per mostrarlo, non per ordinare).
+`Operatori::NomeCompleto` esiste gia' (`Cognome & " " & Nome`).
+
+> **Correzione, dal collaudo 019.** Qui avevo scritto che e' *"non
+> memorizzato: va bene per mostrarlo, non per ordinare"*. **Non e' vero:** ha
+> `storeCalculationResults="True"`, quindi e' memorizzato e si puo' usare per
+> ordinare. Avevo letto `index="None"` e l'avevo preso per "non memorizzato".
+> Sono due cose diverse: `index` dice se l'indice e' **gia' costruito**
+> (`None` con `autoIndex="True"` significa che FileMaker lo costruira' la
+> prima volta che serve), `storeCalculationResults` dice se il risultato e'
+> memorizzato.
 
 ## Resta aperto
 

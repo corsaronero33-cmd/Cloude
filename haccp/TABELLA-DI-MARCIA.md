@@ -21,8 +21,8 @@ funziona** e con un DDR da verificare.
 | 3 | Punti di controllo | l'ultima anagrafica | **fatto** — `archivio/collaudo-012.md` |
 | 4 | Impresa e Parametri | il menu e' completo: tredici pulsanti, tredici destinazioni | **fatto** — `archivio/collaudo-013.md` |
 | 5 | Le larghezze | quindici formati a 1020, tutti chiusi a 996 | **fatto** — `archivio/collaudo-014.md` |
-| **6** | **Le rilevazioni** | **si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita'** | **← sei qui**, `guide/18-rilevazioni-registra.md` |
-| 7 | Sanificazioni e non conformita' | gli altri due registri del quotidiano | |
+| 6 | Le rilevazioni | si misura una temperatura, il programma dice se e' a norma e apre da solo la non conformita' | **fatto** — `archivio/collaudo-019.md` |
+| **7** | **Sanificazioni e non conformita'** | **gli altri due registri del quotidiano** | **← sei qui** |
 | 8 | Ricevimenti e lotti | il **passo indietro** della rintracciabilita': da un lotto al DDT e al fornitore | |
 | 9 | Le stampe | i registri in PDF per l'ispezione — **qui il lavoro diventa consegnabile** | |
 | 10 | Il telefono | FileMaker Go: rilevazione al volo, codice a barre, firma | |
@@ -91,7 +91,19 @@ un errore di lettura del DDR ed e' stato **ritirato**. Da li' la regola
   sei etichette di colonna allineate al loro campo, i quattro disallineamenti
   verticali via.
 
-Resta **una maschera** e la tappa 6 si chiude.
+- `archivio/collaudo-019.md` — Revisione 20: **`D_Rilevazioni elenco` montata
+  e funzionante**, collaudo superato. Verificati nel DDR il Riepilogo iniziale
+  raggruppato su `Giorno`, i due calcoli **memorizzati**, l'ordinamento,
+  `Modalita' Trova` senza Pausa, i parametri dei due pulsanti, il trigger e il
+  rosso `#DD0000` della formattazione condizionale. Un difetto solo: il piede
+  contava `{{TotalRecordCount}}` invece di `{{FoundCount}}`, che si vede solo
+  dopo aver premuto il filtro. Piu' due passi disattivati da cancellare dentro
+  lo script `91`.
+
+**La tappa 6 e' chiusa.** Si misura una temperatura, il programma la confronta
+con i limiti del punto, scrive l'esito, apre da solo la non conformita' con
+l'azione correttiva, e il registro si legge per giornate con i fuori limite in
+rosso.
 
 ### `D_Rilevazioni elenco` — `guide/19-rilevazioni-elenco.md`
 
