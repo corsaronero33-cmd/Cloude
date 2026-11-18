@@ -51,9 +51,9 @@ ed e' a posto.
 
 ### Lo script, i pulsanti, il trigger
 
-`Ordina record`: `Ripristina` attivo, **senza** finestra di dialogo,
+`Ordina i record`: `Ripristina` attivo, **senza** finestra di dialogo,
 `Giorno` decrescente e poi `DataOra` decrescente, nell'ordine giusto.
-`Modalita' Trova` ha **Pausa disattivata**. `Vai al record [ Primo ]`.
+`Passa al modo Trova` ha **Pausa disattivata**. `Vai a Record/Richiesta/Pagina [ Primo ]`.
 
 | Pulsante | X | Largh. | Script | Parametro |
 |---|---|---|---|---|
@@ -101,21 +101,21 @@ quindi il difetto si vede **solo** dopo aver premuto il filtro.
 ## 2. Due passi morti dentro lo script `91`
 
 ```
-10  Esegui trova/sostituisci   [ disattivato ]
-11  Modalita' Scheda           [ disattivato ]
+10  Esegui Trova/Sostituisci   [ disattivato ]
+11  modo Usa           [ disattivato ]
 ```
 
 Tutti e due hanno `enable="False"`: **non girano**, e il comportamento oggi e'
 giusto. Sono il segno che nell'elenco dei passi si e' preso
-`Esegui trova/sostituisci` al posto di `Esegui trova` — i due nomi sono
+`Esegui Trova/Sostituisci` al posto di `Esegui la ricerca` — i due nomi sono
 attaccati — e invece di cancellarlo lo si e' disattivato.
 
-Vanno **cancellati**, non lasciati disattivati. `Esegui trova/sostituisci`
+Vanno **cancellati**, non lasciati disattivati. `Esegui Trova/Sostituisci`
 non e' un passo qualunque: se un domani qualcuno lo riattiva per sbaglio,
 quello cerca e **sostituisce testo in tutti i record e in tutti i campi**.
 Non e' una cosa che deve stare addormentata dentro uno script del registro.
 
-`Modalita' Scheda` e' innocuo (dopo `Esegui trova` si e' gia' in Modalita'
+`Passa al modo Usa` e' innocuo (dopo `Esegui la ricerca` si e' gia' in Modalita'
 Scheda), ma tanto vale togliere tutti e due insieme.
 
 ## 3. Piccolo: manca la linea sopra la fascia delle etichette

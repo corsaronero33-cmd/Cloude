@@ -155,24 +155,24 @@ Due novita': il controllo dell'**errore 105** (formato mancante) separato da
 ogni altro errore, e l'`Esci dallo script` finale che restituisce `"ok"`.
 
 ```
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 Imposta variabile [ $formato ; Valore: Get ( ParametroScript ) ]
-Se [ IsEmpty ( $formato ) ]
+If [ IsEmpty ( $formato ) ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 Vai al formato [ Nome del formato per calcolo: $formato ]
 Imposta variabile [ $errore ; Valore: Get ( UltimoErrore ) ]
-Se [ $errore = 105 ]
+If [ $errore = 105 ]
     Mostra finestra di dialogo personalizzata
         [ "Non ancora pronto" ; "La maschera " & $formato & " non c'e' ancora." ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
-Se [ $errore <> 0 ]
+End If
+If [ $errore <> 0 ]
     Mostra finestra di dialogo personalizzata
         [ "Accesso negato" ;
           "Non hai i permessi per aprire " & $formato & ". Errore " & $errore & "." ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 Mostra tutti i record
 Esci dallo script [ Risultato del testo: "ok" ]
 ```
@@ -181,9 +181,9 @@ Esci dallo script [ Risultato del testo: "ok" ]
 
 ```
 Esegui script [ "90 - Utilita - Vai a" ; Parametro: Get ( ParametroScript ) ]
-Se [ Get ( RisultatoScript ) <> "ok" ]
+If [ Get ( RisultatoScript ) <> "ok" ]
     Esci dallo script [ ]
-Fine se
+End If
 Nuovo record/richiesta
 ```
 

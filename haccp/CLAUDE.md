@@ -24,7 +24,7 @@ Conseguenze pratiche, tutte e tre importanti:
 In italiano molti nomi comuni sono **funzioni di FileMaker** e non si possono
 usare come nomi di parametro: `Codice`, `Data`, `Giorno`, `Mese`, `Anno`,
 `Posizione`, `Lunghezza`, `Filtro`, `Sostituisci`, `Medio`, `Sinistra`,
-`Destra`, `Se`, `Car`.
+`Destra`, `If`, `Car`.
 
 Quindi si scrive `pCodice`, `pData`, `pValore`. Sempre, anche quando il nome
 sembrerebbe libero: costa una lettera e toglie una categoria intera di
@@ -69,10 +69,11 @@ maschera dimenticata, produce due grigi diversi nello stesso file.
 | Le misure dei formati | **`09-MASCHERE.md`**, sezione *Misure standard* |
 | Le schede di lavoro | `guide/`, numerate nell'ordine in cui si costruiscono |
 | I collaudi | `archivio/`, uno per giro di verifica |
+| I nomi italiani di FileMaker | **`VOCABOLARIO-FILEMAKER.md`** |
 
 Non si aprono documenti nuovi in radice: una cosa nuova o entra in uno dei
 nove riferimenti numerati, o e' una scheda in `guide/`, o e' un collaudo in
-`archivio/`.
+`archivio/`. `VOCABOLARIO-FILEMAKER.md` e' l'eccezione, ed e' una tabella.
 
 ## Misure vincolanti e misure di partenza
 
@@ -344,13 +345,24 @@ Su un campo calcolato, nel DDR:
 Leggere `index="None"` e dire "non memorizzato" e' sbagliato: sono il secondo
 e il primo. Costato un'affermazione falsa nel collaudo 018.
 
-### Nomi dei passi, come li scrive FileMaker 22 italiano
+### I nomi delle istruzioni di script stanno in un posto solo
 
-| Inglese | Italiano, nel file |
+**`VOCABOLARIO-FILEMAKER.md`**, verificato sulla documentazione Claris
+italiana. Non si va a memoria e non si traduce a senso: un nome sbagliato
+manda chi costruisce a cercare un comando che non esiste.
+
+Quando serve un nome che non e' in tabella si apre
+`help.claris.com/it/pro-help/content/<nome-inglese-con-trattini>.html` e si
+legge il **titolo della pagina**: quello **e'** il nome italiano.
+
+Le tre che si sbagliano piu' spesso, perche' sembrano traducibili e non lo
+sono:
+
+| Inglese | Italiano |
 |---|---|
-| `Commit Records/Requests` | **`Salva record/richieste`** |
-
-Si scrive il nome che l'utente legge a schermo, non la traduzione a senso.
+| `Perform Find` | **`Esegui la ricerca`**, non "Esegui trova" |
+| `Enter Find Mode` | **`Passa al modo Trova`** |
+| `If` / `Else` / `End If` | **restano in inglese** |
 
 ## Lingua
 

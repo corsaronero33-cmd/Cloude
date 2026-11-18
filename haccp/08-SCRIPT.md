@@ -39,7 +39,7 @@ limite, e legge lotto e scadenza dal cartone.
 > altre hanno un pulsante: si lasciano **Pulsante 2 e 3 vuoti**.
 >
 > **Nomi dei passi.** L'interfaccia e' in italiano: `Imposta variabile`,
-> `Imposta campo`, `Vai al formato`, `Se`, `Fine se`, `Ciclo`. In FileMaker
+> `Imposta campo`, `Vai al formato`, `If`, `End If`, `Ciclo`. In FileMaker
 > italiano **layout si dice formato**. Se un nome non corrisponde
 > esattamente, cercalo nella casella: la traduzione puo' variare di una
 > parola.
@@ -151,14 +151,14 @@ Imposta variabile [ $conto ; Valore: Get ( AccountName ) ]
 Vai al formato [ "Operatori" (Operatori) ]
 Attiva modo Trova
 Imposta campo [ Operatori::AccountFileMaker ; $conto ]
-Esegui trova [ ]
-Se [ Get ( UltimoErrore ) = 0 and Get ( ConteggioRecordTrovati ) = 1 ]
+Esegui la ricerca [ ]
+If [ Get ( UltimoErrore ) = 0 and Get ( ConteggioRecordTrovati ) = 1 ]
     Imposta variabile [ $$UTENTE.Id ; Valore: Operatori::Id ]
     Imposta variabile [ $$UTENTE.Nome ; Valore: Operatori::NomeCompleto ]
-Altrimenti
+Else
     Imposta variabile [ $$UTENTE.Id ; Valore: "" ]
     Imposta variabile [ $$UTENTE.Nome ; Valore: $conto ]
-Fine se
+End If
 ```
 
 Se l'account non e' agganciato a nessun operatore il programma continua a
@@ -171,7 +171,7 @@ sistemare in anagrafica, non da bloccare a video.
 
 ```
 Consenti annullamento utente [ Disattivato ]
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 Esegui script [ "01 - Utilita - Carica parametri" ]
 Esegui script [ "02 - Utilita - Riconosci operatore" ]
 Vai al formato [ "Rilevazioni" (Rilevazioni) ]
@@ -219,20 +219,20 @@ dentro l'azione correttiva gia' scritta nel punto di controllo.
 
 ```
 Consenti annullamento utente [ Disattivato ]
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 
 # --- controlli prima di scrivere qualsiasi cosa ---
-Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
+If [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
     Mostra finestra di dialogo personalizzata [
         "Manca un dato" ; "Scegli il punto di controllo." ; Pulsante 1: "OK" ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 
-Se [ IsEmpty ( RIL|Rilevazioni::gValore ) and IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ]
+If [ IsEmpty ( RIL|Rilevazioni::gValore ) and IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ]
     Mostra finestra di dialogo personalizzata [
         "Manca un dato" ; "Scrivi il valore rilevato." ; Pulsante 1: "OK" ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 
 # --- crea la rilevazione ---
 Vai al formato [ "Z_RIL Rilevazioni" (RIL|Rilevazioni) ]
@@ -259,7 +259,7 @@ Salva record/richieste [ Con dialogo: Disattivato ]
 Imposta variabile [ $idRilevazione ; Valore: RIL|Rilevazioni::Id ]
 
 # --- se e' fuori limite, apri la non conformita' ---
-Se [ $esito = "non conforme" ]
+If [ $esito = "non conforme" ]
     Imposta variabile [ $descrizione ; Valore:
         "Fuori limite: " & RIL|PuntiControllo::Descrizione &
         ". Valore rilevato " & RIL|Rilevazioni::Valore & " " &
@@ -291,7 +291,7 @@ Se [ $esito = "non conforme" ]
         "Valore fuori limite" ;
         $descrizione & "¶¶Azione correttiva da eseguire:¶" & $azione ;
         Pulsante 1: "Ho capito" ]
-Fine se
+End If
 
 # --- svuota i campi di immissione ---
 Imposta campo [ RIL|Rilevazioni::gIdPuntoControllo ; "" ]
@@ -348,12 +348,12 @@ Da eseguire con il cursore su una riga di ricevimento.
 
 ```
 Consenti annullamento utente [ Disattivato ]
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 
-Se [ Get ( PiattaformaSistema ) = 3 ]
+If [ Get ( PiattaformaSistema ) = 3 ]
     Inserisci da dispositivo [ RigheRicevimento::CodiceScansionato ;
         Tipo: Codice a barre ; Fotocamera: Posteriore ]
-Altrimenti
+Else
     Mostra finestra di dialogo personalizzata [
         # scheda "Finestra di dialogo generale"
         Titolo: "Codice etichetta" ;
@@ -362,37 +362,37 @@ Altrimenti
         # scheda "Campi di immissione"
         Mostra campo di immissione 1 -> RigheRicevimento::CodiceScansionato ,
         etichetta "Codice" ]
-    Se [ Get ( UltimaSceltaMessaggio ) = 2 ]
+    If [ Get ( UltimaSceltaMessaggio ) = 2 ]
         Esci dallo script [ Risultato del testo: "" ]
-    Fine se
-Fine se
+    End If
+End If
 
-Se [ IsEmpty ( RigheRicevimento::CodiceScansionato ) ]
+If [ IsEmpty ( RigheRicevimento::CodiceScansionato ) ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 
 Imposta variabile [ $lotto ; Valore: GS1Lotto ( RigheRicevimento::CodiceScansionato ) ]
 Imposta variabile [ $scadenza ; Valore: GS1Scadenza ( RigheRicevimento::CodiceScansionato ) ]
 
-Se [ not IsEmpty ( $lotto ) ]
+If [ not IsEmpty ( $lotto ) ]
     Imposta campo [ RigheRicevimento::Lotto ; $lotto ]
-Fine se
+End If
 
-Se [ not IsEmpty ( $scadenza ) ]
+If [ not IsEmpty ( $scadenza ) ]
     Imposta campo [ RigheRicevimento::DataScadenza ; $scadenza ]
     Imposta campo [ RigheRicevimento::TipoScadenza ; "scadenza" ]
-Fine se
+End If
 
 Salva record/richieste [ Con dialogo: Disattivato ]
 
-Se [ IsEmpty ( $lotto ) and IsEmpty ( $scadenza ) ]
+If [ IsEmpty ( $lotto ) and IsEmpty ( $scadenza ) ]
     Mostra finestra di dialogo personalizzata [
         Pulsante 1: "OK" ;
         "Etichetta non riconosciuta" ;
         "Il codice e' stato salvato ma non contiene lotto ne' scadenza in "
         & "formato GS1. Scrivili a mano e segnalamelo: potrebbe essere "
         & "un'etichetta particolare di quel fornitore." ]
-Fine se
+End If
 ```
 
 **Quando scatta l'avviso.** Solo se non si e' capito **niente**: la condizione

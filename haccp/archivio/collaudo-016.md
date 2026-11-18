@@ -108,7 +108,7 @@ stati ricopiati nel secondo ramo.
 
 Il difetto n. 2 e' nato esattamente da qui: due copie della stessa chiusura,
 e la correzione di una non arriva all'altra. Vanno scritti **una volta sola,
-dopo il `Fine se`**.
+dopo il `End If`**.
 
 ## 4. La finestra `nc` e' una finestra Documento con la barra dei menu
 
@@ -144,7 +144,7 @@ stessa finestra non si vedono: lo schermo resta fermo fino al messaggio.
 
 ## 5. Manca `Salva record/richieste` come primo passo
 
-Righe 11 e 12: `Consenti interruzione utente`, `Imposta acquisizione errori`.
+Righe 11 e 12: `Consenti interruzione utente`, `Imposta cattura errori`.
 Nessun commit. La fase 2 della scheda 18 lo chiedeva ("una riga che va messa
 comunque"). Se il cursore e' ancora dentro `gValore` o `gNote` quando si preme
 REGISTRA, lo script legge il campo com'era prima.
@@ -165,7 +165,7 @@ occorrenza — ma sono gli unici due punti dello script con grafia diversa.
 **Il set `Operatore`** ha accesso personalizzato per tabella, e su
 `Rilevazioni` e su `NonConformita` ha `View`, `Edit` e `Create`. Il ramo della
 non conformita' non si blocca per i permessi — che con
-`Imposta acquisizione errori [ Attivato ]` sarebbe stato un guasto muto.
+`Imposta cattura errori [ Attivato ]` sarebbe stato un guasto muto.
 
 | Tabella | Vedi | Modifica | Crea | Elimina |
 |---|---|---|---|---|

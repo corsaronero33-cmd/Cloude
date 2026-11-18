@@ -30,8 +30,8 @@ giusto:
 | 2 | `"Rilevazione registrata: " & $nome & " - conforme."` | riga 88 |
 | — | `Vai al campo [ gIdPuntoControllo ]` in fondo | riga 91 |
 
-La struttura e' quella voluta: un `Se` che **fa** il lavoro in piu', la
-chiusura comune, un `Se` che **dice** la cosa diversa.
+La struttura e' quella voluta: un `If` che **fa** il lavoro in piu', la
+chiusura comune, un `If` che **dice** la cosa diversa.
 
 ### Due residui da togliere
 
@@ -79,7 +79,7 @@ maschera. Gli unici passi `Nuovo record/richiesta` del file sono questi:
 
 Li ha creati **la mano**: il pulsante **+** della barra degli strumenti,
 `Ctrl+N`, oppure `Record > Nuovo record` dal menu. Sulla maschera, stando in
-Modalita' Scheda, basta una di queste tre strade.
+modo Usa, basta una di queste tre strade.
 
 **E non ci si accorge, per una ragione precisa.** `D_Rilevazioni registra` ha
 **una parte sola, l'Intestazione: non ha il Corpo**. Il Corpo e' la parte che
@@ -132,7 +132,7 @@ restano nel registro e vanno tolti a mano.
 Da `Admin` (il set `Operatore` non ha l'eliminazione su `Rilevazioni`):
 
 1. andare su **`Z_RIL Rilevazioni`**, che ha il Corpo e mostra tutti i campi;
-2. `Ctrl+F` per la Modalita' Trova, scrivere **`=`** da solo nel campo
+2. `Ctrl+F` per passare al modo Trova, scrivere **`=`** da solo nel campo
    `IdPuntoControllo` e dare Invio — `=` e' l'operatore di FileMaker per
    "campo vuoto";
 3. **guardare il set trovato prima di toccarlo**: `DataOra`, `Valore` ed

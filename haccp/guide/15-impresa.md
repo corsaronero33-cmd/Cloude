@@ -62,11 +62,11 @@ partenza; vincolante solo la **fascia blu alta 100**.
 # Agganciato al trigger OnLayoutEnter di D_Impresa scheda.
 
 Mostra tutti i record
-Se [ Get ( ConteggioTrovati ) = 0 ]
+If [ Get ( ConteggioTrovati ) = 0 ]
     Nuovo record/richiesta
-Altrimenti
-    Vai al record/richiesta/pagina [ Primo ]
-Fine se
+Else
+    Vai a Record/Richiesta/Pagina [ Primo ]
+End If
 ```
 
 Trigger `OnLayoutEnter` del formato, nessun parametro.
@@ -115,7 +115,7 @@ Nove prove nella pagina. Le due che contano:
   locale**. Quel campo c'e' da settimane e ha sempre mostrato una riga bianca
   perche' la tabella era vuota.
 - **5.4** — rientrando nella scheda deve esserci **sempre lo stesso record**.
-  Se ne trovi due, lo script sta creando ogni volta: controlla il `Se`.
+  Se ne trovi due, lo script sta creando ogni volta: controlla il `If`.
 
 ---
 

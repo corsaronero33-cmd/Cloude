@@ -199,21 +199,21 @@ chiamata da molti punti.
 # ci sono sempre pulsanti che puntano a qualcosa che arriva domani.
 # Parametro: il nome esatto del formato, fra virgolette.
 
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 Imposta variabile [ $formato ; Valore: Get ( ParametroScript ) ]
 
-Se [ IsEmpty ( $formato ) ]
+If [ IsEmpty ( $formato ) ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 
 Vai al formato [ Nome del formato per calcolo: $formato ]
 
-Se [ Get ( UltimoErrore ) <> 0 ]
+If [ Get ( UltimoErrore ) <> 0 ]
     Mostra finestra di dialogo personalizzata
         [ "Non ancora pronto" ;
           "La maschera " & $formato & " non c'e' ancora." ]
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 
 Mostra tutti i record
 ```

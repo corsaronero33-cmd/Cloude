@@ -29,7 +29,7 @@ spunta **Univoco**. Il perche' e' nella fase 5.
 ## Fase 2 — Lo script `91 - Operatori - Entra nell'elenco`
 
 Duplica quello dei prodotti. `Imposta campo` -> `OPE|Operatori::gCerca`,
-`Ordina record` -> **`Cognome` crescente, poi `Nome` crescente**.
+`Ordina i record` -> **`Cognome` crescente, poi `Nome` crescente**.
 
 **Due criteri e non uno.** In una cucina due Rossi ci sono quasi sempre.
 Ordinando per cognome e basta, l'ordine fra i due cambia a ogni ricerca e non

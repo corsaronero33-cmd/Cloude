@@ -31,10 +31,10 @@ Uno solo per tutta l'applicazione, come il `90` e il `92`.
 
 Nuovo record/richiesta
 
-Se [ not IsEmpty ( Get ( ParametroScript ) ) ]
+If [ not IsEmpty ( Get ( ParametroScript ) ) ]
     Esegui script [ "90 - Utilita - Vai a" ;
                     Parametro: Get ( ParametroScript ) ]
-Fine se
+End If
 ```
 
 Il `93` riceve `"D_Attrezzature scheda"` e lo gira al `90`, che sa gia' come

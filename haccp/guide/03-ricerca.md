@@ -67,21 +67,21 @@ nessun campo: e' uno per tutta l'applicazione.
 # Parametro: il testo da cercare, passato dal trigger della casella.
 
 Imposta variabile [ $cerca ; Valore: Get ( ParametroScript ) ]
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 
-Se [ IsEmpty ( $cerca ) ]
+If [ IsEmpty ( $cerca ) ]
     Mostra tutti i record
     Esci dallo script [ Risultato del testo: "" ]
-Fine se
+End If
 
 Esegui ricerca rapida [ $cerca ]
 
-Se [ Get ( UltimoErrore ) = 401 ]
+If [ Get ( UltimoErrore ) = 401 ]
     Mostra finestra di dialogo personalizzata
         [ "Nessun risultato" ;
           "Nessuna scheda contiene " & $cerca & "." ]
     Mostra tutti i record
-Fine se
+End If
 ```
 
 **401** e' il codice di "nessun record trovato". Senza l'acquisizione errori
@@ -104,7 +104,7 @@ Adesso fa tre cose, e il nome deve dirlo.
 
 Imposta campo [ REP|Reparti::gCerca ; "" ]
 Mostra tutti i record
-Ordina record [ Ordine crescente, poi Codice crescente ; senza finestra ]
+Ordina i record [ Ordine crescente, poi Codice crescente ; senza finestra ]
 ```
 
 Il trigger non va ritoccato: punta allo stesso script, che ha solo cambiato

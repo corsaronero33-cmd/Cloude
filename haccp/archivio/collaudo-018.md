@@ -21,14 +21,14 @@ spostati di uno in meno dopo la cancellazione:
 
 ```
 12  Salva record/richieste
-15  Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
-20  Se [ If ( Grandezza = "visivo" ; IsEmpty ( gValoreTesto ) ; IsEmpty ( gValore ) ) ]
+15  If [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
+20  If [ If ( Grandezza = "visivo" ; IsEmpty ( gValoreTesto ) ; IsEmpty ( gValore ) ) ]
 26  Blocca finestra                       <- una sola volta
 27  Vai al formato [ Z_RIL Rilevazioni ]
 45  Imposta variabile [ $nome ; RIL|PuntiControllo::Descrizione ]
-48  Se [ $esito = "non conforme" ]  ... il lavoro in piu'
+48  If [ $esito = "non conforme" ]  ... il lavoro in piu'
 73  Vai al formato [ Formato originale ]  ... la chiusura comune
-81  Se [ $esito = "non conforme" ]  ... la sola differenza
+81  If [ $esito = "non conforme" ]  ... la sola differenza
 90  Vai al campo [ gIdPuntoControllo ]
 ```
 

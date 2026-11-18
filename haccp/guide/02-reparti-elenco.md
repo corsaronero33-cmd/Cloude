@@ -150,7 +150,7 @@ voce non si trova, si salta — non e' essenziale.
 | # | Passo | Impostazioni |
 |---|---|---|
 | 01 | *commento* | `# Ordina l'elenco dei reparti. Lo chiama il trigger OnLayoutEnter` `# del formato D_Reparti elenco.` |
-| 02 | `Ordina record` | Criteri: `REP\|Reparti::Ordine` crescente, poi `REP\|Reparti::Codice` crescente. **Specifica criteri** spuntato, **con finestra di dialogo: No** |
+| 02 | `Ordina i record` | Criteri: `REP\|Reparti::Ordine` crescente, poi `REP\|Reparti::Codice` crescente. **Specifica criteri** spuntato, **con finestra di dialogo: No** |
 | 03 | `Esci dallo script` | |
 
 ### Il trigger

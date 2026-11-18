@@ -94,7 +94,7 @@ un errore di lettura del DDR ed e' stato **ritirato**. Da li' la regola
 - `archivio/collaudo-019.md` — Revisione 20: **`D_Rilevazioni elenco` montata
   e funzionante**, collaudo superato. Verificati nel DDR il Riepilogo iniziale
   raggruppato su `Giorno`, i due calcoli **memorizzati**, l'ordinamento,
-  `Modalita' Trova` senza Pausa, i parametri dei due pulsanti, il trigger e il
+  `Passa al modo Trova` senza Pausa, i parametri dei due pulsanti, il trigger e il
   rosso `#DD0000` della formattazione condizionale. Un difetto solo: il piede
   contava `{{TotalRecordCount}}` invece di `{{FoundCount}}`, che si vede solo
   dopo aver premuto il filtro. Piu' due passi disattivati da cancellare dentro

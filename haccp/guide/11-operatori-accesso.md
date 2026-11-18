@@ -104,7 +104,7 @@ contiene **il valore stesso**, non un IDUU.
 
 **Deve corrispondere lettera per lettera.** Lo script `94` confronta
 `Ruolo = "Responsabile"` per scegliere il set di privilegi. Con
-`responsabile` minuscolo o `Resp.` il confronto cade nell'`Altrimenti` e il
+`responsabile` minuscolo o `Resp.` il confronto cade nell'`Else` e il
 titolare si ritrova i permessi del cuoco, **senza nessun messaggio di
 errore**.
 

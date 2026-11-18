@@ -42,13 +42,13 @@ Non si scrive: si duplica quello dei reparti e si cambiano **due** cose.
 | 2 | Elenco a sinistra | `91 - Reparti - Entra nell'elenco`, tasto destro › **Duplica** |
 | 3 | Sulla copia | Tasto destro › **Rinomina**: `91 - Attrezzature - Entra nell'elenco` |
 | 4 | Passo `Imposta campo` | Doppio clic › **Specifica**: e' ancora `REP\|Reparti::gCerca`. Cambia l'occorrenza in **`ATT\|Attrezzature`** e scegli `gCerca` |
-| 5 | Passo `Ordina record` | Doppio clic: i criteri sono ancora quelli dei reparti. **Cancellali** e metti `ATT\|Attrezzature::Codice` crescente |
+| 5 | Passo `Ordina i record` | Doppio clic: i criteri sono ancora quelli dei reparti. **Cancellali** e metti `ATT\|Attrezzature::Codice` crescente |
 | 6 | `Mostra tutti i record` | Non si tocca: non nomina nessuna tabella |
 | 7 | | Chiudi e **salva** |
 
 **I passi 4 e 5 sono la trappola della duplicazione.** FileMaker duplica lo
 script **con dentro i riferimenti vecchi** e non te lo dice. Un
-`Ordina record` lasciato sui reparti non da' errore: ordina secondo una
+`Ordina i record` lasciato sui reparti non da' errore: ordina secondo una
 tabella che non c'entra, cioe' non ordina.
 
 **Sì, lo stesso numero 91.** Non e' un progressivo: il numero dice *che tipo

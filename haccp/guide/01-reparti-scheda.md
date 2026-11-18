@@ -45,16 +45,16 @@ controllo che dice le cose con garbo.
 
 | # | Passo | Impostazioni |
 |---|---|---|
-| 01 | `Imposta acquisizione errori` | Attivato — **nuovo** |
+| 01 | `Imposta cattura errori` | Attivato — **nuovo** |
 | 02 | `Imposta variabile` | `$formato` = `Get ( ParametroScript )` |
-| 03 | `Se` | `IsEmpty ( $formato )` |
+| 03 | `If` | `IsEmpty ( $formato )` |
 | 04 | &nbsp;&nbsp;`Esci dallo script` | |
-| 05 | `Fine se` | |
+| 05 | `End If` | |
 | 06 | `Vai al formato` | Nome del formato per calcolo: `$formato` |
-| 07 | `Se` | `Get ( UltimoErrore ) <> 0` — **nuovo** |
+| 07 | `If` | `Get ( UltimoErrore ) <> 0` — **nuovo** |
 | 08 | &nbsp;&nbsp;`Mostra finestra di dialogo personalizzata` | Titolo `Non ancora pronto`; messaggio **come calcolo**: `"La maschera " & $formato & " non c'e' ancora."`; un solo pulsante, `OK` — **nuovo** |
 | 09 | &nbsp;&nbsp;`Esci dallo script` | **nuovo** |
-| 10 | `Fine se` | **nuovo** |
+| 10 | `End If` | **nuovo** |
 | 11 | `Mostra tutti i record` | |
 
 Serve anche dopo: costruendo le maschere una per volta ci saranno sempre

@@ -186,20 +186,20 @@ tabella. Sta nella decina delle utilita' di formato, con il `90`, il `92` e il
 # "Esegui script con privilegi di accesso completo".
 # Chiamato dal pulsante "Crea account" di D_Operatori scheda.
 
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 
 # --- 1. si controlla prima di toccare la sicurezza ---
-Se [ IsEmpty ( OPE|Operatori::Cognome ) or IsEmpty ( OPE|Operatori::Nome ) ]
+If [ IsEmpty ( OPE|Operatori::Cognome ) or IsEmpty ( OPE|Operatori::Nome ) ]
     Mostra finestra di dialogo personalizzata
         [ "Manca il nome" ; "Compila cognome e nome prima di creare l'account." ]
     Esci dallo script [ ]
-Fine se
-Se [ IsEmpty ( OPE|Operatori::Ruolo ) ]
+End If
+If [ IsEmpty ( OPE|Operatori::Ruolo ) ]
     Mostra finestra di dialogo personalizzata
         [ "Manca il ruolo" ; "Scegli se questa persona e' Operatore o Responsabile." ]
     Esci dallo script [ ]
-Fine se
-Se [ not IsEmpty ( OPE|Operatori::AccountFileMaker ) ]
+End If
+If [ not IsEmpty ( OPE|Operatori::AccountFileMaker ) ]
     Mostra finestra di dialogo personalizzata
         [ "Account gia' scritto in scheda" ;
           "Nella scheda c'e' gia' scritto l'account " &
@@ -208,7 +208,7 @@ Se [ not IsEmpty ( OPE|Operatori::AccountFileMaker ) ]
           "Se l'hai scritto tu e l'account non esiste ancora, svuota il campo " &
           "e ripremi Crea account." ]
     Esci dallo script [ ]
-Fine se
+End If
 
 # --- 2. si propone un nome e si chiede conferma ---
 Imposta campo [ OPE|Operatori::gNomeAccount ;
@@ -222,29 +222,29 @@ Mostra finestra di dialogo personalizzata
       Campo immissione 1: OPE|Operatori::gNomeAccount  etichetta "Nome account"
       Campo immissione 2: OPE|Operatori::gPassword     etichetta "Password iniziale"
           con "Usa carattere password" spuntato ]
-Se [ Get ( UltimaSceltaMessaggio ) <> 1 ]
+If [ Get ( UltimaSceltaMessaggio ) <> 1 ]
     Esci dallo script [ ]
-Fine se
-Se [ IsEmpty ( OPE|Operatori::gNomeAccount ) or Length ( OPE|Operatori::gPassword ) < 8 ]
+End If
+If [ IsEmpty ( OPE|Operatori::gNomeAccount ) or Length ( OPE|Operatori::gPassword ) < 8 ]
     Mostra finestra di dialogo personalizzata
         [ "Dati insufficienti" ;
           "Serve un nome account e una password di almeno 8 caratteri." ]
     Esci dallo script [ ]
-Fine se
+End If
 
 # --- 3. si crea l'account. Due rami, e non per pigrizia: vedi la nota. ---
-Se [ OPE|Operatori::Ruolo = "Responsabile" ]
+If [ OPE|Operatori::Ruolo = "Responsabile" ]
     Aggiungi account [ Nome: OPE|Operatori::gNomeAccount ;
                        Password: OPE|Operatori::gPassword ;
                        Set di privilegi: Responsabile ;
                        Scadenza password: Attivata ]
-Altrimenti
+Else
     Aggiungi account [ Nome: OPE|Operatori::gNomeAccount ;
                        Password: OPE|Operatori::gPassword ;
                        Set di privilegi: Operatore ;
                        Scadenza password: Attivata ]
-Fine se
-Se [ Get ( UltimoErrore ) <> 0 ]
+End If
+If [ Get ( UltimoErrore ) <> 0 ]
     Mostra finestra di dialogo personalizzata
         [ "FileMaker ha rifiutato l'account" ;
           "Errore " & Get ( UltimoErrore ) &
@@ -252,7 +252,7 @@ Se [ Get ( UltimoErrore ) <> 0 ]
           "provane un altro." ]
     Imposta campo [ OPE|Operatori::gPassword ; "" ]
     Esci dallo script [ ]
-Fine se
+End If
 
 # --- 4. si collega, si salva, si pulisce ---
 Imposta campo [ OPE|Operatori::AccountFileMaker ; OPE|Operatori::gNomeAccount ]

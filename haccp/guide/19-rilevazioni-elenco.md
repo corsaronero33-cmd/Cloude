@@ -190,42 +190,42 @@ differenza fra un elenco e un registro.
 Nuovo script **`91 - Rilevazioni - Entra nell'elenco`**:
 
 ```
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 Imposta variabile [ $cosa ; Get ( ParametroScript ) ]
 
 Mostra tutti i record
 
-Se [ $cosa = "nonconformi" ]
-   Modalita' Trova [ Pausa: Disattivato ]
+If [ $cosa = "nonconformi" ]
+   Passa al modo Trova [ Pausa: Disattivato ]
    Imposta campo [ RIL|Rilevazioni::Esito ; "==non conforme" ]
-   Esegui trova
-   Se [ Get ( ConteggioTrovati ) = 0 ]
+   Esegui la ricerca
+   If [ Get ( ConteggioTrovati ) = 0 ]
       Mostra tutti i record
       Mostra finestra personalizzata
           [ "Nessuna non conformita'" ;
             "Non ci sono rilevazioni fuori limite. Mostro tutto il registro." ]
-   Fine se
-Fine se
+   End If
+End If
 
-Ordina record [ Ripristina ; Senza finestra di dialogo ]
+Ordina i record [ Ripristina ; Senza finestra di dialogo ]
    Giorno    discendente
    DataOra   discendente
-Vai al record [ Primo ]
+Vai a Record/Richiesta/Pagina [ Primo ]
 ```
 
-`Imposta acquisizione errori` **prima** del trova: senza di quello, zero
+`Imposta cattura errori` **prima** del trova: senza di quello, zero
 record trovati fa comparire la finestra di FileMaker e lo script si ferma li'.
 
 L'ordinamento con `Giorno` **per primo** non e' una scelta estetica: e' la
 condizione perche' il Riepilogo iniziale compaia. Senza, le parti ci sono ma
 non si vedono.
 
-`Vai al record [ Primo ]` perche' dopo un ordinamento il record corrente puo'
+`Vai a Record/Richiesta/Pagina [ Primo ]` perche' dopo un ordinamento il record corrente puo'
 essere a meta' elenco, e il registro va aperto in cima.
 
 ### I tre punti in cui si sbaglia
 
-**`Modalita' Trova` nasce con la Pausa attiva.** Se resta, lo script si ferma
+**`Passa al modo Trova` nasce con la Pausa attiva.** Se resta, lo script si ferma
 li' e aspetta che l'utente prema Invio: il pulsante sembra non fare niente.
 Togliere la spunta a *Pausa*.
 
@@ -245,7 +245,7 @@ script `90`.
 Nell'Area di lavoro script, a destra c'e' l'elenco dei passi con la casella di
 ricerca. Doppio clic aggiunge il passo **sotto la riga selezionata**: si
 costruisce dall'alto in basso tenendo selezionata l'ultima riga aggiunta. Per
-mettere un passo **dentro** un `Se`, si clicca la riga `Se` e poi si aggiunge.
+mettere un passo **dentro** un `If`, si clicca la riga `If` e poi si aggiunge.
 I rientri sono l'unico modo di vedere a colpo d'occhio se un passo e' dentro o
 fuori: se non combaciano con l'elenco qui sopra, si trascina la riga.
 

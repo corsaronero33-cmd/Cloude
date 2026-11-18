@@ -21,7 +21,7 @@ Tabella **Prodotti**, campo `gCerca` Testo, **archiviazione globale**.
 ## Fase 2 — Lo script `91 - Prodotti - Entra nell'elenco`
 
 Duplica quello dei fornitori. `Imposta campo` -> `PRO|Prodotti::gCerca`,
-`Ordina record` -> **`PRO|Prodotti::Descrizione` crescente**.
+`Ordina i record` -> **`PRO|Prodotti::Descrizione` crescente**.
 
 **Si ordina per descrizione.** Il codice prodotto lo conosce chi fa gli
 ordini; la descrizione la conosce chi cucina, ed e' lui che guarda l'elenco

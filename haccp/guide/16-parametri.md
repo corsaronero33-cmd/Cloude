@@ -39,7 +39,7 @@ Non otto, come avevo detto prima: **sei**, contati nel file.
 
 ```
 Mostra tutti i record
-Ordina record [ PAR|Parametri::Categoria crescente ;
+Ordina i record [ PAR|Parametri::Categoria crescente ;
                 PAR|Parametri::Chiave crescente ] [ Senza finestra di dialogo ]
 ```
 

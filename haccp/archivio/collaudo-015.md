@@ -28,7 +28,7 @@ La fase 2a diceva di mettere `Vai al formato [ Formato originale ]` **in
 fondo**, cioe' dopo le finestre di dialogo. Quindi il messaggio esce mentre si
 e' ancora su `Z_RIL`, e il ritorno avviene solo premendo OK.
 
-Va spostato **prima** del `Se [ $esito = "non conforme" ]`, insieme ai quattro
+Va spostato **prima** del `If [ $esito = "non conforme" ]`, insieme ai quattro
 `Imposta campo` che svuotano i globali. Conseguenza: la finestra del
 "Registrato" non puo' piu' nominare il punto, che va salvato prima in una
 variabile.
@@ -53,7 +53,7 @@ copiano globali vuoti.
 
 ## 3. La riga che manca comunque
 
-Primo passo del `20`, prima di `Imposta acquisizione errori`:
+Primo passo del `20`, prima di `Imposta cattura errori`:
 
 ```
 Salva record/richieste [ Senza finestra di dialogo ]

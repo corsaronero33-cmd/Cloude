@@ -22,7 +22,7 @@ tipo Testo, `Opzioni` › `Archiviazione` › **Usa archiviazione globale**.
 Duplica `91 - Attrezzature`, rinomina, e cambia **due** cose:
 
 - `Imposta campo` -> `FOR|Fornitori::gCerca`
-- `Ordina record` -> **`FOR|Fornitori::RagioneSociale` crescente**
+- `Ordina i record` -> **`FOR|Fornitori::RagioneSociale` crescente**
 
 Si ordina per ragione sociale e non per un codice: i fornitori non hanno un
 codice nostro, e chi cerca "Rossi" se lo aspetta in ordine alfabetico.

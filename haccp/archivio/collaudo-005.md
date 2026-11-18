@@ -23,7 +23,7 @@ che legge `$$PARAMETRI`.
 
 **Lo script 10 e' corretto**, compreso il punto su cui c'era il dubbio: la
 condizione finale e' `IsEmpty ( $lotto ) and IsEmpty ( $scadenza )`, con
-`and`, e il `Mostra finestra` sta **dentro** il blocco `Se`. Con il lotto
+`and`, e il `Mostra finestra` sta **dentro** il blocco `If`. Con il lotto
 trovato quella finestra non puo' aprirsi.
 
 **I cinque campi globali** ci sono, e i formati tecnici sono organizzati con
@@ -54,7 +54,7 @@ Il passo punta a **`RigheRicevimento::Quantita`** invece che a
 **`RigheRicevimento::CodiceScansionato`**.
 
 Su PC non si vede: quel ramo gira solo su iPhone e iPad, e il collaudo e'
-passato dal ramo `Altrimenti`. Sull'iPad pero' la scansione scriverebbe il
+passato dal ramo `Else`. Sull'iPad pero' la scansione scriverebbe il
 codice a barre dentro la quantita', e lascerebbe vuoto il campo che serve.
 
 **Rimedio:** apri lo script `10`, clicca il passo `Inserisci da dispositivo`,

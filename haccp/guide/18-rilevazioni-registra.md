@@ -74,20 +74,20 @@ alla fine si parla.
 
 ```
 Consenti interruzione utente [ Disattivato ]
-Imposta acquisizione errori [ Attivato ]
+Imposta cattura errori [ Attivato ]
 Salva record/richieste [ Senza finestra di dialogo ]
 
 # 1 - controlli, prima di toccare il database
-Se [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
+If [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
    Mostra finestra personalizzata [ "Manca un dato" ; "Scegli il punto di controllo." ]
    Esci dallo script [ "" ]
-Fine se
-Se [ If ( RIL|PuntoScelto::Grandezza = "visivo" ;
+End If
+If [ If ( RIL|PuntoScelto::Grandezza = "visivo" ;
           IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ;
           IsEmpty ( RIL|Rilevazioni::gValore ) ) ]
    Mostra finestra personalizzata [ "Manca un dato" ; "Scrivi il valore rilevato." ]
    Esci dallo script [ "" ]
-Fine se
+End If
 
 Blocca finestra
 
@@ -122,7 +122,7 @@ Imposta variabile [ $azione ; RIL|PuntiControllo::AzioneCorrettiva ]
 Imposta variabile [ $gravita ; If ( RIL|PuntiControllo::Tipo = "CCP" ; "alta" ; "media" ) ]
 
 # 4 - solo se fuori limite: apri la non conformita'
-Se [ $esito = "non conforme" ]
+If [ $esito = "non conforme" ]
    Vai al formato [ NonConformita ]
    Nuovo record/richiesta
    Imposta campo [ NonConformita::Data ; Get ( CurrentDate ) ]
@@ -137,7 +137,7 @@ Se [ $esito = "non conforme" ]
    Vai al formato [ Z_RIL Rilevazioni ]
    Imposta campo [ RIL|Rilevazioni::IdNonConformita ; $idNC ]
    Salva record/richieste
-Fine se
+End If
 
 # 5 - chiusura, identica nei due casi
 Vai al formato [ Formato originale ]
@@ -148,13 +148,13 @@ Imposta campo [ RIL|Rilevazioni::gNote ; "" ]
 Salva record/richieste
 
 # 6 - un messaggio solo, scelto in base all'esito
-Se [ $esito = "non conforme" ]
+If [ $esito = "non conforme" ]
    Mostra finestra personalizzata [ "Valore fuori limite" ;
        $descrizione & "PP Azione correttiva da eseguire: P" & $azione ]
-Altrimenti
+Else
    Mostra finestra personalizzata [ "Registrato" ;
        "Rilevazione registrata: " & $nome & " - conforme." ]
-Fine se
+End If
 
 Vai al campo [ RIL|Rilevazioni::gIdPuntoControllo ]
 ```
@@ -175,7 +175,7 @@ farebbe passare il controllo con `Valore` vuoto, e `EsitoRilevazione` di un
 valore vuoto restituisce `""`. Il registro conserverebbe l'esito vuoto.
 
 **`Vai al formato [ Formato originale ]` sta nella chiusura comune**, dopo il
-`Fine se` del lavoro e prima del `Se` dei messaggi. In fondo a tutto il
+`End If` del lavoro e prima del `If` dei messaggi. In fondo a tutto il
 messaggio esce mentre si e' ancora sul formato tecnico, e il ritorno avviene
 solo premendo OK. Dentro i rami diventa un doppione.
 
