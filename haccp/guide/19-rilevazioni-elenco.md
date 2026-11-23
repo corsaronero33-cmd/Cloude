@@ -45,8 +45,8 @@ dello stesso giorno**.
 
 | Campo | Tipo | Risultato | Formula |
 |---|---|---|---|
-| `Giorno` | **Calcolo** | **Data** | `GetAsDate ( DataOra )` |
-| `Ora` | **Calcolo** | **Ora** | `GetAsTime ( DataOra )` |
+| `Giorno` | **Calcolo** | **Data** | `RicavaComeData ( DataOra )` |
+| `Ora` | **Calcolo** | **Ora** | `RicavaComeOra ( DataOra )` |
 | `ConteggioRilevazioni` | **Riepilogo** | — | **Conteggio di** `Id` |
 
 Su `Giorno`, dentro `Opzioni > Archiviazione`, controllare che
@@ -199,7 +199,7 @@ If [ $cosa = "nonconformi" ]
    Passa al modo Trova [ Pausa: Disattivato ]
    Imposta campo [ RIL|Rilevazioni::Esito ; "==non conforme" ]
    Esegui la ricerca
-   If [ Get ( ConteggioTrovati ) = 0 ]
+   If [ Get ( ContoTrovati ) = 0 ]
       Mostra tutti i record
       Mostra finestra personalizzata
           [ "Nessuna non conformita'" ;

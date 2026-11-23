@@ -202,7 +202,7 @@ chiamata da molti punti.
 Imposta cattura errori [ Attivato ]
 Imposta variabile [ $formato ; Valore: Get ( ParametroScript ) ]
 
-If [ IsEmpty ( $formato ) ]
+If [ EVuoto ( $formato ) ]
     Esci dallo script [ Risultato del testo: "" ]
 End If
 

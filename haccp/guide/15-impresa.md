@@ -62,7 +62,7 @@ partenza; vincolante solo la **fascia blu alta 100**.
 # Agganciato al trigger OnLayoutEnter di D_Impresa scheda.
 
 Mostra tutti i record
-If [ Get ( ConteggioTrovati ) = 0 ]
+If [ Get ( ContoTrovati ) = 0 ]
     Nuovo record/richiesta
 Else
     Vai a Record/Richiesta/Pagina [ Primo ]

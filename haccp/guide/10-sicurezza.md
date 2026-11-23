@@ -106,7 +106,7 @@ la spunta quel pulsante da' lo stesso messaggio — ed e' lo stesso guasto che s
 ripresenta un mese dopo, quando nessuno si ricorda piu' di questa finestra.
 
 **Il minimo di 8 caratteri va messo qui, non solo nello script.** Il controllo
-`Length ( gPassword ) < 8` dentro il `94` vale per la password **iniziale**,
+`Lunghezza ( gPassword ) < 8` dentro il `94` vale per la password **iniziale**,
 quella che scrive chi crea l'account. Quando l'utente se la cambia, lo script
 non c'e': a imporre la lunghezza resta solo questa casella.
 
@@ -189,17 +189,17 @@ tabella. Sta nella decina delle utilita' di formato, con il `90`, il `92` e il
 Imposta cattura errori [ Attivato ]
 
 # --- 1. si controlla prima di toccare la sicurezza ---
-If [ IsEmpty ( OPE|Operatori::Cognome ) or IsEmpty ( OPE|Operatori::Nome ) ]
+If [ EVuoto ( OPE|Operatori::Cognome ) or EVuoto ( OPE|Operatori::Nome ) ]
     Mostra finestra di dialogo personalizzata
         [ "Manca il nome" ; "Compila cognome e nome prima di creare l'account." ]
     Esci dallo script [ ]
 End If
-If [ IsEmpty ( OPE|Operatori::Ruolo ) ]
+If [ EVuoto ( OPE|Operatori::Ruolo ) ]
     Mostra finestra di dialogo personalizzata
         [ "Manca il ruolo" ; "Scegli se questa persona e' Operatore o Responsabile." ]
     Esci dallo script [ ]
 End If
-If [ not IsEmpty ( OPE|Operatori::AccountFileMaker ) ]
+If [ not EVuoto ( OPE|Operatori::AccountFileMaker ) ]
     Mostra finestra di dialogo personalizzata
         [ "Account gia' scritto in scheda" ;
           "Nella scheda c'e' gia' scritto l'account " &
@@ -212,7 +212,7 @@ End If
 
 # --- 2. si propone un nome e si chiede conferma ---
 Imposta campo [ OPE|Operatori::gNomeAccount ;
-    Lower ( Left ( OPE|Operatori::Nome ; 1 ) & OPE|Operatori::Cognome ) ]
+    Lower ( Sinistra ( OPE|Operatori::Nome ; 1 ) & OPE|Operatori::Cognome ) ]
 Imposta campo [ OPE|Operatori::gPassword ; "" ]
 Mostra finestra di dialogo personalizzata
     [ Titolo: "Nuovo account"
@@ -222,10 +222,10 @@ Mostra finestra di dialogo personalizzata
       Campo immissione 1: OPE|Operatori::gNomeAccount  etichetta "Nome account"
       Campo immissione 2: OPE|Operatori::gPassword     etichetta "Password iniziale"
           con "Usa carattere password" spuntato ]
-If [ Get ( UltimaSceltaMessaggio ) <> 1 ]
+If [ Get ( SceltaUltimoMessaggio ) <> 1 ]
     Esci dallo script [ ]
 End If
-If [ IsEmpty ( OPE|Operatori::gNomeAccount ) or Length ( OPE|Operatori::gPassword ) < 8 ]
+If [ EVuoto ( OPE|Operatori::gNomeAccount ) or Lunghezza ( OPE|Operatori::gPassword ) < 8 ]
     Mostra finestra di dialogo personalizzata
         [ "Dati insufficienti" ;
           "Serve un nome account e una password di almeno 8 caratteri." ]
@@ -289,9 +289,9 @@ in `Gestisci › Sicurezza`. Per chi non ha ancora l'accesso lo riempie lo
 script, da solo, al passo 4. Scriverlo prima significa dire allo script *questa
 persona e' gia' a posto*, e lui ti crede.
 
-**Due nomi da verificare nella tua versione.** `Get ( UltimaSceltaMessaggio )`
+**Due nomi da verificare nella tua versione.** `Get ( SceltaUltimoMessaggio )`
 e `Aggiungi account` sono tradotti, e la traduzione puo' variare. In inglese
-sono `Get ( LastMessageChoice )` e `Add Account`, categoria `Account`.
+sono `Get ( SceltaUltimoMessaggio )` e `Add Account`, categoria `Account`.
 
 ## Fase 6 — I pulsanti sulla scheda operatore
 
@@ -310,14 +310,14 @@ Il corpo passa da **230** a **400**, e i pulsanti stanno dentro il riquadro
 Tutti e due, `Ispettore › Dati › Nascondi oggetto quando`:
 
 ```
-Get ( NomeSetPrivilegi ) = "Operatore"
+Get ( NomeSetPrivilegiAccount ) = "Operatore"
 ```
 
 Sul solo `Crea account`, la condizione diventa:
 
 ```
-Get ( NomeSetPrivilegi ) = "Operatore"
-or not IsEmpty ( OPE|Operatori::AccountFileMaker )
+Get ( NomeSetPrivilegiAccount ) = "Operatore"
+or not EVuoto ( OPE|Operatori::AccountFileMaker )
 ```
 
 Il campo `Ruolo` va nel riquadro nuovo (controllo **Menu a discesa**, lista
@@ -396,7 +396,7 @@ Il calcolo per il blocco, gia' pronto:
 
 ```
 Rilevazioni::CreatoDa = Get ( NomeAccount )
-and GetAsDate ( Rilevazioni::CreatoIl ) = Get ( DataCorrente )
+and RicavaComeData ( Rilevazioni::CreatoIl ) = Get ( DataCorrente )
 ```
 
 ---

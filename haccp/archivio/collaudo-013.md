@@ -27,11 +27,11 @@ di nomenclatura, e tre controlli che l'export non permette di fare.
 | Script `91 - Parametri` | `Mostra tutti` + `Ordina per Categoria, poi Chiave`, sui campi di `PAR\|Parametri` |
 | Le quattro colonne | ogni etichetta ha la X e la larghezza del suo campo |
 | I due campi `Valore` | sovrapposti, stessa X e larghezza, condizioni **esattamente opposte** |
-| Le formule | `Get ( AccountPrivilegeSetName ) = "Operatore" or ( ... = "Responsabile" and ModificabileDalCliente = "No" )`, e il `not` sull'altra |
+| Le formule | `Get ( NomeSetPrivilegiAccount ) = "Operatore" or ( ... = "Responsabile" and ModificabileDalCliente = "No" )`, e il `not` sull'altra |
 | Quello che non c'e' | casella di ricerca, `Tutti`, `+ Nuovo`, `Apri` — come doveva |
 
 **Sui nomi delle funzioni:** nelle formule compare
-`Get ( AccountPrivilegeSetName )` e non `Get ( NomeSetPrivilegi )`. **E' la
+`Get ( NomeSetPrivilegiAccount )` e non `Get ( NomeSetPrivilegiAccount )`. **E' la
 stessa funzione**: FileMaker la mostra tradotta e la salva in inglese, quindi
 nell'esportazione si ritrova sempre cosi'.
 

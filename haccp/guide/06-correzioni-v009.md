@@ -31,7 +31,7 @@ Uno solo per tutta l'applicazione, come il `90` e il `92`.
 
 Nuovo record/richiesta
 
-If [ not IsEmpty ( Get ( ParametroScript ) ) ]
+If [ not EVuoto ( Get ( ParametroScript ) ) ]
     Esegui script [ "90 - Utilita - Vai a" ;
                     Parametro: Get ( ParametroScript ) ]
 End If

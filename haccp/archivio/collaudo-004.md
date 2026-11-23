@@ -8,7 +8,7 @@ Verifica sul file salvato in XML il 09/09/2026, archiviato in `haccp/ddr/v004/`.
 |---|---|
 | 21 tabelle, 79 occorrenze, 42 relazioni, 24 layout | ok |
 | Tipi dei campi (numeri, date, ore, data e ora) | ok, nessuno rimasto Testo per sbaglio |
-| `Id` su tutte e 21: `Get (UUID)`, univoco, non vuoto, non modificabile | ok |
+| `Id` su tutte e 21: `Get ( IDUU )`, univoco, non vuoto, non modificabile | ok |
 | I quattro campi di sistema con immissione automatica e protezione | ok su tutte |
 | `ATT\|PuntiControllo` sulla tabella `PuntiControllo` | ok |
 | Eliminazione a cascata | **solo** fra `RIC\|Ricevimenti` e `RIC\|RigheRicevimento` |

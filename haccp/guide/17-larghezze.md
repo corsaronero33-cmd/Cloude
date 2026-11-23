@@ -157,7 +157,7 @@ ogni altro errore, e l'`Esci dallo script` finale che restituisce `"ok"`.
 ```
 Imposta cattura errori [ Attivato ]
 Imposta variabile [ $formato ; Valore: Get ( ParametroScript ) ]
-If [ IsEmpty ( $formato ) ]
+If [ EVuoto ( $formato ) ]
     Esci dallo script [ Risultato del testo: "" ]
 End If
 Vai al formato [ Nome del formato per calcolo: $formato ]

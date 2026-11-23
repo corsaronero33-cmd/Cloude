@@ -59,8 +59,8 @@ dove invece funzionano. L'assenza era nel lettore, non nel file.
 
 ```
 If ( RIL|PuntoScelto::Grandezza = "visivo" ;
-     IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ;
-     IsEmpty ( RIL|Rilevazioni::gValore ) )
+     EVuoto ( RIL|Rilevazioni::gValoreTesto ) ;
+     EVuoto ( RIL|Rilevazioni::gValore ) )
 ```
 
 e' un miglioramento a prescindere: chiede il dato giusto per il tipo di punto

@@ -222,7 +222,7 @@ e `OrarioAtteso2`.
 ## Passo 5 — I campi di sistema
 
 > **`Id` resta di tipo Testo, ed e' giusto cosi'.** Contiene un IDUU, cioe' una
-> stringa: `Get ( UUID )` restituisce testo, non un numero. Di `Id` si cambia
+> stringa: `Get ( IDUU )` restituisce testo, non un numero. Di `Id` si cambia
 > il comportamento, non il tipo. Vale lo stesso per `CreatoDa` e
 > `ModificatoDa`, che contengono nomi di account.
 >
@@ -261,7 +261,7 @@ Su **ogni** tabella, apri le opzioni (`Opzioni...` accanto al campo) e imposta:
 
 | Campo | Immissione automatica | Altro |
 |---|---|---|
-| `Id` | Valore calcolato: `Get ( UUID )`, **togliere** la spunta "Non sostituire il valore esistente" al primo giro, rimetterla dopo | Convalida: univoco, non vuoto. Vietare la modifica |
+| `Id` | Valore calcolato: `Get ( IDUU )`, **togliere** la spunta "Non sostituire il valore esistente" al primo giro, rimetterla dopo | Convalida: univoco, non vuoto. Vietare la modifica |
 | `CreatoIl` | Data e ora di creazione | Vietare la modifica |
 | `CreatoDa` | Nome account di creazione | Vietare la modifica |
 | `ModificatoIl` | Data e ora di modifica | Vietare la modifica |
@@ -280,7 +280,7 @@ tabelle di `import/dati/`:
 1. vai su un formulario di quella tabella, `Record` -> `Mostra tutti`;
 2. clicca nel campo `Id`;
 3. `Record` -> `Sostituisci contenuto campo`;
-4. scegli **"Sostituisci con risultato calcolato"** e scrivi `Get ( UUID )`.
+4. scegli **"Sostituisci con risultato calcolato"** e scrivi `Get ( IDUU )`.
 
 Un colpo solo per tabella. Poi rimetti la spunta "Non sostituire il valore
 esistente" sull'immissione automatica di `Id`.

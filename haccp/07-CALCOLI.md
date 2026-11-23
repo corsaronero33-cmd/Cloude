@@ -75,7 +75,7 @@ Serve solo alla partita IVA. Raddoppia una cifra e, se il risultato supera 9,
 gli toglie 9.
 
 ```
-Let ( r = GetAsNumber ( cifra ) * 2 ;
+Dichiara ( r = GetAsNumber ( cifra ) * 2 ;
   If ( r > 9 ; r - 9 ; r )
 )
 ```
@@ -86,13 +86,13 @@ Torna `1` se e' valida, `0` se non lo e'. Una partita IVA vuota torna `1`: la
 funzione controlla la forma, non l'obbligatorieta'.
 
 ```
-Let ( [
+Dichiara ( [
   p = Filter ( partitaIva ; "0123456789" )
 ] ;
-Case (
-  IsEmpty ( partitaIva ) ; 1 ;
-  Length ( p ) <> 11 ; 0 ;
-  Let ( [
+Casi (
+  EVuoto ( partitaIva ) ; 1 ;
+  Lunghezza ( p ) <> 11 ; 0 ;
+  Dichiara ( [
     d1  = GetAsNumber ( Middle ( p ;  1 ; 1 ) ) ;
     d2  = GetAsNumber ( Middle ( p ;  2 ; 1 ) ) ;
     d3  = GetAsNumber ( Middle ( p ;  3 ; 1 ) ) ;
@@ -125,10 +125,10 @@ Il cuore dell'autocontrollo. Torna `conforme` o `non conforme` confrontando la
 misura con i limiti **del punto di controllo**, che arrivano da fuori.
 
 ```
-Case (
-  IsEmpty ( valore ) ; "" ;
-  not IsEmpty ( limiteMin ) and valore < limiteMin ; "non conforme" ;
-  not IsEmpty ( limiteMax ) and valore > limiteMax ; "non conforme" ;
+Casi (
+  EVuoto ( valore ) ; "" ;
+  not EVuoto ( limiteMin ) and valore < limiteMin ; "non conforme" ;
+  not EVuoto ( limiteMax ) and valore > limiteMax ; "non conforme" ;
   "conforme"
 )
 ```
@@ -146,8 +146,8 @@ L'accettazione merce non e' bianco o nero: c'e' la fascia di tolleranza in cui
 la merce si prende ma si usa subito e si segnala al fornitore.
 
 ```
-Case (
-  IsEmpty ( temperatura ) ; "" ;
+Casi (
+  EVuoto ( temperatura ) ; "" ;
   temperatura >= tempMin and temperatura <= tempMax ; "accettato" ;
   temperatura > tempMax and temperatura <= tempMax + tolleranza ; "accettato con riserva" ;
   temperatura < tempMin and temperatura >= tempMin - tolleranza ; "accettato con riserva" ;
@@ -161,8 +161,8 @@ Case (
 ## 5. `GiorniAllaScadenza ( dataScadenza )`
 
 ```
-If ( IsEmpty ( dataScadenza ) ; "" ;
-  dataScadenza - Get ( CurrentDate )
+If ( EVuoto ( dataScadenza ) ; "" ;
+  dataScadenza - Get ( DataCorrente )
 )
 ```
 
@@ -174,16 +174,16 @@ Regola HACCP: una confezione aperta ha **due** scadenze, quella stampata e
 quella che parte dall'apertura. Vale la piu' vicina delle due.
 
 ```
-Let ( [
+Dichiara ( [
   sa = If (
-         IsEmpty ( dataApertura ) or IsEmpty ( giorniDopoApertura ) ;
+         EVuoto ( dataApertura ) or EVuoto ( giorniDopoApertura ) ;
          "" ;
          dataApertura + giorniDopoApertura
        )
 ] ;
-Case (
-  IsEmpty ( sa ) ; dataScadenza ;
-  IsEmpty ( dataScadenza ) ; sa ;
+Casi (
+  EVuoto ( sa ) ; dataScadenza ;
+  EVuoto ( dataScadenza ) ; sa ;
   Min ( sa ; dataScadenza )
 ) )
 ```
@@ -191,10 +191,10 @@ Case (
 ## 7. `SemaforoScadenza ( dataScadenza ; giorniAvviso )`
 
 ```
-Case (
-  IsEmpty ( dataScadenza ) ; "" ;
-  dataScadenza < Get ( CurrentDate ) ; "scaduto" ;
-  dataScadenza - Get ( CurrentDate ) <= giorniAvviso ; "in scadenza" ;
+Casi (
+  EVuoto ( dataScadenza ) ; "" ;
+  dataScadenza < Get ( DataCorrente ) ; "scaduto" ;
+  dataScadenza - Get ( DataCorrente ) <= giorniAvviso ; "in scadenza" ;
   "valido"
 )
 ```
@@ -232,15 +232,15 @@ La funzione ricorsiva che cammina lungo la stringa. Non la chiamerai mai
 direttamente.
 
 ```
-Case (
-  Length ( resto ) < 3 ; "" ;
-  Let ( [
-    pre2 = Left ( resto ; 2 ) ;
+Casi (
+  Lunghezza ( resto ) < 3 ; "" ;
+  Dichiara ( [
+    pre2 = Sinistra ( resto ; 2 ) ;
     quattro = pre2 = "31" or pre2 = "32" or pre2 = "33"
            or pre2 = "34" or pre2 = "35" or pre2 = "36" ;
     lungAI = If ( quattro ; 4 ; 2 ) ;
-    aiCorrente = Left ( resto ; lungAI ) ;
-    lungFissa = Case (
+    aiCorrente = Sinistra ( resto ; lungAI ) ;
+    lungFissa = Casi (
       quattro ; 6 ;
       pre2 = "00" ; 18 ;
       pre2 = "01" or pre2 = "02" ; 14 ;
@@ -249,24 +249,24 @@ Case (
       pre2 = "20" ; 2 ;
       0
     ) ;
-    dopoAI = Middle ( resto ; lungAI + 1 ; Length ( resto ) ) ;
+    dopoAI = Middle ( resto ; lungAI + 1 ; Lunghezza ( resto ) ) ;
     posSep = Position ( dopoAI ; Char ( 29 ) ; 1 ; 1 ) ;
-    lungDato = Case (
+    lungDato = Casi (
       lungFissa > 0 ; lungFissa ;
       posSep > 0 ; posSep - 1 ;
-      Length ( dopoAI )
+      Lunghezza ( dopoAI )
     ) ;
-    dato = Left ( dopoAI ; lungDato ) ;
-    resto2 = Middle ( dopoAI ; lungDato + 1 ; Length ( dopoAI ) ) ;
+    dato = Sinistra ( dopoAI ; lungDato ) ;
+    resto2 = Middle ( dopoAI ; lungDato + 1 ; Lunghezza ( dopoAI ) ) ;
     resto3 = If (
-      Left ( resto2 ; 1 ) = Char ( 29 ) ;
-      Middle ( resto2 ; 2 ; Length ( resto2 ) ) ;
+      Sinistra ( resto2 ; 1 ) = Char ( 29 ) ;
+      Middle ( resto2 ; 2 ; Lunghezza ( resto2 ) ) ;
       resto2
     )
   ] ;
-    Case (
+    Casi (
       aiCorrente = ai ; dato ;
-      Length ( resto3 ) < 3 ; "" ;
+      Lunghezza ( resto3 ) < 3 ; "" ;
       GS1Scorri ( resto3 ; ai )
     )
   )
@@ -307,14 +307,14 @@ Prende la data di scadenza `17`, e se non c'e' ripiega sul termine minimo di
 conservazione `15`. Torna una **data vera**, non un testo.
 
 ```
-Let ( [
+Dichiara ( [
   d  = GS1Estrai ( pCodice ; "17" ) ;
-  d2 = If ( IsEmpty ( d ) ; GS1Estrai ( pCodice ; "15" ) ; d )
+  d2 = If ( EVuoto ( d ) ; GS1Estrai ( pCodice ; "15" ) ; d )
 ] ;
-Case (
-  Length ( d2 ) < 6 ; "" ;
-  Let ( [
-    aa = 2000 + GetAsNumber ( Left ( d2 ; 2 ) ) ;
+Casi (
+  Lunghezza ( d2 ) < 6 ; "" ;
+  Dichiara ( [
+    aa = 2000 + GetAsNumber ( Sinistra ( d2 ; 2 ) ) ;
     mm = GetAsNumber ( Middle ( d2 ; 3 ; 2 ) ) ;
     gg = GetAsNumber ( Middle ( d2 ; 5 ; 2 ) ) ;
     ggReale = If ( gg = 0 ; Day ( Date ( mm + 1 ; 1 ; aa ) - 1 ) ; gg )
@@ -397,9 +397,9 @@ l'espressione. Confronta con il risultato atteso.
 | `EsitoAccettazione ( 3 ; 0 ; 4 ; 2 )` | `accettato` |
 | `EsitoAccettazione ( 5 ; 0 ; 4 ; 2 )` | `accettato con riserva` |
 | `EsitoAccettazione ( 7 ; 0 ; 4 ; 2 )` | `respinto` |
-| `SemaforoScadenza ( Get ( CurrentDate ) + 30 ; 7 )` | `valido` |
-| `SemaforoScadenza ( Get ( CurrentDate ) + 3 ; 7 )` | `in scadenza` |
-| `SemaforoScadenza ( Get ( CurrentDate ) - 1 ; 7 )` | `scaduto` |
+| `SemaforoScadenza ( Get ( DataCorrente ) + 30 ; 7 )` | `valido` |
+| `SemaforoScadenza ( Get ( DataCorrente ) + 3 ; 7 )` | `in scadenza` |
+| `SemaforoScadenza ( Get ( DataCorrente ) - 1 ; 7 )` | `scaduto` |
 | `GS1Lotto ( "010800123456789010LOTTO123" )` | `LOTTO123` |
 | `GS1Gtin ( "010800123456789010LOTTO123" )` | `08001234567890` |
 | `GS1Estrai ( "01080012345678901725013110LOTTO123" ; "17" )` | `250131` |

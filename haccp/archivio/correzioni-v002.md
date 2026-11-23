@@ -197,7 +197,7 @@ Per ognuna delle sei tabelle:
 5. menu `Record` -> **`Sostituisci contenuto campo`**
 6. scegli **`Sostituisci con risultato calcolato`**, scrivi
 
-   `Get ( UUID )`
+   `Get ( IDUU )`
 
 7. `OK`, poi conferma
 

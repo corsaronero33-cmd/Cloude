@@ -78,13 +78,13 @@ Imposta cattura errori [ Attivato ]
 Salva record/richieste [ Senza finestra di dialogo ]
 
 # 1 - controlli, prima di toccare il database
-If [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
+If [ EVuoto ( RIL|Rilevazioni::gIdPuntoControllo ) ]
    Mostra finestra personalizzata [ "Manca un dato" ; "Scegli il punto di controllo." ]
    Esci dallo script [ "" ]
 End If
 If [ If ( RIL|PuntoScelto::Grandezza = "visivo" ;
-          IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ;
-          IsEmpty ( RIL|Rilevazioni::gValore ) ) ]
+          EVuoto ( RIL|Rilevazioni::gValoreTesto ) ;
+          EVuoto ( RIL|Rilevazioni::gValore ) ) ]
    Mostra finestra personalizzata [ "Manca un dato" ; "Scrivi il valore rilevato." ]
    Esci dallo script [ "" ]
 End If
@@ -95,7 +95,7 @@ Blocca finestra
 Vai al formato [ Z_RIL Rilevazioni ]
 Nuovo record/richiesta
 Imposta campo [ RIL|Rilevazioni::IdPuntoControllo ; RIL|Rilevazioni::gIdPuntoControllo ]
-Imposta campo [ RIL|Rilevazioni::DataOra ; Get ( CurrentTimeStamp ) ]
+Imposta campo [ RIL|Rilevazioni::DataOra ; Get ( IndicatoreDataOraCorrente ) ]
 Imposta campo [ RIL|Rilevazioni::IdOperatore ; $$UTENTE.Id ]
 Imposta campo [ RIL|Rilevazioni::Valore ; RIL|Rilevazioni::gValore ]
 Imposta campo [ RIL|Rilevazioni::ValoreTesto ; RIL|Rilevazioni::gValoreTesto ]
@@ -125,7 +125,7 @@ Imposta variabile [ $gravita ; If ( RIL|PuntiControllo::Tipo = "CCP" ; "alta" ; 
 If [ $esito = "non conforme" ]
    Vai al formato [ NonConformita ]
    Nuovo record/richiesta
-   Imposta campo [ NonConformita::Data ; Get ( CurrentDate ) ]
+   Imposta campo [ NonConformita::Data ; Get ( DataCorrente ) ]
    Imposta campo [ NonConformita::Origine ; "rilevazione" ]
    Imposta campo [ NonConformita::IdRilevazione ; $idRilevazione ]
    Imposta campo [ NonConformita::Descrizione ; $descrizione ]

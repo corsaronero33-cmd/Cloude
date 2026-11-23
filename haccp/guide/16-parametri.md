@@ -130,16 +130,16 @@ Quale si vede, per chi:
 Campo A, *Nascondi oggetto quando*:
 
 ```
-Get ( NomeSetPrivilegi ) = "Operatore"
-or ( Get ( NomeSetPrivilegi ) = "Responsabile"
+Get ( NomeSetPrivilegiAccount ) = "Operatore"
+or ( Get ( NomeSetPrivilegiAccount ) = "Responsabile"
      and PAR|Parametri::ModificabileDalCliente = "No" )
 ```
 
 Campo B, l'opposto:
 
 ```
-not ( Get ( NomeSetPrivilegi ) = "Operatore"
-or ( Get ( NomeSetPrivilegi ) = "Responsabile"
+not ( Get ( NomeSetPrivilegiAccount ) = "Operatore"
+or ( Get ( NomeSetPrivilegiAccount ) = "Responsabile"
      and PAR|Parametri::ModificabileDalCliente = "No" ) )
 ```
 
@@ -162,7 +162,7 @@ regge perche' non ha accesso a Modifica formato.
 
 **Nei calcoli, solo i nomi che abbiamo dato noi.** La prima versione
 confrontava con `[Accesso completo]`: sbagliata, perche' quel nome e' tradotto
-solo nell'interfaccia mentre `Get ( NomeSetPrivilegi )` restituisce il valore
+solo nell'interfaccia mentre `Get ( NomeSetPrivilegiAccount )` restituisce il valore
 inglese.
 
 **Perche' due campi e non una spunta.** *Consenti l'immissione nel campo* e'

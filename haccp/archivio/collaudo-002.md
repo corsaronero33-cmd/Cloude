@@ -23,7 +23,7 @@ Non e' un dettaglio estetico, e' quello che impedisce di andare avanti:
 - il confronto `Valore < LimiteMin` su campi Testo confronta **stringhe**, e
   in ordine alfabetico `"10"` viene prima di `"9"`. Il semaforo conforme /
   non conforme darebbe risultati sbagliati proprio sulle temperature;
-- `DataScadenza - Get(CurrentDate)` su un campo Testo non calcola niente;
+- `DataScadenza - Get ( DataCorrente )` su un campo Testo non calcola niente;
 - gli ordinamenti per data ordinano per stringa: 01/12 prima di 02/03.
 
 Sono **49 campi**. L'elenco esatto, generato dal rapporto struttura:
@@ -170,7 +170,7 @@ Rimedio, per ognuna delle sei:
 2. nelle opzioni di `Id` togli temporaneamente *Non consentire la modifica*;
 3. formulario della tabella, `Record` -> `Mostra tutti i record`, clicca in
    `Id`, poi `Record` -> `Sostituisci contenuto campo` -> **Sostituisci con
-   risultato calcolato** -> `Get ( UUID )`;
+   risultato calcolato** -> `Get ( IDUU )`;
 4. rimetti la spunta.
 
 Controllo finale: su `ModelliPuntoControllo` i 33 record devono avere 33 `Id`

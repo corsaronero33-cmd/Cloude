@@ -69,7 +69,7 @@ X di sempre: **44 / 143 / 489 / 588**. Passo **40**.
 
 Lo usa lo script `02 - Utilita - Riconosci operatore`, che all'avvio:
 
-1. prende `Get ( AccountName )`, il nome dell'account con cui sei entrato;
+1. prende `Get ( NomeAccount )`, il nome dell'account con cui sei entrato;
 2. cerca fra gli operatori chi ha **quel** valore in `AccountFileMaker`;
 3. **solo se ne trova esattamente uno** riempie `$$UTENTE.Nome` con
    `NomeCompleto`.
@@ -132,7 +132,7 @@ cerchio aperto il primo giorno:
 
 - **9.9** — sul **tuo** record, in `Account FM`, scrivi il nome dell'account
   con cui entri. Se non lo ricordi: `Strumenti` › `Visualizzatore dati`,
-  scheda **Corrente**, espressione `Get ( AccountName )`.
+  scheda **Corrente**, espressione `Get ( NomeAccount )`.
 - **9.10** — esegui `00 - Avvio`.
 - **9.11** — in testata compare **il tuo nome e cognome** al posto del nome
   dell'account.

@@ -56,6 +56,64 @@ un'istruzione di script **If**"*.
 
 Quindi **non** si scrive `Se [ ... ]`, `Altrimenti`, `Fine se`.
 
+## Funzioni di calcolo
+
+Verificate sul titolo della pagina italiana Claris, una per una. Si scrivono
+**in italiano**, come le mostra FileMaker (vedi `CLAUDE.md`, regola 3).
+
+| Inglese | Italiano |
+|---|---|
+| `IsEmpty` | **`EVuoto`** |
+| `If` | `If` |
+| `Case` | **`Casi`** |
+| `Let` | **`Dichiara`** |
+| `Count` | `Conteggio` |
+| `GetAsDate` | **`RicavaComeData`** |
+| `GetAsTime` | **`RicavaComeOra`** |
+| `GetAsText` | `RicavaComeTesto` |
+| `Left` | `Sinistra` |
+| `Length` | `Lunghezza` |
+
+### Le `Get`
+
+| Inglese | Italiano |
+|---|---|
+| `Get ( ScriptParameter )` | `Get ( ParametroScript )` |
+| `Get ( ScriptResult )` | `Get ( RisultatoScript )` |
+| `Get ( FoundCount )` | **`Get ( ContoTrovati )`** |
+| `Get ( RecordNumber )` | `Get ( NumeroRecord )` |
+| `Get ( LastError )` | `Get ( UltimoErrore )` |
+| `Get ( LastMessageChoice )` | **`Get ( SceltaUltimoMessaggio )`** |
+| `Get ( AccountName )` | `Get ( NomeAccount )` |
+| `Get ( AccountPrivilegeSetName )` | **`Get ( NomeSetPrivilegiAccount )`** |
+| `Get ( CurrentDate )` | `Get ( DataCorrente )` |
+| `Get ( CurrentTimestamp )` | **`Get ( IndicatoreDataOraCorrente )`** |
+| `Get ( UUID )` | **`Get ( IDUU )`** |
+| `Get ( SystemPlatform )` | `Get ( PiattaformaSistema )` |
+| `Get ( Device )` | `Get ( Dispositivo )` |
+
+### Operatori: non si traducono
+
+`AND`, `OR`, `XOR`, `NOT`. La pagina italiana *Operatori logici* li scrive
+cosi': *"Utilizzare AND, OR o XOR con due espressioni; utilizzare NOT con
+un'espressione"*.
+
+### Nomi inventati, corretti il 23 novembre 2026
+
+| Scritto | Non esiste. Si chiama |
+|---|---|
+| `Get ( NomeSetPrivilegi )` | `Get ( NomeSetPrivilegiAccount )` |
+| `Get ( ConteggioTrovati )` | `Get ( ContoTrovati )` |
+| `Get ( ConteggioRecordTrovati )` | `Get ( ContoTrovati )` |
+| `Get ( UltimaSceltaMessaggio )` | `Get ( SceltaUltimoMessaggio )` |
+
+### Non ancora verificati
+
+Le variabili di unione nei formati (`{{FoundCount}}`, `{{RecordNumber}}`)
+sono scritte all'inglese e **non** sono state verificate in italiano. Finche'
+non lo sono, nelle schede si dice di **copiarle da un formato che le ha gia'**
+invece di scriverle.
+
 ## I quattro modi
 
 Si dice **modo**, non "modalita'": `modo Usa`, `modo Trova`,

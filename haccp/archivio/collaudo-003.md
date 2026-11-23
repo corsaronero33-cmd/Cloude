@@ -18,7 +18,7 @@ coerenti.
 | 1. Tipi dei campi | tutti e 49 convertiti; nessun campo rimasto Testo dove non deve | **ok** |
 | 2. `NomeCompleto` | risultato `Testo`, formula `Cognome & " " & Nome` | **ok** |
 | 3. `ATT\|PuntiControllo` | tabella di base ora `PuntiControllo`; `idAttrezzatuea` eliminato | **ok** |
-| 4. Chiavi primarie | 21 tabelle su 21 con `Id` = `Get (UUID)`, univoco, non vuoto, non modificabile; i quattro campi di sistema con l'immissione automatica giusta | **ok** |
+| 4. Chiavi primarie | 21 tabelle su 21 con `Id` = `Get ( IDUU )`, univoco, non vuoto, non modificabile; i quattro campi di sistema con l'immissione automatica giusta | **ok** |
 | 5. Spunte di creazione | le quattro previste, e la cascata di eliminazione **solo** fra ricevimento e righe | **ok** |
 | 6. Campi doppioni | i tre eliminati, le tre relazioni rifatte passando da punto di controllo e voce di piano | **ok** |
 | 7. Pulizie | `IdNonConformita Copia` eliminato, tabella `HACCP` eliminata, i quattro nomi di occorrenza corretti | **ok** |

@@ -141,7 +141,7 @@ Tutti e cinque vanno impostati con **"Non consentire la modifica del valore
 durante l'immissione dati"**. Non e' pignoleria: e' il requisito di
 inalterabilita' del registro.
 
-`Id` usa `Get(UUID)` come valore calcolato all'immissione, con la spunta
+`Id` usa `Get ( IDUU )` come valore calcolato all'immissione, con la spunta
 "Non sostituire il valore esistente".
 
 ---
@@ -173,7 +173,7 @@ iPhone ha **un compito solo per schermata**, pulsanti grandi, nessuna tabella
 laterale: la si usa con una mano, spesso con i guanti.
 
 All'apertura, uno script di avvio indirizza alla famiglia giusta leggendo
-`Get(Device)` (e in seconda battuta `Get(SystemPlatform)`). I valori esatti
+`Get ( Dispositivo )` (e in seconda battuta `Get ( PiattaformaSistema )`). I valori esatti
 restituiti dalla funzione vanno verificati sul dispositivo reale prima di
 fidarsi: si scrive lo script, si esegue una volta su iPhone e su iPad, si
 guardano i numeri veri.

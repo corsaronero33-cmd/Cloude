@@ -119,14 +119,14 @@ Partono da x **143**, allineati alla colonna dei campi. Su tutti e due,
 `Ispettore › Dati › Nascondi oggetto quando`:
 
 ```
-Get ( NomeSetPrivilegi ) = "Operatore"
+Get ( NomeSetPrivilegiAccount ) = "Operatore"
 ```
 
 Sul solo `Crea account`:
 
 ```
-Get ( NomeSetPrivilegi ) = "Operatore"
-or not IsEmpty ( OPE|Operatori::AccountFileMaker )
+Get ( NomeSetPrivilegiAccount ) = "Operatore"
+or not EVuoto ( OPE|Operatori::AccountFileMaker )
 ```
 
 **Il pulsante resta visibile finche' il record non e' confermato**, e non e'

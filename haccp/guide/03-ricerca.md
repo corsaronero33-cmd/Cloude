@@ -69,7 +69,7 @@ nessun campo: e' uno per tutta l'applicazione.
 Imposta variabile [ $cerca ; Valore: Get ( ParametroScript ) ]
 Imposta cattura errori [ Attivato ]
 
-If [ IsEmpty ( $cerca ) ]
+If [ EVuoto ( $cerca ) ]
     Mostra tutti i record
     Esci dallo script [ Risultato del testo: "" ]
 End If
@@ -229,7 +229,7 @@ gia' scritte.
 > risultato.
 
 > **Rifinitura che per ora non farei.** Ispettore -> scheda Dati -> **Nascondi
-> oggetto quando**, calcolo `IsEmpty ( REP|Reparti::gCerca )`: il pulsante
+> oggetto quando**, calcolo `EVuoto ( REP|Reparti::gCerca )`: il pulsante
 > comparirebbe solo a ricerca attiva. E' elegante, ma un pulsante che va e
 > viene si nota piu' di uno fermo, e `Tutti` serve anche ad annullare una
 > ricerca fatta con `Ctrl+F`.

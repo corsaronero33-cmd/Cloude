@@ -65,7 +65,7 @@ Valgono per **tutte** le tabelle, e non si ripetono negli elenchi sotto.
 
 | Campo | Tipo | Impostazione |
 |---|---|---|
-| `Id` | testo | chiave primaria, immissione automatica `Get(UUID)`, non modificabile, univoco, obbligatorio |
+| `Id` | testo | chiave primaria, immissione automatica `Get ( IDUU )`, non modificabile, univoco, obbligatorio |
 | `CreatoIl` | data e ora | immissione automatica alla creazione, non modificabile |
 | `CreatoDa` | testo | immissione automatica alla creazione, nome account, non modificabile |
 | `ModificatoIl` | data e ora | immissione automatica alla modifica, non modificabile |

@@ -34,10 +34,25 @@ Quando si corregge il nome di un parametro va cambiato **anche dentro il
 corpo del calcolo**, non solo nell'elenco dei parametri: FileMaker non lo
 aggiorna da solo.
 
-**3. Le formule si scrivono con i nomi delle funzioni in inglese.**
-`Case`, `Let`, `Middle`, `Get ( CurrentDate )`. FileMaker li accetta anche
-nella versione italiana. Restano cosi' in tutta la documentazione: sono
-quelli che si trovano scritti ovunque.
+**3. Le formule si scrivono con i nomi italiani, verificati.**
+`EVuoto`, `Casi`, `Dichiara`, `Get ( ContoTrovati )`: sono quelli che
+FileMaker 22 italiano mostra nell'elenco funzioni di *Specifica calcolo* e
+quelli che ricompaiono quando si riapre una formula salvata. Chi costruisce
+confronta la guida con lo schermo, e i due devono coincidere.
+
+Ogni nome si prende da `VOCABOLARIO-FILEMAKER.md`, e se non c'e' si verifica
+sul titolo della pagina italiana Claris **prima** di scriverlo. Mai tradurre a
+senso: `Get ( ConteggioTrovati )`, `Get ( NomeSetPrivilegi )` e
+`Get ( UltimaSceltaMessaggio )` erano nomi inventati, e chi costruiva li ha
+corretti a mano per sei tappe.
+
+FileMaker accetta **anche** il nome inglese se lo si incolla (`IsEmpty`,
+`Case`): per questo nei riferimenti `07-CALCOLI.md` e `08-SCRIPT.md`
+qualche funzione non ancora verificata (`Middle`, `Substitute`, `Char`,
+`Trim`, `Position`) e' rimasta in inglese. Funziona; non e' un errore, e' un
+nome non ancora tradotto.
+
+Gli operatori **non** si traducono: `AND`, `OR`, `XOR`, `NOT`.
 
 ## I colori non si dettano
 
@@ -373,7 +388,7 @@ etichette a video e nelle stampe, dove le legge una persona.
 
 ## Nei calcoli, solo i nomi che abbiamo dato noi
 
-`Get ( NomeSetPrivilegi )` restituisce `[Full Access]` anche su un file
+`Get ( NomeSetPrivilegiAccount )` restituisce `[Full Access]` anche su un file
 italiano: i nomi dei set predefiniti sono **tradotti solo nell'interfaccia**.
 Un calcolo che confronta con `"[Accesso completo]"` e' quindi sempre vero, e
 il guasto non da' nessun errore — si vede solo provando con tre account

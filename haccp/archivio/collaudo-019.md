@@ -40,8 +40,8 @@ Ci sono anche il rettangolo bianco della fascia etichette (x 0, y 110,
 
 | Campo | Tipo | Formula | Memorizzato |
 |---|---|---|---|
-| `Giorno` | Calcolo, risultato Data | `GetAsDate ( DataOra )` | **si'** |
-| `Ora` | Calcolo, risultato Ora | `GetAsTime ( DataOra )` | **si'** |
+| `Giorno` | Calcolo, risultato Data | `RicavaComeData ( DataOra )` | **si'** |
+| `Ora` | Calcolo, risultato Ora | `RicavaComeOra ( DataOra )` | **si'** |
 | `ConteggioRilevazioni` | Riepilogo | Conteggio di `Id` | — |
 
 `storeCalculationResults="True"` su tutti e due i calcoli: e' la condizione

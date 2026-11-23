@@ -47,7 +47,7 @@ controllo che dice le cose con garbo.
 |---|---|---|
 | 01 | `Imposta cattura errori` | Attivato — **nuovo** |
 | 02 | `Imposta variabile` | `$formato` = `Get ( ParametroScript )` |
-| 03 | `If` | `IsEmpty ( $formato )` |
+| 03 | `If` | `EVuoto ( $formato )` |
 | 04 | &nbsp;&nbsp;`Esci dallo script` | |
 | 05 | `End If` | |
 | 06 | `Vai al formato` | Nome del formato per calcolo: `$formato` |

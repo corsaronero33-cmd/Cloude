@@ -97,7 +97,7 @@ Perche' per FileMaker **non sono vuoti**. Letto dal DDR:
 
 | Campo | Auto-immissione | Convalida |
 |---|---|---|
-| `Id` | calcolo `Get (UUID)` | **Non vuoto**, univoco |
+| `Id` | calcolo `Get ( IDUU )` | **Non vuoto**, univoco |
 | `CreatoIl` | data e ora di creazione | — |
 | `CreatoDa` | nome account di creazione | — |
 | `IdPuntoControllo` | — | **nessuna** |

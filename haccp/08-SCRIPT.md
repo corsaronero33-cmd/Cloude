@@ -34,7 +34,7 @@ limite, e legge lotto e scadenza dal cartone.
 >
 > **Quanti pulsanti su una finestra di dialogo.** Due servono **solo** se lo
 > script poi guarda quale e' stato premuto, cioe' se c'e' un
-> `Get ( UltimaSceltaMessaggio )` dopo. In tutto il progetto capita **una volta
+> `Get ( SceltaUltimoMessaggio )` dopo. In tutto il progetto capita **una volta
 > sola**: la finestra che chiede il codice a mano nello script `10`. Tutte le
 > altre hanno un pulsante: si lasciano **Pulsante 2 e 3 vuoti**.
 >
@@ -81,17 +81,17 @@ globale, e questa funzione ne pesca uno.
 Si usa cosi': `Parametro ( "GiorniAvvisoScadenza" )`.
 
 ```
-Let ( [
+Dichiara ( [
   righe = $$PARAMETRI ;
   pos = Position ( "¶" & righe ; "¶" & pChiave & "=" ; 1 ; 1 )
 ] ;
-Case (
+Casi (
   pos = 0 ; "" ;
-  Let ( [
-    resto = Middle ( righe ; pos + Length ( pChiave ) + 1 ; Length ( righe ) ) ;
+  Dichiara ( [
+    resto = Middle ( righe ; pos + Lunghezza ( pChiave ) + 1 ; Lunghezza ( righe ) ) ;
     fine = Position ( resto ; "¶" ; 1 ; 1 )
   ] ;
-    If ( fine = 0 ; resto ; Left ( resto ; fine - 1 ) )
+    If ( fine = 0 ; resto ; Sinistra ( resto ; fine - 1 ) )
   )
 ) )
 ```
@@ -147,12 +147,12 @@ sola all'avvio. Da li' in poi ogni registrazione sa chi l'ha fatta senza
 chiederlo.
 
 ```
-Imposta variabile [ $conto ; Valore: Get ( AccountName ) ]
+Imposta variabile [ $conto ; Valore: Get ( NomeAccount ) ]
 Vai al formato [ "Operatori" (Operatori) ]
 Attiva modo Trova
 Imposta campo [ Operatori::AccountFileMaker ; $conto ]
 Esegui la ricerca [ ]
-If [ Get ( UltimoErrore ) = 0 and Get ( ConteggioRecordTrovati ) = 1 ]
+If [ Get ( UltimoErrore ) = 0 and Get ( ContoTrovati ) = 1 ]
     Imposta variabile [ $$UTENTE.Id ; Valore: Operatori::Id ]
     Imposta variabile [ $$UTENTE.Nome ; Valore: Operatori::NomeCompleto ]
 Else
@@ -222,13 +222,13 @@ Consenti annullamento utente [ Disattivato ]
 Imposta cattura errori [ Attivato ]
 
 # --- controlli prima di scrivere qualsiasi cosa ---
-If [ IsEmpty ( RIL|Rilevazioni::gIdPuntoControllo ) ]
+If [ EVuoto ( RIL|Rilevazioni::gIdPuntoControllo ) ]
     Mostra finestra di dialogo personalizzata [
         "Manca un dato" ; "Scegli il punto di controllo." ; Pulsante 1: "OK" ]
     Esci dallo script [ Risultato del testo: "" ]
 End If
 
-If [ IsEmpty ( RIL|Rilevazioni::gValore ) and IsEmpty ( RIL|Rilevazioni::gValoreTesto ) ]
+If [ EVuoto ( RIL|Rilevazioni::gValore ) and EVuoto ( RIL|Rilevazioni::gValoreTesto ) ]
     Mostra finestra di dialogo personalizzata [
         "Manca un dato" ; "Scrivi il valore rilevato." ; Pulsante 1: "OK" ]
     Esci dallo script [ Risultato del testo: "" ]
@@ -362,30 +362,30 @@ Else
         # scheda "Campi di immissione"
         Mostra campo di immissione 1 -> RigheRicevimento::CodiceScansionato ,
         etichetta "Codice" ]
-    If [ Get ( UltimaSceltaMessaggio ) = 2 ]
+    If [ Get ( SceltaUltimoMessaggio ) = 2 ]
         Esci dallo script [ Risultato del testo: "" ]
     End If
 End If
 
-If [ IsEmpty ( RigheRicevimento::CodiceScansionato ) ]
+If [ EVuoto ( RigheRicevimento::CodiceScansionato ) ]
     Esci dallo script [ Risultato del testo: "" ]
 End If
 
 Imposta variabile [ $lotto ; Valore: GS1Lotto ( RigheRicevimento::CodiceScansionato ) ]
 Imposta variabile [ $scadenza ; Valore: GS1Scadenza ( RigheRicevimento::CodiceScansionato ) ]
 
-If [ not IsEmpty ( $lotto ) ]
+If [ not EVuoto ( $lotto ) ]
     Imposta campo [ RigheRicevimento::Lotto ; $lotto ]
 End If
 
-If [ not IsEmpty ( $scadenza ) ]
+If [ not EVuoto ( $scadenza ) ]
     Imposta campo [ RigheRicevimento::DataScadenza ; $scadenza ]
     Imposta campo [ RigheRicevimento::TipoScadenza ; "scadenza" ]
 End If
 
 Salva record/richieste [ Con dialogo: Disattivato ]
 
-If [ IsEmpty ( $lotto ) and IsEmpty ( $scadenza ) ]
+If [ EVuoto ( $lotto ) and EVuoto ( $scadenza ) ]
     Mostra finestra di dialogo personalizzata [
         Pulsante 1: "OK" ;
         "Etichetta non riconosciuta" ;
@@ -419,7 +419,7 @@ si presenta il ricevimento a video.
 > *Specifica* per scegliere il campo.
 >
 > Il **Pulsante 2** non e' facoltativo: e' quello che il passo successivo
-> riconosce come Annulla con `Get ( UltimaSceltaMessaggio ) = 2`. Senza, quel
+> riconosce come Annulla con `Get ( SceltaUltimoMessaggio ) = 2`. Senza, quel
 > controllo non scatta mai e l'operatore non puo' rinunciare alla scansione.
 
 **Sul PC il passo della fotocamera non funziona**, ed e' giusto cosi':

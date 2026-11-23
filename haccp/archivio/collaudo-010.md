@@ -71,7 +71,7 @@ un'ispezione tira fuori i registri.
 Passi 46-49, letti dall'export:
 
 ```
-46  If [ Get ( LastError ) <> 0 ]
+46  If [ Get ( UltimoErrore ) <> 0 ]
 47    Show Custom Dialog [ "Account non creato" ... ]
 48    Set Field [ gPassword ; "" ]
 49  End If                      <- nessun Exit Script
@@ -90,7 +90,7 @@ Finche' non e' corretto, un collaudo verde non prova niente.
 
 | Passo | C'e' scritto | Deve essere |
 |---|---|---|
-| 25 | `Left ( Nome ; 1 ) & ( Cognome )` | `Lower ( Left ( Nome ; 1 ) & Cognome )` |
+| 25 | `Sinistra ( Nome ; 1 ) & ( Cognome )` | `Lower ( Sinistra ( Nome ; 1 ) & Cognome )` |
 | 26 | `gPassword & ""` | `""` |
 | 20 | titolo `ATTENZIONE \|\|\|` | `ATTENZIONE !!!` |
 

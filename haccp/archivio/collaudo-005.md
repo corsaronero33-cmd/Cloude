@@ -22,7 +22,7 @@ che legge `$$PARAMETRI`.
 147 righe di commento su 99 passi. Fra sei mesi si ringrazia.
 
 **Lo script 10 e' corretto**, compreso il punto su cui c'era il dubbio: la
-condizione finale e' `IsEmpty ( $lotto ) and IsEmpty ( $scadenza )`, con
+condizione finale e' `EVuoto ( $lotto ) and EVuoto ( $scadenza )`, con
 `and`, e il `Mostra finestra` sta **dentro** il blocco `If`. Con il lotto
 trovato quella finestra non puo' aprirsi.
 
