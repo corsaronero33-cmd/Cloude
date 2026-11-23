@@ -1,0 +1,85 @@
+<svg viewBox="-20 -44 1060 389" role="img" aria-label="La maschera D_NonConformita elenco a video: le non conformita aperte in cima e in rosso, sotto quelle chiuse con la data di chiusura." font-family="Source Sans 3, Segoe UI, sans-serif">
+  <line x1="81" y1="-16" x2="81" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="81" y="-22" font-size="11" fill="currentColor" opacity=".75">81</text>
+  <line x1="181" y1="-16" x2="181" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="181" y="-22" font-size="11" fill="currentColor" opacity=".75">181</text>
+  <line x1="301" y1="-16" x2="301" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="301" y="-22" font-size="11" fill="currentColor" opacity=".75">301</text>
+  <line x1="686" y1="-16" x2="686" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="686" y="-22" font-size="11" fill="currentColor" opacity=".75">686</text>
+  <line x1="776" y1="-16" x2="776" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="776" y="-22" font-size="11" fill="currentColor" opacity=".75">776</text>
+  <line x1="876" y1="-16" x2="876" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="876" y="-22" font-size="11" fill="currentColor" opacity=".75">876</text>
+  <line x1="24" y1="-16" x2="24" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="24" y="-22" font-size="11" fill="currentColor" opacity=".75">24</text>
+  <line x1="996" y1="-16" x2="996" y2="-4" stroke="currentColor" opacity=".35"/>
+  <text x="996" y="-22" font-size="11" fill="currentColor" opacity=".75" text-anchor="end">996</text>
+  <rect x="0" y="0" width="1020" height="143" fill="#1B3A5C"/>
+  <text x="24" y="44" font-size="25" font-weight="700" fill="#FFFFFF">Non conformità</text>
+  <text x="996" y="40" font-size="15" fill="#C9DAE8" text-anchor="end">Mario Rossi</text>
+  <rect x="24" y="57" width="84" height="35" rx="3" fill="#E8EDF1"/>
+  <text x="66" y="79" font-size="13" fill="#1B3A5C" text-anchor="middle">&#8592; Menu</text>
+  <rect x="109" y="57" width="117" height="35" rx="3" fill="#E8EDF1"/>
+  <text x="168" y="79" font-size="13" fill="#1B3A5C" text-anchor="middle">Tutte</text>
+  <rect x="230" y="57" width="160" height="35" rx="3" fill="#E8EDF1"/>
+  <text x="310" y="79" font-size="13" fill="#1B3A5C" text-anchor="middle">Solo aperte</text>
+  <line x1="0" y1="101" x2="1020" y2="101" stroke="#FFFFFF" opacity=".35"/>
+  <rect x="0" y="110" width="1020" height="32" fill="#FFFFFF"/>
+  <text x="87" y="131" font-size="12" font-weight="700" fill="#44565F">Data</text>
+  <text x="187" y="131" font-size="12" font-weight="700" fill="#44565F">Origine</text>
+  <text x="307" y="131" font-size="12" font-weight="700" fill="#44565F">Descrizione</text>
+  <text x="692" y="131" font-size="12" font-weight="700" fill="#44565F">Gravità</text>
+  <text x="782" y="131" font-size="12" font-weight="700" fill="#44565F">Stato</text>
+  <text x="882" y="131" font-size="12" font-weight="700" fill="#44565F">Chiusa il</text>
+  <rect x="0" y="143" width="1020" height="30" fill="#FFFFFF"/>
+  <rect x="24" y="145" width="51" height="26" rx="3" fill="#E8EDF1"/>
+  <text x="49.5" y="163" font-size="12" fill="#1B3A5C" text-anchor="middle">Apri</text>
+  <text x="87" y="163" font-size="13.5" fill="#16222A" font-weight="400">11/11/2026</text>
+  <text x="187" y="163" font-size="13.5" fill="#16222A" font-weight="400">rilevazione</text>
+  <text x="307" y="163" font-size="13.5" fill="#16222A" font-weight="400">Fuori limite: Frigo carni. Valore rilevato 7 °C, li…</text>
+  <text x="692" y="163" font-size="13.5" fill="#16222A" font-weight="400">alta</text>
+  <text x="782" y="163" font-size="13.5" fill="#DD0000" font-weight="700">aperta</text>
+  <line x1="0" y1="173" x2="1020" y2="173" stroke="#D5DDE1"/>
+  <rect x="0" y="173" width="1020" height="30" fill="#FFFFFF"/>
+  <rect x="24" y="175" width="51" height="26" rx="3" fill="#E8EDF1"/>
+  <text x="49.5" y="193" font-size="12" fill="#1B3A5C" text-anchor="middle">Apri</text>
+  <text x="87" y="193" font-size="13.5" fill="#16222A" font-weight="400">10/11/2026</text>
+  <text x="187" y="193" font-size="13.5" fill="#16222A" font-weight="400">rilevazione</text>
+  <text x="307" y="193" font-size="13.5" fill="#16222A" font-weight="400">Fuori limite: Abbattitore. Valore rilevato -12 °C…</text>
+  <text x="692" y="193" font-size="13.5" fill="#16222A" font-weight="400">alta</text>
+  <text x="782" y="193" font-size="13.5" fill="#DD0000" font-weight="700">aperta</text>
+  <line x1="0" y1="203" x2="1020" y2="203" stroke="#D5DDE1"/>
+  <rect x="0" y="203" width="1020" height="30" fill="#FFFFFF"/>
+  <rect x="24" y="205" width="51" height="26" rx="3" fill="#E8EDF1"/>
+  <text x="49.5" y="223" font-size="12" fill="#1B3A5C" text-anchor="middle">Apri</text>
+  <text x="87" y="223" font-size="13.5" fill="#16222A" font-weight="400">06/11/2026</text>
+  <text x="187" y="223" font-size="13.5" fill="#16222A" font-weight="400">reclamo</text>
+  <text x="307" y="223" font-size="13.5" fill="#16222A" font-weight="400">Cliente segnala pesce poco fresco al tavolo 4</text>
+  <text x="692" y="223" font-size="13.5" fill="#16222A" font-weight="400">media</text>
+  <text x="782" y="223" font-size="13.5" fill="#DD0000" font-weight="700">aperta</text>
+  <line x1="0" y1="233" x2="1020" y2="233" stroke="#D5DDE1"/>
+  <rect x="0" y="233" width="1020" height="30" fill="#FFFFFF"/>
+  <rect x="24" y="235" width="51" height="26" rx="3" fill="#E8EDF1"/>
+  <text x="49.5" y="253" font-size="12" fill="#1B3A5C" text-anchor="middle">Apri</text>
+  <text x="87" y="253" font-size="13.5" fill="#16222A" font-weight="400">28/10/2026</text>
+  <text x="187" y="253" font-size="13.5" fill="#16222A" font-weight="400">rilevazione</text>
+  <text x="307" y="253" font-size="13.5" fill="#16222A" font-weight="400">Fuori limite: Frigo cucina 1. Valore rilevato 6 °C…</text>
+  <text x="692" y="253" font-size="13.5" fill="#16222A" font-weight="400">alta</text>
+  <text x="782" y="253" font-size="13.5" fill="#16222A" font-weight="400">chiusa</text>
+  <text x="882" y="253" font-size="13.5" fill="#16222A" font-weight="400">29/10/2026</text>
+  <line x1="0" y1="263" x2="1020" y2="263" stroke="#D5DDE1"/>
+  <rect x="0" y="263" width="1020" height="30" fill="#FFFFFF"/>
+  <rect x="24" y="265" width="51" height="26" rx="3" fill="#E8EDF1"/>
+  <text x="49.5" y="283" font-size="12" fill="#1B3A5C" text-anchor="middle">Apri</text>
+  <text x="87" y="283" font-size="13.5" fill="#16222A" font-weight="400">15/10/2026</text>
+  <text x="187" y="283" font-size="13.5" fill="#16222A" font-weight="400">verifica interna</text>
+  <text x="307" y="283" font-size="13.5" fill="#16222A" font-weight="400">Etichette lotto mancanti in cella 2</text>
+  <text x="692" y="283" font-size="13.5" fill="#16222A" font-weight="400">bassa</text>
+  <text x="782" y="283" font-size="13.5" fill="#16222A" font-weight="400">chiusa</text>
+  <text x="882" y="283" font-size="13.5" fill="#16222A" font-weight="400">16/10/2026</text>
+  <line x1="0" y1="293" x2="1020" y2="293" stroke="#D5DDE1"/>
+  <rect x="0" y="293" width="1020" height="38" fill="#F2F5F6"/>
+  <text x="24" y="317" font-size="13" fill="#5F7078">Record   1   Di   5</text>
+  <rect x="0" y="0" width="1020" height="331" fill="none" stroke="currentColor" opacity=".35"/>
+</svg>

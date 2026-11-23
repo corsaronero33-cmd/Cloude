@@ -147,6 +147,53 @@ Rinominarli adesso, a tappa 6 ancora aperta, vorrebbe dire toccare lo script
 
 ---
 
+## Tappa 7 — Non conformita' e sanificazioni
+
+**Gli altri due registri del quotidiano.** Alla tappa 6 le non conformita'
+hanno cominciato a nascere da sole; qui imparano a **chiudersi**. Poi il
+piano di sanificazione e il suo registro.
+
+E' la tappa piu' larga: due meta', una maschera per scheda.
+
+### 7a — Non conformita'
+
+| Scheda | Maschera | Cosa fa |
+|---|---|---|
+| 20 | `D_NonConformita elenco` — `guide/20-nonconformita-elenco.md`, <https://claude.ai/artifact/RsvVpw9yn9GgPvfg2twiUY> | tutte le non conformita', **le aperte in cima e in rosso**, filtro *Solo aperte*. Piu' il debito n. 1 |
+| 21 | `D_NonConformita scheda` | si legge cosa e' successo e il **Responsabile la chiude**: esito della verifica, efficacia, data e firma. Da qui nascono anche quelle a mano (reclamo, ispezione, analisi) |
+
+Una non conformita' aperta e non chiusa e' **il primo rilievo che fa un
+ispettore** (`02-DATI.md`). L'elenco deve mostrarle prima di tutto il resto.
+
+### 7b — Sanificazioni
+
+| Scheda | Maschera | Cosa fa |
+|---|---|---|
+| 22 | il piano di sanificazione | cosa si pulisce, con cosa, ogni quanto: nasce dai modelli importati come i punti di controllo alla tappa 3 |
+| 23 | `D_Sanificazioni registra` | l'operatore segna cosa ha fatto oggi |
+| 24 | `D_Sanificazioni elenco` | il registro |
+
+La 7b si progetta **dopo** la 7a, con il DDR in mano: prima di disegnare il
+piano va visto se `PianoSanificazione` e' gia' popolato o va generato dai
+modelli.
+
+### Debito n. 1 — si paga nella scheda 20
+
+Tre formati nati dall'importazione sono attraversati da uno script:
+`Parametri` (script `01`), `Operatori` (`02`), `NonConformita` (`20`). Si
+rinominano `Z_Parametri`, `Z_Operatori`, `Z_NonConformita`, cosi' nella
+cartella `TECNICI` si distinguono dai diciotto che sono solo resti
+dell'importazione. Alla consegna, chi fa pulizia saprebbe di non toccarli: con
+`Imposta cattura errori` attivo, uno di quei tre cancellato fermerebbe lo
+script **senza dire niente**.
+
+Solo rinominare, non ripuntare sulle occorrenze-ancora: FileMaker segue i
+formati per identificativo interno, quindi i riferimenti negli script non si
+rompono; ripuntarli vorrebbe dire rifare a mano i campi di tre script che
+funzionano, senza un guasto da togliere.
+
+---
+
 ## In panchina
 
 Non sono dimenticanze: ognuna ha un momento in cui conviene farla.
@@ -154,14 +201,11 @@ Non sono dimenticanze: ognuna ha un momento in cui conviene farla.
 | Cosa | Rientra alla tappa |
 |---|---|
 | Script `95 - Reimposta password` (si duplica il `94`) | 11 |
-| Script `90`: distinguere *formato che non esiste* da *formato che non posso leggere* | 5 |
-| Script `93`: non controlla l'esito del `90` e crea il record comunque | 5 |
 | Blocco della rilevazione dopo il salvataggio | 11 |
-| Gli script sui formati nudi (`01`, `02`, `10`): da ripuntare sulle occorrenze | 6 |
 | Lo script `10` non aggancia il prodotto dal GTIN | 8 |
 | Controllo di completezza della riga di ricevimento (lotto, scadenza) | 8 |
 | Le tabelle di fase 2 vuote: manca il **passo avanti** della rintracciabilita' | 11 |
-| I sette ritocchi minori, elencati sotto | 5 |
+| Lo stile `Titolo Riquadro` del tema (il ritocco rimasto, sotto) | 9 |
 
 **L'unica voce che tocca un obbligo di legge** e' il passo avanti della
 rintracciabilita': oggi si sa da dove viene un lotto, non in quale
