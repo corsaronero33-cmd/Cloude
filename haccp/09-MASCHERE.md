@@ -299,7 +299,7 @@ quindi la scheda si apre gia' sul reparto giusto.
 > Costruzione completa, con il disegno in scala e le coordinate di ogni
 > oggetto: **`guide/01-reparti-scheda.md`**. Qui sotto solo l'impianto.
 
-`Formati` -> `Nuovo formato/rapporto` -> **Modulo**, su `REP|Reparti`.
+`Formati` -> `Nuovo formato/resoconto` -> **Modulo**, su `REP|Reparti`.
 
 | Parte | Cosa ci va |
 |---|---|

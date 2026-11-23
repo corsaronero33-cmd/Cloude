@@ -65,8 +65,8 @@ che un errore di FileMaker.
 
 ## Fase 1 — Creare il formato vuoto
 
-1. `Visualizza` › `Modifica formato` (Ctrl+L).
-2. `Formati` › `Nuovo formato/rapporto`.
+1. `Visualizza` › `Formato scheda` (Ctrl+L).
+2. `Formati` › `Nuovo formato/resoconto`.
 3. Nella finestra:
    - **Mostra record da:** `REP|Reparti` — l'occorrenza con la sigla, **non**
      la `Reparti` nuda.

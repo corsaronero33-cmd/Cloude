@@ -59,7 +59,7 @@ partenza; vincolante solo la **fascia blu alta 100**.
 ```
 # === 96 - IMPRESA - APRI LA SCHEDA ===
 # Porta sull'unico record dell'impresa, e lo crea se la tabella e' vuota.
-# Agganciato al trigger OnLayoutEnter di D_Impresa scheda.
+# Agganciato al trigger SuEntrataFormato di D_Impresa scheda.
 
 Mostra tutti i record
 If [ Get ( ContoTrovati ) = 0 ]
@@ -69,7 +69,7 @@ Else
 End If
 ```
 
-Trigger `OnLayoutEnter` del formato, nessun parametro.
+Trigger `SuEntrataFormato` del formato, nessun parametro.
 
 **Perche' `96` e non `91`.** Il `91` e' *entra in un elenco*: svuota la
 ricerca, mostra tutti, ordina. Questo fa una cosa che non esiste su

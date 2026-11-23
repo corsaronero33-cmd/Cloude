@@ -82,7 +82,7 @@ Li ha creati **la mano**: il pulsante **+** della barra degli strumenti,
 modo Usa, basta una di queste tre strade.
 
 **E non ci si accorge, per una ragione precisa.** `D_Rilevazioni registra` ha
-**una parte sola, l'Intestazione: non ha il Corpo**. Il Corpo e' la parte che
+**una sezione sola, l'Intestazione: non ha il Corpo**. Il Corpo e' la parte che
 FileMaker disegna una volta per record. Senza Corpo, un record nuovo **non si
 vede**: a schermo non cambia niente, il contatore passa da 12 a 13 e nessuno
 guarda il contatore. Per questo si sono accumulati.

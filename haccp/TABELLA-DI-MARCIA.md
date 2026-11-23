@@ -60,7 +60,7 @@ Due maschere, una scheda di lavoro ciascuna. **DDR a fine tappa.**
 
 Porta con se' tre cose nuove: una **relazione da un campo globale**
 (`RIL|PuntoScelto`) che fa vedere i limiti **prima** di registrare; un formato
-con **una parte sola**, perche' i campi globali nel corpo non si vedrebbero a
+con **una sezione sola**, perche' i campi globali nel corpo non si vedrebbero a
 tabella vuota; e la coda dello script `20` da rifare.
 
 **Montata, e corretta due volte.**
@@ -92,7 +92,7 @@ un errore di lettura del DDR ed e' stato **ritirato**. Da li' la regola
   verticali via.
 
 - `archivio/collaudo-019.md` — Revisione 20: **`D_Rilevazioni elenco` montata
-  e funzionante**, collaudo superato. Verificati nel DDR il Riepilogo iniziale
+  e funzionante**, collaudo superato. Verificati nel DDR il Riassunto parziale
   raggruppato su `Giorno`, i due calcoli **memorizzati**, l'ordinamento,
   `Passa al modo Trova` senza Pausa, i parametri dei due pulsanti, il trigger e il
   rosso `#DD0000` della formattazione condizionale. Un difetto solo: il piede
@@ -111,7 +111,7 @@ rosso.
 
 Il registro: sola lettura, per data decrescente, raggruppato per giorno.
 
-Porta con se' tre cose nuove: una **parte Riepilogo iniziale**, che compare una
+Porta con se' tre cose nuove: una **sezione Riassunto parziale**, che compare una
 volta per gruppo e **solo se i record sono ordinati sul campo del gruppo**; due
 **campi calcolati memorizzati** (`Giorno`, `Ora`), perche' `DataOra` e' diverso
 su ogni record e quindi non raggruppa; e il **primo colore di allarme** del

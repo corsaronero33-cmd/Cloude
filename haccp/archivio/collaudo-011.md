@@ -16,7 +16,7 @@ stessa X e larghezza, elenco e scheda larghi uguali — e tutto il resto.
 | `D_PuntiControllo elenco` | sette colonne, **ogni etichetta ha X e larghezza del suo campo**, `Apri` a x 25 |
 | Colonna Reparto | `PCO\|Reparti::Descrizione` — e' il campo collegato |
 | Script `91 - PuntiControllo` | `Imposta campo` su `PCO\|PuntiControllo::gCerca`, ordina `Ordine` poi `Codice` |
-| I due trigger | `OnObjectExit` → `92` con parametro `PCO\|PuntiControllo::gCerca`; `OnLayoutEnter` → `91` |
+| I due trigger | `SuUscitaOggetto` → `92` con parametro `PCO\|PuntiControllo::gCerca`; `SuEntrataFormato` → `91` |
 | Parametri dei pulsanti | tutti giusti, compreso `+ Nuovo` → `93` |
 | `IdReparto` | Menu a comparsa con `vl_Reparti` |
 | Le sette tendine del valore | Menu a discesa con la lista giusta |

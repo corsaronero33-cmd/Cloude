@@ -26,7 +26,7 @@ Le X delle colonne, che valgono per **tutti** gli elenchi del progetto:
 
 ## Fase 1 — Duplicare la scheda
 
-1. `Visualizza` › `Modifica formato` (Ctrl+L), vai su `D_Reparti scheda`.
+1. `Visualizza` › `Formato scheda` (Ctrl+L), vai su `D_Reparti scheda`.
 2. `Formati` › **Duplica formato**.
 3. `Formati` › `Imposta formato`, scheda Generale:
    - **Nome formato:** `D_Reparti elenco`
@@ -149,14 +149,14 @@ voce non si trova, si salta — non e' essenziale.
 
 | # | Passo | Impostazioni |
 |---|---|---|
-| 01 | *commento* | `# Ordina l'elenco dei reparti. Lo chiama il trigger OnLayoutEnter` `# del formato D_Reparti elenco.` |
+| 01 | *commento* | `# Ordina l'elenco dei reparti. Lo chiama il trigger SuEntrataFormato` `# del formato D_Reparti elenco.` |
 | 02 | `Ordina i record` | Criteri: `REP\|Reparti::Ordine` crescente, poi `REP\|Reparti::Codice` crescente. **Specifica criteri** spuntato, **con finestra di dialogo: No** |
 | 03 | `Esci dallo script` | |
 
 ### Il trigger
 
 `Formati` › `Imposta formato` › scheda **Trigger di script** › spunta
-**OnLayoutEnter** e scegli `91 - Reparti - Ordina elenco`.
+**SuEntrataFormato** e scegli `91 - Reparti - Ordina elenco`.
 
 Un trigger e' uno script che parte da solo quando succede una certa cosa — qui,
 quando entri nel formato. Non va chiamato da nessuna parte.

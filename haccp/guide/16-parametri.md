@@ -45,7 +45,7 @@ Ordina i record [ PAR|Parametri::Categoria crescente ;
 
 Niente `Imposta campo`: su `Parametri` non c'e' `gCerca`.
 
-**L'ordinamento e' il motore del raggruppamento.** Il sottoriepilogo compare
+**L'ordinamento e' il motore del raggruppamento.** Il riassunto parziale compare
 **solo se i record sono ordinati per il campo su cui si raggruppa**. Senza
 l'ordinamento per `Categoria` le fasce non si vedono e sembra che la parte non
 funzioni: e' l'inghippo numero uno dei sottoriepiloghi.
@@ -60,21 +60,20 @@ esatto `D_Parametri elenco`. Si cancellano casella di ricerca, `Tutti`,
 
 Un formato FileMaker non e' un foglio unico: e' fatto di **fasce orizzontali
 sovrapposte**, e ognuna si chiama *parte*. Sono quelle con la linguetta grigia
-sul bordo sinistro quando si e' in Modifica formato.
+sul bordo sinistro quando si e' nel modo Formato scheda.
 
 | Parte | Quante volte compare | Da noi contiene |
 |---|---|---|
 | Intestazione | una sola, in cima | fascia blu, titolo, pulsanti, etichette di colonna |
 | Corpo | **una per record** | la riga dell'elenco |
 | Pie' di pagina | una sola, in fondo | il contatore |
-| **Sottoriepilogo** | **una per gruppo** | il nome della categoria |
+| **Riassunto parziale** | **una per gruppo** | il nome della categoria |
 
-**La parte nuova:** in **Modifica formato** (in Modo Usa quel menu non c'e'),
-`Formati › Imposta parti...` apre l'elenco delle fasce del formato. `Crea...`
-apre la finestra **Parte**: si sceglie **Sottoriepilogo durante
-l'ordinamento** e nella colonna di destra il campo **`Categoria`**.
+**La sezione nuova:** nel **modo Formato scheda** (in Modo Usa quel menu non c'e'),
+`Formati › Imposta la Sezione` apre l'elenco delle fasce del formato. `Crea...`
+apre la finestra **Definizione della sezione**: si sceglie **Riassunto parziale** e nella colonna di destra il campo **`Categoria`**.
 
-> **Sopra `Corpo` ce ne sono due**, e l'altra e' `Riepilogo iniziale`, che
+> **Sopra `Corpo` ce ne sono due**, e l'altra e' un **riassunto generale**, che
 > compare **una volta sola in cima** e mostra il valore del primo record. Si
 > distinguono con certezza da una cosa: selezionando quella giusta **si
 > accende l'elenco dei campi a destra**, perche' FileMaker chiede su cosa
@@ -82,12 +81,12 @@ l'ordinamento** e nella colonna di destra il campo **`Categoria`**.
 
 Alta 34, sfondo `#E7EEF5`, dentro il campo `Categoria` in grassetto.
 
-**Scorciatoia:** doppio clic sulla linguetta grigia di una parte apre la
+**Scorciatoia:** doppio clic sulla linguetta grigia di una sezione apre la
 stessa finestra, gia' puntata su quella. Serve per cambiare tipo o altezza di
-una fascia che esiste; per crearne una nuova serve `Imposta parti... ›
+una fascia che esiste; per crearne una nuova serve `Imposta la Sezione ›
 Crea...`.
 
-Sopra e non sotto: il sottoriepilogo iniziale fa da **titolo** del gruppo, il
+Sopra e non sotto: il riassunto parziale fa da **titolo** del gruppo, il
 finale da **totale**. I totali serviranno alle stampe.
 
 **Il campo nella fascia e' il campo della tabella**, non un testo scritto a

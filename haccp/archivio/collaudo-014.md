@@ -19,7 +19,7 @@ non spostate insieme al loro campo.
 | I due campi `Valore` | x 836, larghi 160 tutti e due: **esattamente sovrapposti** |
 | Script `90` | ramo **105**, ramo errore generico, `Esci dallo script "ok"` |
 | Script `93` | `Se Get ( RisultatoScript ) <> "ok"` prima di `Nuovo record` |
-| Trigger della ricerca | **`OnObjectSave`** su tutti e sei gli elenchi che hanno la casella |
+| Trigger della ricerca | **`SuSalvataggioOggetto`** su tutti e sei gli elenchi che hanno la casella |
 | Griglia del menu | 24 / 271 / 518 / 765, larghi 231, chiude a 996 |
 | `D_Impresa scheda` | rinominato con la **s** minuscola |
 

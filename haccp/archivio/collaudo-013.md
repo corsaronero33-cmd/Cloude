@@ -17,7 +17,7 @@ di nomenclatura, e tre controlli che l'export non permette di fare.
 | Parti | Intestazione 100, Corpo 559, **nessun pie' di pagina** |
 | Pulsanti | `← Menù` → `90` con `"D_Menu"`, `Salva`, `Annulla Modifiche`. Niente `+ Nuovo` ne' `Elimina` |
 | Campi | gli undici testi, `DataScia` **Calendario a discesa**, contenitori `Logo` e `ManualeAutocontrollo` |
-| Script `96` | esiste, scritto giusto, agganciato a **`OnLayoutEnter`** |
+| Script `96` | esiste, scritto giusto, agganciato a **`SuEntrataFormato`** |
 
 ### `D_Parametri elenco`
 

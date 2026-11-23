@@ -268,8 +268,8 @@ Casella e pulsante `Tutti` sono arrivati con la duplicazione. Vanno
 | # | Cosa | Come |
 |---|---|---|
 | 1 | La **casella** punta a `REP\|Reparti::gCerca` | Doppio clic, cambia l'occorrenza in `ATT\|Attrezzature`, scegli `gCerca` |
-| 2 | Il **trigger** della casella passa il campo dei reparti | Tasto destro › `Imposta trigger di script` › `OnObjectSave` › `Specifica script`: lo script `92` resta, cambia il **Parametro script facoltativo** in `ATT\|Attrezzature::gCerca` — **senza virgolette** |
-| 3 | Il **trigger del formato** chiama `91 - Reparti` | `Imposta formato` › `Trigger di script` › `OnLayoutEnter` → **`91 - Attrezzature - Entra nell'elenco`** |
+| 2 | Il **trigger** della casella passa il campo dei reparti | `Formattazione` › `Imposta trigger di script` › `SuSalvataggioOggetto` › `Specifica script`: lo script `92` resta, cambia il **Parametro script facoltativo** in `ATT\|Attrezzature::gCerca` — **senza virgolette** |
+| 3 | Il **trigger del formato** chiama `91 - Reparti` | `Imposta formato` › `Trigger di script` › `SuEntrataFormato` → **`91 - Attrezzature - Entra nell'elenco`** |
 
 ### Le spunte della Ricerca rapida
 

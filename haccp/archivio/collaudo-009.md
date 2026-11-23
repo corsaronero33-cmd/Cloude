@@ -17,7 +17,7 @@ cosa sbagliata e due spazi di troppo.
 | `Tipo`, `Attivo` | restano **Drop-down List**, com'e' giusto |
 | `D_Attrezzature elenco` | colonna Reparto = `ATT\|Reparti::Descrizione`, il campo correlato |
 | Allineamento colonne | **tutte e quattro**: etichetta e campo con la stessa X e la stessa larghezza |
-| Trigger formato | `OnLayoutEnter` -> `91 - Attrezzature - Entra nell'elenco` |
+| Trigger formato | `SuEntrataFormato` -> `91 - Attrezzature - Entra nell'elenco` |
 | Trigger casella | `92 - Utilita - Cerca`, parametro `ATT\|Attrezzature::gCerca` |
 | Pulsanti | `← Elenco` -> `"D_Attrezzature elenco"`, `Apri` -> `"D_Attrezzature scheda"`, `Tutti` -> lo script 91 giusto |
 | `D_Menu` | dodici pulsanti, tutti con il parametro giusto |

@@ -29,7 +29,7 @@ Restano fuori dall'export, come sempre: **le spunte della Ricerca rapida**
 | `D_Operatori scheda` | due riquadri, `Ruolo` Drop-down List con `vl_Ruoli`, `AccountFileMaker` **Edit Box senza lista**, `Salva` = Commit *con finestra disattivata*, `Annulla Modifiche` = Revert *con finestra attiva*, `Elimina` con finestra |
 | `Crea account` | → script `94`, con **tutte e due** le condizioni di nascondimento |
 | `D_Operatori elenco` | sette colonne, `Ruolo` **accanto** ad `Account FM`; ogni etichetta ha la X e la larghezza del suo campo |
-| I cinque trigger `OnObjectExit` | parametro `OCC|Tabella::gCerca` corretto su tutti |
+| I cinque trigger `SuUscitaOggetto` | parametro `OCC|Tabella::gCerca` corretto su tutti |
 
 **Chiusi:** il `+ Nuovo` mancante sugli elenchi, e l'`Esci` che tornava ai
 reparti.

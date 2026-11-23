@@ -126,6 +126,49 @@ Si dice **modo**, non "modalita'": `modo Usa`, `modo Trova`,
 | Preview mode | modo Anteprima |
 | Layout mode | modo Formato scheda |
 
+## Formati, sezioni, trigger
+
+| Inglese | Italiano | Dove |
+|---|---|---|
+| layout parts | **sezioni** del formato | non "parti" |
+| Part Setup | **`Formati > Imposta la Sezione`**, finestra **`Imposta sezione`** | non "Imposta parti" |
+| Insert Part | **`Inserisci > Sezione`**, finestra **`Definizione della sezione`** | |
+| Sub-summary | **`Riassunto parziale`** (con il *campo di separazione*) | non "Riepilogo iniziale", non "Sottoriepilogo" |
+| Header / Body / Footer | `Intestazione` / `Corpo` / `Piè di pagina` | |
+| Top / Bottom Navigation | `Navigazione superiore` / `Navigazione inferiore` | |
+| New Layout/Report | pulsante **`Nuovo formato/resoconto`** nella barra (modo Formato scheda), oppure `File > Gestisci > Formati > Nuovo` | non "Nuovo formato/rapporto" |
+| List / Form / Table View | **`Visualizza come lista`** / `come modulo` / `come tabella` | non "Vista Elenco" |
+| Layout Setup | **`Impostazione formato`**, dalla barra formato in modo Formato scheda | |
+| layout triggers | `Impostazione formato` > scheda **`Script trigger`** > doppio clic sull'evento | non "Formati > Imposta trigger di script" |
+| object triggers | **`Formattazione > Imposta trigger di script`**, finestra `Imposta script trigger` | il menu e' **Formattazione**, non Formati |
+| Conditional Formatting | **`Formattazione > Condizionale`**, finestra `Formattazione condizionale` > `Aggiungi` | non "Formato > Formattazione condizionale" |
+| merge field | `Inserisci > Campo di fusione` | |
+| Script Workspace | `Script > Area di lavoro script` | |
+| Duplicate | `Modifica > Duplica` | |
+
+I **modi** si scelgono dal menu `Visualizza` (o con la scorciatoia):
+`Usa`, `Trova`, `Formato scheda`, `Anteprima`.
+
+### I trigger
+
+| Inglese | Italiano |
+|---|---|
+| `OnLayoutEnter` | **`SuEntrataFormato`** |
+| `OnLayoutExit` | `SuUscitaFormato` |
+| `OnRecordLoad` | `SuCaricamentoRecord` |
+| `OnRecordCommit` | `SuSalvataggioRecord` |
+| `OnObjectEnter` | `SuEntrataOggetto` |
+| `OnObjectExit` | **`SuUscitaOggetto`** |
+| `OnObjectSave` | **`SuSalvataggioOggetto`** |
+| `OnObjectModify` | `SuModificaOggetto` |
+| `OnFirstWindowOpen` | `SuAperturaPrimaFinestra` |
+| `OnModeEnter` | `SuEntrataModo` |
+
+### Tipi di campo
+
+`Testo`, `Numero`, `Data`, `Ora`, `Indicatore data e ora`, `Contenitore`,
+**`Calcolo`**, **`Riassunto`** (non "Riepilogo").
+
 ## Altri termini verificati
 
 | Inglese | Italiano |
@@ -148,6 +191,15 @@ Scritto per diciannove schede, e corretto tutto in una volta:
 | `Vai al record [ Primo ]` | `Vai a Record/Richiesta/Pagina [ Primo ]` |
 | `Se [ ... ]` / `Altrimenti` / `Fine se` | `If [ ... ]` / `Else` / `End If` |
 | "passo di script" | "istruzione di script" |
+| "parti" del formato, `Imposta parti...` | **sezioni**, `Formati > Imposta la Sezione` |
+| "Riepilogo iniziale", "Sottoriepilogo" | **Riassunto parziale** |
+| campo di tipo "Riepilogo" | campo di tipo **Riassunto** |
+| `Vista Elenco` | `Visualizza come lista` |
+| `Nuovo formato/rapporto` | `Nuovo formato/resoconto` |
+| `Formati > Imposta trigger di script` | formato: `Impostazione formato > Script trigger`; oggetto: `Formattazione > Imposta trigger di script` |
+| `OnLayoutEnter`, `OnObjectSave`, `OnObjectExit` | `SuEntrataFormato`, `SuSalvataggioOggetto`, `SuUscitaOggetto` |
+| `Formato > Formattazione condizionale` | `Formattazione > Condizionale` |
+| `Visualizza > Modifica formato` | `Visualizza > Formato scheda` (Ctrl+L) |
 
 La prima a cadere e' stata `Esegui trova`, segnalata da chi stava costruendo:
 *"a dire il vero non e' esegui trova ma esegui ricerca"*. Tirando quel filo

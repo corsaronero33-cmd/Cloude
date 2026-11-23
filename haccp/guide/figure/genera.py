@@ -120,7 +120,7 @@ def figura_parti():
     o = io.StringIO()
     W, H = 720, 330
     o.write(f'<svg viewBox="0 0 {W} {H}" role="img" '
-            f'aria-label="Le quattro parti del formato: in Modalita Formato scheda sono una ciascuna; '
+            f'aria-label="Le quattro sezioni del formato: nel modo Formato scheda sono una ciascuna; '
             f'a video l Intestazione e il Pie di pagina compaiono una volta sola, il Riepilogo iniziale '
             f'una volta per giornata e il Corpo una volta per rilevazione." '
             f'font-family="{FONT}">\n')
@@ -128,7 +128,7 @@ def figura_parti():
             'markerHeight="7" orient="auto-start-reverse">'
             '<path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/></marker></defs>\n')
 
-    o.write('  <text x="30" y="22" font-size="12.5" font-weight="700" fill="currentColor">In Modalita&#768; Formato scheda</text>\n')
+    o.write('  <text x="30" y="22" font-size="12.5" font-weight="700" fill="currentColor">Nel modo Formato scheda</text>\n')
     o.write('  <text x="452" y="22" font-size="12.5" font-weight="700" fill="currentColor">A video</text>\n')
 
     LX, LW = 30, 242          # colonna di sinistra

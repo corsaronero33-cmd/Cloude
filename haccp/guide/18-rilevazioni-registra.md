@@ -26,7 +26,7 @@ vuota non si disegna, e **i campi non si vedono**. `Rilevazioni` e' vuota
 adesso e lo sara' a ogni file di cliente nuovo: la maschera piu' importante si
 presenterebbe come una pagina bianca.
 
-Due deroghe che ne derivano: il formato ha **una parte sola** — niente corpo,
+Due deroghe che ne derivano: il formato ha **una sezione sola** — niente corpo,
 niente pie' — e la **fascia blu e' un rettangolo**, non il colore della parte,
 perche' l'intestazione qui e' alta 510.
 
@@ -203,7 +203,7 @@ il desktop e, alla tappa 10, il telefono.
 ## Fase 3 — Il formato
 
 Vista **Modulo**, occorrenza `RIL|Rilevazioni`, larghezza **1020**.
-`Imposta parti...`: **eliminare Corpo e Pie' di pagina**. Resta la sola
+`Imposta la Sezione`: **eliminare Corpo e Pie' di pagina**. Resta la sola
 **Intestazione**, alta **510**.
 
 La fascia blu e' un rettangolo x 0 y 0, 1020 × 100, `#1B3A5C`, **mandato
@@ -329,5 +329,5 @@ premere REGISTRA**, e guardare nel `Visualizzatore dati` quanto valgono
 ## Poi
 
 `D_Rilevazioni elenco`, il registro: sola lettura, per data decrescente,
-raggruppato per giorno col sottoriepilogo. **DDR a fine tappa**, con tutte e
+raggruppato per giorno col riassunto parziale. **DDR a fine tappa**, con tutte e
 due.

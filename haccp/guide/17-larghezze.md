@@ -193,7 +193,7 @@ Nuovo record/richiesta
 
 - Lo stile del tema si chiama ancora `Titolo Riquadro`: rinominarlo
   **`Titolo maschera`** e risalvare il tema.
-- Il trigger della casella di ricerca da `OnObjectExit` a **`OnObjectSave`**:
+- Il trigger della casella di ricerca da `SuUscitaOggetto` a **`SuSalvataggioOggetto`**:
   cosi' la ricerca non riparte uscendo dal campo per cliccare `Apri`.
 - Giro di controllo sulle spunte della **Ricerca rapida**: spente su tutti i
   campi collegati e su `O. atteso 1`.

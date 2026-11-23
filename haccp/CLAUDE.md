@@ -353,7 +353,7 @@ il lettore ha dimostrato di saper trovare.
 Su un campo calcolato, nel DDR:
 
 - `storeCalculationResults="True"` -> il risultato e' **memorizzato**, e quindi
-  il campo si puo' usare per **ordinare** e per raggruppare in un Riepilogo;
+  il campo si puo' usare per **ordinare** e per raggruppare in un Riassunto parziale;
 - `index="None"` -> l'indice non e' **ancora costruito**. Con
   `autoIndex="True"` FileMaker lo costruisce la prima volta che serve.
 

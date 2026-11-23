@@ -7,7 +7,7 @@ piu' recenti in cima, raggruppato per giornata.
 
 **Il disegno della maschera** sta in `figure/19-rilevazioni-elenco-maschera.svg`
 (come si presenta a video, alle misure vere) e `figure/19-rilevazioni-elenco-parti.svg`
-(le quattro parti: quante volte ognuna viene disegnata). Si rigenerano con
+(le quattro sezioni: quante volte ognuna viene disegnata). Si rigenerano con
 `python3 figure/genera.py <maschera.svg> <parti.svg>`.
 
 ## Due cose che la rendono diversa dagli altri elenchi
@@ -22,10 +22,10 @@ registro. Se un valore e' sbagliato si registra un'altra rilevazione.
 Quindi: nessun pulsante `Apri`, la prima colonna comincia a x **24**, e a
 tutti i campi si **toglie l'immissione**.
 
-### 2. Serve una parte nuova: il Riepilogo iniziale
+### 2. Serve una sezione nuova: il Riassunto parziale
 
 Un registro si legge per giornate. FileMaker lo fa con un
-**Riepilogo iniziale** (*Leading Sub-summary*): una parte che compare **una
+**Riassunto parziale** (*Leading Sub-summary*): una sezione che compare **una
 volta per gruppo**, ma **solo se i record sono ordinati sul campo del
 gruppo**.
 
@@ -34,7 +34,7 @@ essere `DataOra`, che e' una marca temporale al secondo e quindi diversa su
 ogni record. Serve un campo che valga **lo stesso per tutte le rilevazioni
 dello stesso giorno**.
 
-> Attenzione a non confondere **Riepilogo iniziale** con **Intestazione**:
+> Attenzione a non confondere **Riassunto parziale** con **Intestazione**:
 > nell'elenco delle parti sono vicini. Quello giusto e' il solo che, quando lo
 > selezioni, **accende l'elenco dei campi a destra** chiedendoti su quale
 > campo raggruppare.
@@ -47,33 +47,33 @@ dello stesso giorno**.
 |---|---|---|---|
 | `Giorno` | **Calcolo** | **Data** | `RicavaComeData ( DataOra )` |
 | `Ora` | **Calcolo** | **Ora** | `RicavaComeOra ( DataOra )` |
-| `ConteggioRilevazioni` | **Riepilogo** | — | **Conteggio di** `Id` |
+| `ConteggioRilevazioni` | **Riassunto** | — | **Conteggio di** `Id` |
 
 Su `Giorno`, dentro `Opzioni > Archiviazione`, controllare che
 **&laquo;Non memorizzare, calcola quando necessario&raquo; NON sia
 spuntato**: un calcolo non memorizzato **non si puo' usare per ordinare**, e
-senza ordinamento il Riepilogo iniziale non compare mai. E' il punto in cui
+senza ordinamento il Riassunto parziale non compare mai. E' il punto in cui
 questa maschera si rompe in silenzio.
 
 Perche' campi calcolati e non auto-immissione: un calcolo si ricalcola da se'
 e **non si puo' sporcare a mano**. Un valore auto-immesso puo' restare vecchio
 se qualcuno tocca `DataOra` da un altro formato.
 
-`ConteggioRilevazioni` e' un campo **Riepilogo**: messo nel Corpo conterebbe
-tutto, messo nel Riepilogo iniziale conta **il gruppo**. E' quello che serve:
+`ConteggioRilevazioni` e' un campo **Riassunto**: messo nel Corpo conterebbe
+tutto, messo nel Riassunto parziale conta **il gruppo**. E' quello che serve:
 *"12 rilevazioni"* accanto alla data.
 
 ## Fase 2 — Il formato
 
-`Formati > Nuovo formato`, **Vista Elenco**, occorrenza **`RIL|Rilevazioni`**,
+**`Nuovo formato/resoconto`** (barra, in modo Formato scheda), **Visualizza come lista**, occorrenza **`RIL|Rilevazioni`**,
 tema **`Haccp`**, larghezza **1020**.
 
-`Imposta parti...`, quattro parti in quest'ordine:
+`Formati > Imposta la Sezione`, quattro sezioni in quest'ordine:
 
 | Parte | Alta | Da y | A y |
 |---|---|---|---|
 | **Intestazione** | 143 | 0 | 143 |
-| **Riepilogo iniziale**, raggruppato su `Giorno` | 40 | 143 | 183 |
+| **Riassunto parziale**, raggruppato su `Giorno` | 40 | 143 | 183 |
 | **Corpo** | 30 | 183 | 213 |
 | **Pie' di pagina** | 40 | 213 | 253 |
 
@@ -141,7 +141,7 @@ il dato sta in `Esito`. Un punto visivo non ha un numero ne' un'unita' di
 misura. Non si mettono due campi sovrapposti per riempire quella casella con
 la stessa parola che c'e' gia' nella colonna accanto.
 
-Nel **Riepilogo iniziale**:
+Nel **Riassunto parziale**:
 
 | Oggetto | X | Y | Largh. | Alt. |
 |---|---|---|---|---|
@@ -169,7 +169,7 @@ larga **1020**, che stacca i pulsanti dalla fascia bianca.
 
 ## Fase 5 — L'unico colore nuovo del progetto
 
-Sul campo `Esito`: `Formato > Formattazione condizionale`, condizione
+Sul campo `Esito`: `Formattazione > Condizionale`, condizione
 **La formula e' vera**:
 
 ```
@@ -217,7 +217,7 @@ Vai a Record/Richiesta/Pagina [ Primo ]
 record trovati fa comparire la finestra di FileMaker e lo script si ferma li'.
 
 L'ordinamento con `Giorno` **per primo** non e' una scelta estetica: e' la
-condizione perche' il Riepilogo iniziale compaia. Senza, le parti ci sono ma
+condizione perche' il Riassunto parziale compaia. Senza, le sezioni ci sono ma
 non si vedono.
 
 `Vai a Record/Richiesta/Pagina [ Primo ]` perche' dopo un ordinamento il record corrente puo'
@@ -249,8 +249,8 @@ mettere un passo **dentro** un `If`, si clicca la riga `If` e poi si aggiunge.
 I rientri sono l'unico modo di vedere a colpo d'occhio se un passo e' dentro o
 fuori: se non combaciano con l'elenco qui sopra, si trascina la riga.
 
-**Trigger:** Formati > `Imposta trigger di script...` >
-**`OnLayoutEnter`** > `91 - Rilevazioni - Entra nell'elenco`, **senza
+**Trigger:** `Impostazione formato` > scheda **`Script trigger`** >
+**`SuEntrataFormato`** > `91 - Rilevazioni - Entra nell'elenco`, **senza
 parametro**. Entrando dal menu si vede tutto; il filtro lo si chiede con il
 pulsante.
 

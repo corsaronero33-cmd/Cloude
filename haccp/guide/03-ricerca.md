@@ -100,7 +100,7 @@ Adesso fa tre cose, e il nome deve dirlo.
 
 ```
 # Azzera la ricerca, mostra tutti i reparti, li ordina.
-# Lo chiamano il trigger OnLayoutEnter e il pulsante Tutti.
+# Lo chiamano il trigger SuEntrataFormato e il pulsante Tutti.
 
 Imposta campo [ REP|Reparti::gCerca ; "" ]
 Mostra tutti i record
@@ -134,8 +134,8 @@ scheda Dati), altrimenti il programma cerca dentro la casella di ricerca.
 | # | Dove sei | Cosa fai |
 |---|---|---|
 | 1 | Sul formato, in modifica | Clicchi la casella `gCerca` per selezionarla |
-| 2 | | Tasto destro -> **Imposta trigger di script...** (equivale a `Formati` -> `Imposta trigger di script`) |
-| 3 | Finestra **Imposta trigger di script** | Nell'elenco degli eventi, spunta **OnObjectSave** |
+| 2 | | **`Formattazione` -> `Imposta trigger di script`** |
+| 3 | Finestra **Imposta script trigger** | Nell'elenco degli eventi, spunta **SuSalvataggioOggetto** |
 | 4 | Finestra **Specifica script** (si apre da sola) | Scegli `92 - Utilita - Cerca` |
 | 5 | Stessa finestra, in basso | Riquadro **Parametro script facoltativo**. Se accanto c'e' **Modifica...**, premilo: si apre la finestra di calcolo |
 | 6 | Nel parametro | Scrivi `REP\|Reparti::gCerca` — **senza virgolette** |
@@ -152,9 +152,9 @@ del progetto.** Il riquadro del parametro e' un **calcolo**:
 La regola: **fra virgolette un testo fisso, senza virgolette il nome di un
 campo**.
 
-**Perche' OnObjectSave e non OnObjectExit.** `OnObjectSave` scatta solo se hai
+**Perche' SuSalvataggioOggetto e non SuUscitaOggetto.** `SuSalvataggioOggetto` scatta solo se hai
 **cambiato** il contenuto, uscendo con `Invio`, `Tab` o un clic fuori.
-`OnObjectExit` scatterebbe ogni volta che esci, anche passandoci sopra con il
+`SuUscitaOggetto` scatterebbe ogni volta che esci, anche passandoci sopra con il
 Tab senza scrivere niente, e rifarebbe la stessa ricerca a vuoto.
 
 ### Tutti i parametri del progetto, in un posto solo
@@ -164,8 +164,8 @@ Tab senza scrivere niente, e rifarebbe la stessa ricerca a vuoto.
 | Pulsante `← Elenco` | D_Reparti scheda | `90` | `"D_Reparti elenco"` |
 | Pulsante `← Menù` | D_Reparti elenco | `90` | `"D_Menu"` |
 | Pulsante `Apri` | D_Reparti elenco, nel corpo | `90` | `"D_Reparti scheda"` |
-| **Trigger OnObjectSave** | sulla casella `gCerca` | `92` | `REP\|Reparti::gCerca` — **senza virgolette** |
-| **Trigger OnLayoutEnter** | su D_Reparti elenco | `91` | *nessuno* |
+| **Trigger SuSalvataggioOggetto** | sulla casella `gCerca` | `92` | `REP\|Reparti::gCerca` — **senza virgolette** |
+| **Trigger SuEntrataFormato** | su D_Reparti elenco | `91` | *nessuno* |
 | Pulsante `Tutti` | D_Reparti elenco | `91` | *nessuno* |
 | Pulsanti `Nuovo`, `Elimina` | entrambi i formati | *passo script diretto* | *—* |
 

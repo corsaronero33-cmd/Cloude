@@ -22,7 +22,7 @@ diventano lo standard — e cinque ritocchi.
 | Tendina | `Attivo` sulla scheda e' Drop-down List con `vl_SiNo`; sull'elenco e' campo normale |
 | Campi del corpo elenco | sfondo trasparente e bordi spenti su tutti e quattro |
 | Allineamento colonne | **perfetto**: ogni etichetta ha la stessa X e la stessa larghezza del campo sotto |
-| Trigger | `OnLayoutEnter` su `D_Reparti elenco` -> `91 - Reparti - Ordina elenco`, attivo in Navigazione e in Trova |
+| Trigger | `SuEntrataFormato` su `D_Reparti elenco` -> `91 - Reparti - Ordina elenco`, attivo in Navigazione e in Trova |
 | Ordinamento | la videata mostra `Totale (Ordinati)` e le righe 10 poi 40: **regge dopo `Mostra tutti i record`** |
 | Campi di sistema | fuori da entrambi i formati |
 

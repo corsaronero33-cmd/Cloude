@@ -14,7 +14,7 @@ c'era, e avevo dato una misura sbagliata nella specifica.
 |---|---|
 | Campo | `Reparti::gCerca`, tipo **Testo**, `Storage global="True"` |
 | Script | `91 - Reparti - Entra nell'elenco` (rinominato) e `92 - Utilita - Cerca` (nuovo) |
-| Trigger di formato | `OnLayoutEnter` -> `91 - Reparti - Entra nell'elenco`, attivo in Navigazione. FileMaker ha seguito il rinomino da solo, come previsto |
+| Trigger di formato | `SuEntrataFormato` -> `91 - Reparti - Entra nell'elenco`, attivo in Navigazione. FileMaker ha seguito il rinomino da solo, come previsto |
 | Casella sul formato | `REP|Reparti::gCerca`, nell'intestazione |
 | Pulsante `Tutti` | -> `91 - Reparti - Entra nell'elenco`, **parametro vuoto**: esattamente giusto |
 
@@ -27,7 +27,7 @@ quindi la ricerca non avrebbe mai cercato niente. **Falso.** Il parametro c'e'
 ed e' quello giusto:
 
 ```xml
-<ScriptTrigger action="OnObjectExit">
+<ScriptTrigger action="SuUscitaOggetto">
   <ScriptReference name="92 - Utilita - Cerca">
     <Calculation><Text>REP|Reparti::gCerca</Text></Calculation>
   </ScriptReference>
@@ -43,17 +43,17 @@ non solo i figli diretti. La ricerca nel file reale funziona.
 
 ---
 
-## Unica osservazione rimasta: `OnObjectExit` invece di `OnObjectSave`
+## Unica osservazione rimasta: `SuUscitaOggetto` invece di `SuSalvataggioOggetto`
 
 Funzionano tutti e due, ed e' verificato che funziona. La differenza:
 
 | | Quando scatta |
 |---|---|
-| `OnObjectSave` | solo se **hai cambiato** il contenuto, quando esci |
-| `OnObjectExit` | **ogni volta** che esci, anche senza aver scritto niente |
+| `SuSalvataggioOggetto` | solo se **hai cambiato** il contenuto, quando esci |
+| `SuUscitaOggetto` | **ogni volta** che esci, anche senza aver scritto niente |
 
 Il caso in cui si sente: il cursore e' nella casella, clicchi `Apri` su una
-riga. Con `OnObjectExit` uscire dal campo fa comunque ripartire la ricerca, il
+riga. Con `SuUscitaOggetto` uscire dal campo fa comunque ripartire la ricerca, il
 gruppo trovato cambia sotto al clic, e `Apri` puo' portarti su un record
 diverso da quello puntato.
 

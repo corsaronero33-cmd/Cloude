@@ -200,8 +200,8 @@ nudi nati dall'importazione, e dal formato `Rilevazioni` nudo non c'e' nessuna
 relazione verso i punti di controllo: i limiti tornerebbero vuoti e l'esito
 sarebbe sempre "conforme".
 
-1. `Visualizza` -> `Modifica formato`
-2. `Formati` -> `Nuovo formato/rapporto`
+1. `Visualizza` -> `Formato scheda`
+2. `Formati` -> `Nuovo formato/resoconto`
 3. **Mostra record da: `RIL|Rilevazioni`** (non l'occorrenza senza sigla)
 4. Nome: **`Z_RIL Rilevazioni`**, tipo Modulo
 5. `Formati` -> `Imposta formato`, togli *Includi nel menu dei formati*

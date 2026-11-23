@@ -16,7 +16,7 @@ morti da togliere.
 | Parte | Alta | y | |
 |---|---|---|---|
 | Intestazione | 143 | 0&ndash;143 | |
-| **Riepilogo iniziale** | 40 | 143&ndash;183 | **raggruppato su `Giorno`** |
+| **Riassunto parziale** | 40 | 143&ndash;183 | **raggruppato su `Giorno`** |
 | Corpo | 30 | 183&ndash;213 | |
 | Pie' di pagina | 38 | 213&ndash;251 | |
 
@@ -42,11 +42,11 @@ Ci sono anche il rettangolo bianco della fascia etichette (x 0, y 110,
 |---|---|---|---|
 | `Giorno` | Calcolo, risultato Data | `RicavaComeData ( DataOra )` | **si'** |
 | `Ora` | Calcolo, risultato Ora | `RicavaComeOra ( DataOra )` | **si'** |
-| `ConteggioRilevazioni` | Riepilogo | Conteggio di `Id` | — |
+| `ConteggioRilevazioni` | Riassunto | Conteggio di `Id` | — |
 
 `storeCalculationResults="True"` su tutti e due i calcoli: e' la condizione
-perche' `Giorno` si possa usare per ordinare, e quindi perche' il Riepilogo
-iniziale compaia. Era il punto in cui questa maschera si rompeva in silenzio,
+perche' `Giorno` si possa usare per ordinare, e quindi perche' il Riassunto
+parziale compaia. Era il punto in cui questa maschera si rompeva in silenzio,
 ed e' a posto.
 
 ### Lo script, i pulsanti, il trigger
@@ -61,7 +61,7 @@ ed e' a posto.
 | `Tutte` | 109 | 117 | `91 - Rilevazioni - Entra nell'elenco` | nessuno |
 | `Solo non conformi` | 227 | 187 | lo stesso | `"nonconformi"` |
 
-Trigger `OnLayoutEnter` -> `91 - Rilevazioni - Entra nell'elenco`, senza
+Trigger `SuEntrataFormato` -> `91 - Rilevazioni - Entra nell'elenco`, senza
 parametro.
 
 Formattazione condizionale su `Esito`:
@@ -115,8 +115,8 @@ non e' un passo qualunque: se un domani qualcuno lo riattiva per sbaglio,
 quello cerca e **sostituisce testo in tutti i record e in tutti i campi**.
 Non e' una cosa che deve stare addormentata dentro uno script del registro.
 
-`Passa al modo Usa` e' innocuo (dopo `Esegui la ricerca` si e' gia' in Modalita'
-Scheda), ma tanto vale togliere tutti e due insieme.
+`Passa al modo Usa` e' innocuo (dopo `Esegui la ricerca` si e' gia' nel modo
+Usa), ma tanto vale togliere tutti e due insieme.
 
 ## 3. Piccolo: manca la linea sopra la fascia delle etichette
 
