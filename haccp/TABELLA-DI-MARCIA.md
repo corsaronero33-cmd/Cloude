@@ -160,7 +160,7 @@ E' la tappa piu' larga: due meta', una maschera per scheda.
 | Scheda | Maschera | Cosa fa |
 |---|---|---|
 | 20 | `D_NonConformita elenco` — `guide/20-nonconformita-elenco.md`, <https://claude.ai/artifact/RsvVpw9yn9GgPvfg2twiUY> | tutte le non conformita', **le aperte in cima e in rosso**, filtro *Solo aperte*. Piu' il debito n. 1 |
-| 21 | `D_NonConformita scheda` | si legge cosa e' successo e il **Responsabile la chiude**: esito della verifica, efficacia, data e firma. Da qui nascono anche quelle a mano (reclamo, ispezione, analisi) |
+| 21 | `D_NonConformita scheda` — `guide/21-nonconformita-scheda.md`, <https://claude.ai/artifact/KUKhCxVnhfHBESUYo3i2Nf> | si legge cosa e' successo e il **Responsabile la chiude**: esito della verifica, efficacia, data e firma. Da qui nascono anche quelle a mano (reclamo, ispezione, analisi) |
 
 Una non conformita' aperta e non chiusa e' **il primo rilievo che fa un
 ispettore** (`02-DATI.md`). L'elenco deve mostrarle prima di tutto il resto.
@@ -177,7 +177,14 @@ La 7b si progetta **dopo** la 7a, con il DDR in mano: prima di disegnare il
 piano va visto se `PianoSanificazione` e' gia' popolato o va generato dai
 modelli.
 
-### Debito n. 1 — si paga nella scheda 20
+### Fatto
+
+- `archivio/collaudo-020.md` — Revisione 21: **debito n. 1 pagato**, gli
+  script `01`, `02`, `20` seguono i formati rinominati; `D_NonConformita elenco`
+  giusta salvo l'etichetta `GRAVITÀ` e il rosso. Corretto un mio errore: nei
+  collaudi `MRossi` e' **Responsabile**, l'Operatore e' **`P_Pippo`**.
+
+### Debito n. 1 — pagato nella scheda 20
 
 Tre formati nati dall'importazione sono attraversati da uno script:
 `Parametri` (script `01`), `Operatori` (`02`), `NonConformita` (`20`). Si
@@ -201,7 +208,7 @@ Non sono dimenticanze: ognuna ha un momento in cui conviene farla.
 | Cosa | Rientra alla tappa |
 |---|---|
 | Script `95 - Reimposta password` (si duplica il `94`) | 11 |
-| Blocco della rilevazione dopo il salvataggio | 11 |
+| Blocco della rilevazione dopo il salvataggio — con il meccanismo della scheda 21: permesso *Limitati* sul set e script con accesso completo | 11 |
 | Lo script `10` non aggancia il prodotto dal GTIN | 8 |
 | Controllo di completezza della riga di ricevimento (lotto, scadenza) | 8 |
 | Le tabelle di fase 2 vuote: manca il **passo avanti** della rintracciabilita' | 11 |

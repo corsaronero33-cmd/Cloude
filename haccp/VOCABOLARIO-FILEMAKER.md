@@ -169,6 +169,20 @@ I **modi** si scelgono dal menu `Visualizza` (o con la scorciatoia):
 `Testo`, `Numero`, `Data`, `Ora`, `Indicatore data e ora`, `Contenitore`,
 **`Calcolo`**, **`Riassunto`** (non "Riepilogo").
 
+## Sicurezza e script
+
+| Inglese | Italiano |
+|---|---|
+| Run script with full access privileges | tasto destro sullo script > **`Garantisci privilegi di accesso completo`** |
+| Edit Privilege Set | finestra `Modifica set privilegi` |
+| Records: Custom privileges | `Record` > **`Privilegi personalizzati`**, finestra `Privilegi record personalizzati` |
+| View / Edit / Create / Delete | `Visualizza` / `Modifica` / `Crea` / `Elimina` |
+| Yes / Limited / No | `Sì` / **`Limitati`** / `No` |
+| Commit option "With dialog" | `Con finestra di dialogo` |
+| Revert Record/Request | `Ripristina record` (il pulsante `Annulla Modifiche` delle schede) |
+| Manage Layouts | `File > Gestisci > Formati`, finestra `Gestisci formati` |
+| Get ( CurrentPrivilegeSetName ) | `Get ( NomeSetPrivilegiCorrente )` — dentro uno script con accesso completo restituisce `[Full Access]`; `Get ( NomeSetPrivilegiAccount )` resta il set vero |
+
 ## Altri termini verificati
 
 | Inglese | Italiano |

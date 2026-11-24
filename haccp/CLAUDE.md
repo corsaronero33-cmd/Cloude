@@ -202,6 +202,7 @@ Il nome e' fatto di tre pezzi: `NN - Ambito - Cosa fa`.
 | `01`, `02` | utilita' chiamate dall'avvio | uno ciascuna |
 | `10` | ricevimento merci | uno |
 | `20` | registrazione di una rilevazione | uno |
+| `30` | non conformita': chiusura | uno |
 | `90` | navigazione fra i formati | **uno per tutto il file** |
 | `91` | entrare in un elenco: svuota la ricerca, mostra tutti, ordina | **uno per tabella** |
 | `92` | ricerca rapida | **uno per tutto il file** |
