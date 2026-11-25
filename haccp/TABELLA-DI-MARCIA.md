@@ -208,7 +208,7 @@ Non sono dimenticanze: ognuna ha un momento in cui conviene farla.
 | Cosa | Rientra alla tappa |
 |---|---|
 | Script `95 - Reimposta password` (si duplica il `94`) | 11 |
-| Impostazioni di FileMaker sul computer del cliente: avvisi di aggiornamento e annunci spenti, *All'avvio, apri il file*, file **fuori** da OneDrive/Dropbox, cartella dei dati esclusa dall'antivirus — nate dall'avvio lento, <https://claude.ai/artifact/FSuheH9hognnyYBuQXiBGr> | 11 |
+| Impostazioni di FileMaker sul computer del cliente: avvisi di aggiornamento e annunci spenti, *All'avvio, apri il file*, file **fuori** da OneDrive/Dropbox, cartella dei dati esclusa dall'antivirus — nate dall'avvio lento: spegnere avvisi di aggiornamento e annunci ha portato l'avvio **da 20 a 6 secondi**; tre-quattro secondi sono il minimo della 22, <https://claude.ai/artifact/FSuheH9hognnyYBuQXiBGr> | 11 |
 | Blocco della rilevazione dopo il salvataggio — con il meccanismo della scheda 21: permesso *Limitati* sul set e script con accesso completo | 11 |
 | Lo script `10` non aggancia il prodotto dal GTIN | 8 |
 | Controllo di completezza della riga di ricevimento (lotto, scadenza) | 8 |
