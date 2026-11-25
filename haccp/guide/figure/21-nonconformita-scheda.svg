@@ -1,5 +1,20 @@
-<svg viewBox="-150 -10 1190 1031" role="img" aria-label="La maschera D_NonConformita scheda su fondo bianco: tre cornici con il titolo sulla linea, cosa e successo, cosa si e fatto e la chiusura, piu le note; in alto i pulsanti Elenco, Nuova, Salva, Annulla modifiche e Chiudi la non conformita." font-family="Source Sans 3, Segoe UI, sans-serif">
+<svg viewBox="-150 -44 1212 1065" role="img" aria-label="La maschera D_NonConformita scheda su fondo bianco: tre cornici con il titolo sulla linea, cosa e successo, cosa si e fatto e la chiusura, piu le note; in alto i pulsanti Elenco, Nuova, Salva, Annulla modifiche e Chiudi la non conformita." font-family="Source Sans 3, Segoe UI, sans-serif">
   <rect x="0" y="0" width="1020" height="1011" fill="#FFFFFF"/>
+  <line x1="14" y1="-14" x2="14" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="17" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="start">14</text>
+  <line x1="147" y1="-14" x2="147" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="147" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="middle">147</text>
+  <line x1="459" y1="-14" x2="459" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="459" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="middle">459</text>
+  <line x1="621" y1="-14" x2="621" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="621" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="middle">621</text>
+  <line x1="969" y1="-14" x2="969" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="966" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="end">969</text>
+  <line x1="996" y1="-14" x2="996" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="993" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="end">996</text>
+  <line x1="1020" y1="-14" x2="1020" y2="0" stroke="currentColor" opacity=".55"/>
+  <text x="1023" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="start">1020</text>
+  <text x="-16" y="-19" font-size="12" fill="currentColor" opacity=".8" text-anchor="end">X</text>
   <rect x="0" y="0" width="1020" height="100" fill="#1B3A5C"/>
   <text x="24" y="44" font-size="25" font-weight="700" fill="#FFFFFF">NON CONFORMITÀ</text>
   <text x="996" y="40" font-size="15" fill="#C9DAE8" text-anchor="end">Mario Rossi</text>
@@ -16,56 +31,56 @@
   <rect x="14" y="116" width="982" height="232" rx="5" fill="none" stroke="#A9B6BD"/>
   <rect x="28" y="104" width="141" height="23" fill="#FFFFFF"/>
   <text x="34" y="121" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA È SUCCESSO</text>
-  <text x="159" y="163" font-size="13" fill="#5F7078" text-anchor="end">Data</text>
-  <rect x="167" y="142" width="292" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="175" y="163" font-size="13.5" fill="#16222A" font-weight="400">11/11/2026</text>
+  <text x="136" y="163" font-size="13" fill="#5F7078" text-anchor="end">Data</text>
+  <rect x="147" y="142" width="312" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="155" y="163" font-size="13.5" fill="#16222A" font-weight="400">11/11/2026</text>
   <rect x="435" y="150" width="16" height="15" rx="2" fill="none" stroke="#5F7078"/><line x1="435" y1="155" x2="451" y2="155" stroke="#5F7078"/>
   <text x="610" y="163" font-size="13" fill="#5F7078" text-anchor="end">Origine</text>
   <rect x="621" y="142" width="348" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
   <text x="629" y="163" font-size="13.5" fill="#16222A" font-weight="400">rilevazione</text>
   <path d="M 949 155 l 6 7 l 6 -7" fill="none" stroke="#5F7078" stroke-width="1.5"/>
-  <text x="159" y="203" font-size="13" fill="#5F7078" text-anchor="end">Gravità</text>
-  <rect x="167" y="182" width="292" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="175" y="203" font-size="13.5" fill="#16222A" font-weight="400">alta</text>
+  <text x="136" y="203" font-size="13" fill="#5F7078" text-anchor="end">Gravità</text>
+  <rect x="147" y="182" width="312" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="155" y="203" font-size="13.5" fill="#16222A" font-weight="400">alta</text>
   <path d="M 439 195 l 6 7 l 6 -7" fill="none" stroke="#5F7078" stroke-width="1.5"/>
   <text x="610" y="203" font-size="13" fill="#5F7078" text-anchor="end">Rilevata da</text>
   <rect x="621" y="182" width="348" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
   <text x="629" y="203" font-size="13.5" fill="#16222A" font-weight="400">Rossi Mario</text>
   <path d="M 949 195 l 6 7 l 6 -7" fill="none" stroke="#5F7078" stroke-width="1.5"/>
-  <text x="159" y="243" font-size="13" fill="#5F7078" text-anchor="end">Descrizione</text>
-  <rect x="167" y="222" width="802" height="100" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="175" y="243" font-size="13.5" fill="#16222A" font-weight="400">Fuori limite: Frigo carni. Valore rilevato 7 °C,</text>
-  <text x="175" y="261" font-size="13.5" fill="#16222A" font-weight="400">limiti ammessi da 0 a 4.</text>
-  <rect x="14" y="376" width="982" height="130" rx="5" fill="none" stroke="#A9B6BD"/>
-  <rect x="28" y="364" width="141" height="23" fill="#FFFFFF"/>
-  <text x="34" y="381" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA SI È FATTO</text>
-  <text x="159" y="423" font-size="13" fill="#5F7078" text-anchor="end">Azione correttiva</text>
-  <rect x="167" y="402" width="802" height="80" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="175" y="423" font-size="13.5" fill="#16222A" font-weight="400">Spostati i prodotti nel frigo 2. Chiamato il tecnico:</text>
-  <text x="175" y="441" font-size="13.5" fill="#16222A" font-weight="400">guarnizione della porta sostituita.</text>
-  <rect x="14" y="534" width="982" height="216" rx="5" fill="none" stroke="#A9B6BD"/>
-  <rect x="28" y="522" width="90" height="23" fill="#FFFFFF"/>
-  <text x="34" y="539" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">CHIUSURA</text>
-  <text x="159" y="581" font-size="13" fill="#5F7078" text-anchor="end">Verifica</text>
-  <rect x="167" y="560" width="802" height="80" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="175" y="581" font-size="13.5" fill="#16222A" font-weight="400">Rimisurato il giorno dopo alle 7:00 e alle 12:00:</text>
-  <text x="175" y="599" font-size="13.5" fill="#16222A" font-weight="400">3 °C e 3,5 °C.</text>
-  <text x="159" y="675" font-size="13" fill="#5F7078" text-anchor="end">Esito</text>
-  <rect x="167" y="654" width="292" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="175" y="675" font-size="13.5" fill="#16222A" font-weight="400">efficace</text>
-  <path d="M 439 667 l 6 7 l 6 -7" fill="none" stroke="#5F7078" stroke-width="1.5"/>
-  <text x="610" y="675" font-size="13" fill="#5F7078" text-anchor="end">Stato</text>
-  <rect x="621" y="654" width="348" height="32" rx="3" fill="#F4F6F7" stroke="#C9D3D8"/>
-  <text x="629" y="675" font-size="13.5" fill="#DD0000" font-weight="700">aperta</text>
-  <text x="159" y="715" font-size="13" fill="#5F7078" text-anchor="end">Chiusa il</text>
-  <rect x="167" y="694" width="292" height="32" rx="3" fill="#F4F6F7" stroke="#C9D3D8"/>
-  <text x="175" y="715" font-size="13.5" fill="#16222A" font-weight="400"></text>
-  <text x="610" y="715" font-size="13" fill="#5F7078" text-anchor="end">Chiusa da</text>
-  <rect x="621" y="694" width="348" height="32" rx="3" fill="#F4F6F7" stroke="#C9D3D8"/>
-  <text x="629" y="715" font-size="13.5" fill="#16222A" font-weight="400"></text>
-  <text x="14" y="794" font-size="13" fill="#5F7078">Note</text>
-  <rect x="14" y="800" width="982" height="110" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="22" y="821" font-size="13.5" fill="#16222A" font-weight="400"></text>
+  <text x="136" y="243" font-size="13" fill="#5F7078" text-anchor="end">Descrizione</text>
+  <rect x="147" y="222" width="822" height="100" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="155" y="243" font-size="13.5" fill="#16222A" font-weight="400">Fuori limite: Frigo carni. Valore rilevato 7 °C,</text>
+  <text x="155" y="261" font-size="13.5" fill="#16222A" font-weight="400">limiti ammessi da 0 a 4.</text>
+  <rect x="14" y="392" width="982" height="132" rx="5" fill="none" stroke="#A9B6BD"/>
+  <rect x="28" y="380" width="141" height="23" fill="#FFFFFF"/>
+  <text x="34" y="397" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA SI È FATTO</text>
+  <text x="136" y="439" font-size="13" fill="#5F7078" text-anchor="end">Azione corr.</text>
+  <rect x="147" y="418" width="822" height="80" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="155" y="439" font-size="13.5" fill="#16222A" font-weight="400">Spostati i prodotti nel frigo 2. Chiamato il tecnico:</text>
+  <text x="155" y="457" font-size="13.5" fill="#16222A" font-weight="400">guarnizione della porta sostituita.</text>
+  <rect x="14" y="568" width="982" height="212" rx="5" fill="none" stroke="#A9B6BD"/>
+  <rect x="28" y="556" width="90" height="23" fill="#FFFFFF"/>
+  <text x="34" y="573" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">CHIUSURA</text>
+  <text x="136" y="615" font-size="13" fill="#5F7078" text-anchor="end">Verifica</text>
+  <rect x="147" y="594" width="822" height="80" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="155" y="615" font-size="13.5" fill="#16222A" font-weight="400">Rimisurato il giorno dopo alle 7:00 e alle 12:00:</text>
+  <text x="155" y="633" font-size="13.5" fill="#16222A" font-weight="400">3 °C e 3,5 °C.</text>
+  <text x="136" y="703" font-size="13" fill="#5F7078" text-anchor="end">Esito</text>
+  <rect x="147" y="682" width="312" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="155" y="703" font-size="13.5" fill="#16222A" font-weight="400">efficace</text>
+  <path d="M 439 695 l 6 7 l 6 -7" fill="none" stroke="#5F7078" stroke-width="1.5"/>
+  <text x="610" y="703" font-size="13" fill="#5F7078" text-anchor="end">Stato</text>
+  <rect x="621" y="682" width="348" height="32" rx="3" fill="#F4F6F7" stroke="#C9D3D8"/>
+  <text x="629" y="703" font-size="13.5" fill="#DD0000" font-weight="700">aperta</text>
+  <text x="136" y="743" font-size="13" fill="#5F7078" text-anchor="end">Chiusa il</text>
+  <rect x="147" y="722" width="312" height="32" rx="3" fill="#F4F6F7" stroke="#C9D3D8"/>
+  <text x="155" y="743" font-size="13.5" fill="#16222A" font-weight="400"></text>
+  <text x="610" y="743" font-size="13" fill="#5F7078" text-anchor="end">Chiusa da</text>
+  <rect x="621" y="722" width="348" height="32" rx="3" fill="#F4F6F7" stroke="#C9D3D8"/>
+  <text x="629" y="743" font-size="13.5" fill="#16222A" font-weight="400"></text>
+  <text x="14" y="809" font-size="13" fill="#5F7078">Note</text>
+  <rect x="14" y="815" width="982" height="110" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
+  <text x="22" y="836" font-size="13.5" fill="#16222A" font-weight="400"></text>
   <rect x="0" y="973" width="1020" height="38" fill="#F2F5F6"/>
   <text x="24" y="997" font-size="13" fill="#5F7078">Record   3   Di   5</text>
   <rect x="0" y="0" width="1020" height="1011" fill="none" stroke="currentColor" opacity=".35"/>
@@ -76,5 +91,5 @@
   <text x="-140" y="96" font-size="11" fill="currentColor" opacity=".6">y 100</text>
   <line x1="-140" y1="973" x2="-6" y2="973" stroke="currentColor" opacity=".3" stroke-dasharray="3 3"/>
   <text x="-140" y="969" font-size="11" fill="currentColor" opacity=".6">y 973</text>
-  <text x="621" y="768" font-size="11.5" fill="#5F7078">in grigio: li scrive lo script, non si toccano</text>
+  <text x="621" y="798" font-size="11.5" fill="#5F7078">in grigio: li scrive lo script, non si toccano</text>
 </svg>

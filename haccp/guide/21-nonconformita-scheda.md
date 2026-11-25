@@ -195,9 +195,17 @@ rilevazioni arrivera' alla tappa 11, con lo stesso meccanismo.
 ## Fase 6 — Il formato
 
 `Nuovo formato/resoconto`: **Visualizza come modulo**, occorrenza
-`NCF|NonConformita`, tema `Haccp`, larghezza 1020. Nome esatto:
+`NCF|NonConformita`, tema `Haccp`. Nome esatto:
 **`D_NonConformita scheda`** — e' quello che il pulsante `Apri` dell'elenco
 chiama gia'.
+
+**Larghezza del formato: 1020**, come tutte le altre (il bordo destro dei
+contenuti e' 996, piu' 24 di margine). Il formato nuovo nasce largo **1024** e
+nella 22 non c'e' una casella dove scrivere la larghezza: si **trascina la
+linea grigia sul lato destro del formato**. Per fermarla esattamente a 1020:
+disegna un rettangolo provvisorio, Impostazioni › Posizione **x 1000,
+larghezza 20** (quindi finisce a 1020), trascina la linea grigia fino al suo
+bordo destro, poi cancella il rettangolo.
 
 Sezioni identiche a `D_PuntiControllo scheda`: Intestazione **100**, Corpo
 **873**, Pie' di pagina **38**. Cosi' quello che si copia da li' cade al suo
@@ -219,47 +227,66 @@ quella: su `D_PuntiControllo scheda` si selezionano la cornice di
 `IDENTIFICAZIONE` e il suo titolo, Ctrl+C, e sulla scheda nuova Ctrl+V tre
 volte. **Prima le cornici, poi i campi**, cosi' le cornici restano sotto.
 
-Tutte e tre x **14**, larghe **982** (chiudono a 996), titolo a x 28.
+**Le misure sono quelle di tutte le altre schede** (`09-MASCHERE.md`,
+*Misure standard*, rilevate dal DDR Rev 21). Correzione: la prima stesura di
+questa guida metteva i campi a x 167; le sei schede gia' fatte li hanno a
+**147**, e 147 e' giusto.
 
-Colonna sinistra: etichette x 28 larghe 131 allineate a destra, campi da
-x **167**. Colonna destra: etichette che finiscono a 610, campi da x **621**
-larghi 348. **Tutto chiude a 969.**
+| Oggetto | X | Larghezza | Finisce a |
+|---|---|---|---|
+| Formato | — | **1020** | 1020 |
+| Cornici | **14** | **982** | **996** |
+| Titolo della cornice | 28 | quanto il testo | — |
+| Etichette colonna sinistra | 24 | 112 | **136** |
+| Campi colonna sinistra | **147** | **312** | **459** |
+| Etichette colonna destra | 498 | 112 | **610** |
+| Campi colonna destra | **621** | **348** | **969** |
+| Campi a tutta larghezza | **147** | **822** | **969** |
+| `Note` | 14 | 982 | 996 |
+
+Etichette **allineate a destra**, alte **23**, a **Y = campo + 6**. Campi
+alti 32, passo 40. Fra una cornice e l'altra **44**.
 
 ### `COSA È SUCCESSO` — cornice y 116, alta 232; titolo y 104
 
-| Y | Etichetta | Campo | X | Largh. | Alt. | Controllo |
+| Y campo | Etichetta (y) | Campo | X | Largh. | Alt. | Controllo |
 |---|---|---|---|---|---|---|
-| 142 | Data | `Data` | 167 | 292 | 32 | **Calendario a discesa** |
-| 142 | Origine | `Origine` | 621 | 348 | 32 | **Elenco a discesa** `vl_OrigineNonConformita` |
-| 182 | Gravità | `Gravita` | 167 | 292 | 32 | **Elenco a discesa** `vl_Gravita` |
-| 182 | Rilevata da | `IdOperatoreRilevatore` | 621 | 348 | 32 | **Menu a comparsa** `vl_Operatori` |
-| 222 | Descrizione | `Descrizione` | 167 | 802 | 100 | Casella modifica |
+| 142 | Data (148) | `Data` | 147 | 312 | 32 | **Calendario a discesa** |
+| 142 | Origine (148) | `Origine` | 621 | 348 | 32 | **Elenco a discesa** `vl_OrigineNonConformita` |
+| 182 | Gravità (188) | `Gravita` | 147 | 312 | 32 | **Elenco a discesa** `vl_Gravita` |
+| 182 | Rilevata da (188) | `IdOperatoreRilevatore` | 621 | 348 | 32 | **Menu a comparsa** `vl_Operatori` |
+| 222 | Descrizione (228) | `Descrizione` | 147 | 822 | 100 | Casella modifica |
 
-### `COSA SI È FATTO` — cornice y 376, alta 130; titolo y 364
+L'ultimo campo finisce a 322; la cornice 26 sotto, a 348.
 
-| Y | Etichetta | Campo | X | Largh. | Alt. |
-|---|---|---|---|---|---|
-| 402 | Azione correttiva | `AzioneCorrettiva` | 167 | 802 | 80 |
+### `COSA SI È FATTO` — cornice y 392, alta 132; titolo y 380
 
-### `CHIUSURA` — cornice y 534, alta 216; titolo y 522
-
-| Y | Etichetta | Campo | X | Largh. | Alt. | Controllo |
+| Y campo | Etichetta (y) | Campo | X | Largh. | Alt. | Controllo |
 |---|---|---|---|---|---|---|
-| 560 | Verifica | `VerificaEfficacia` | 167 | 802 | 80 | Casella modifica |
-| 654 | Esito | `EsitoVerifica` | 167 | 292 | 32 | **Elenco a discesa** `vl_EsitoVerifica` |
-| 654 | Stato | `Stato` | 621 | 348 | 32 | **accesso tolto** |
-| 694 | Chiusa il | `DataChiusura` | 167 | 292 | 32 | **accesso tolto** |
-| 694 | Chiusa da | `NCF\|OperatoreResponsabile::NomeCompleto` | 621 | 348 | 32 | **accesso tolto** |
+| 418 | Azione corr. (424) | `AzioneCorrettiva` | 147 | 822 | 80 | Casella modifica |
+
+"Azione correttiva" per intero non sta in 112: partirebbe fuori dalla
+cornice. Si accorcia, come `Ragione soc.` e `Temp. min.` nelle altre schede.
+
+### `CHIUSURA` — cornice y 568, alta 212; titolo y 556
+
+| Y campo | Etichetta (y) | Campo | X | Largh. | Alt. | Controllo |
+|---|---|---|---|---|---|---|
+| 594 | Verifica (600) | `VerificaEfficacia` | 147 | 822 | 80 | Casella modifica |
+| 682 | Esito (688) | `EsitoVerifica` | 147 | 312 | 32 | **Elenco a discesa** `vl_EsitoVerifica` |
+| 682 | Stato (688) | `Stato` | 621 | 348 | 32 | **accesso tolto** |
+| 722 | Chiusa il (728) | `DataChiusura` | 147 | 312 | 32 | **accesso tolto** |
+| 722 | Chiusa da (728) | `NCF\|OperatoreResponsabile::NomeCompleto` | 621 | 348 | 32 | **accesso tolto** |
 
 **Le ultime tre si leggono e basta** (*accesso tolto* = Impostazioni › Dati ›
 area Comportamento › **Accesso campo**: togliere la spunta del modo Usa): le
-scrive lo script `30`. Chi le
-potesse scrivere a mano potrebbe chiudere una non conformita' senza passare
-dai controlli.
+scrive lo script `30`. Chi le potesse scrivere a mano potrebbe chiudere una
+non conformita' senza passare dai controlli.
 
 ### Note
 
-Etichetta `Note` x 14, y 778; campo `Note` x 14, y 800, **982** x 110.
+Etichetta `Note` x 14, y 793, alta 21; campo `Note` x 14, y 815, **982** x 110
+(finisce a 925; il corpo finisce a 973).
 
 ## Fase 8 — I pulsanti
 

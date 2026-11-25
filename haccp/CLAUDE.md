@@ -112,8 +112,9 @@ non puo' cambiare e' che **tutti gli oggetti coinvolti abbiano lo stesso**.
 | Vincolo | Se non lo rispetti |
 |---|---|
 | Etichetta di colonna e campo sotto: **stessa X, stessa larghezza** | l'intestazione scivola rispetto ai dati |
-| **Tutti** gli oggetti chiudono allo stesso bordo destro (oggi 680) | il margine destro balla da una maschera all'altra |
-| Margine sinistro uguale ovunque (oggi 24) | idem a sinistra |
+| **Tutti** gli oggetti chiudono allo stesso bordo destro (oggi 996, formato 1020) | il margine destro balla da una maschera all'altra |
+| Margine sinistro uguale ovunque (oggi 24; 14 per cornici e `Note`) |
+| Nelle schede, campi della stessa colonna alla **stessa X** in tutte le maschere (oggi 147 e 621) | passando da una scheda all'altra i campi "saltano" | idem a sinistra |
 | Fascia blu **alta uguale** su tutti i formati | la finestra "salta" passando da una maschera all'altra |
 | Passo verticale **costante dentro una maschera** | le righe sembrano storte |
 | Elenco e scheda della stessa anagrafica **larghi uguali** | la finestra cambia misura a ogni `Apri` |
@@ -143,7 +144,12 @@ standard***. Quella tabella e' rilevata dal file reale, non proposta a
 tavolino.
 
 Quando si scrive una guida per una maschera nuova, le misure si **copiano da
-li'**, non si reinventano. Se costruendo emerge che una misura non va, si
+li'**, non si reinventano.
+**Prima di copiarle si confrontano con l'ultimo DDR**: la tabella era ferma a
+settembre (formato 685, bordo 680) mentre il file era passato a 1020 / 996, e
+la scheda 21 e' uscita con i campi a 167 invece che a 147, come in tutte le
+altre schede. Se tabella e DDR non coincidono, prima si aggiorna la tabella,
+poi si scrive la guida. Se costruendo emerge che una misura non va, si
 cambia nel file e poi si aggiorna quella tabella: **il file vince sempre sulla
 guida**, e la guida va allineata prima di passare alla maschera successiva.
 

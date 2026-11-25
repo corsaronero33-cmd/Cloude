@@ -79,87 +79,83 @@ quello viaggia dentro il tema.
 
 ## Misure standard
 
-**Queste sono le misure del file reale**, rilevate dall'esportazione XML del
-17/09/2026 e verificate in `archivio/collaudo-007.md`. Dove divergono da quello che
-era scritto in `13a` e `13b`, **vince questa tabella**: le guide di
-costruzione erano una proposta, il file e' la verita'.
+**Queste sono le misure del file reale**, rilevate dal DDR Rev 21 (24 novembre
+2026) su tutte le schede `D_... scheda` e su due elenchi. Sostituiscono la
+tabella di settembre (formato 685, bordo a 680), che era rimasta indietro e ha
+fatto dare misure sbagliate alla scheda 21. **Vince sempre il file**: se una
+misura cambia, si rileva di nuovo dal DDR e si aggiorna qui.
 
-Larghezza formato: **685**, uguale per elenco e scheda, cosi' la finestra non
-cambia misura quando si passa dall'uno all'altro.
+Larghezza formato: **1020**, uguale per elenco e scheda, cosi' la finestra non
+cambia misura quando si passa dall'uno all'altro. Un formato nuovo nasce largo
+**1024**: va portato a 1020 trascinando la linea grigia sul lato destro del
+formato (nella 22 non c'e' una casella dove scriverlo).
 
-**Margini: 24 a sinistra, il contenuto chiude a 680 a destra.** Il margine
-destro e' quindi 5, non 24: e' asimmetrico, ma e' cosi' da prima ed e'
-coerente in tutto il file. Ci finiscono `<<$$UTENTE.Nome>>`, l'ultima colonna
-dell'elenco, la casella di ricerca e il pulsante `Tutti`.
+**Il contenuto chiude a 996 a destra** (vincolante): ci finiscono
+`<<$$UTENTE.Nome>>`, le cornici, l'ultima colonna dell'elenco, il pulsante
+`Tutti`. A sinistra: 24 per intestazione e pie' di pagina, 14 per cornici e
+`Note`.
 
 ### Intestazione
 
 | | Scheda | Elenco |
 |---|---|---|
-| Altezza | 100 | 143 |
-| Fondo | `#1B3A5C` (dalla parte, quindi dal tema) | idem |
-| Titolo | x 24, y 16 — stile `Titolo maschera` | idem |
-| Operatore | `<<$$UTENTE.Nome>>` x 425, y 18, largh. 255, allineato a destra | idem |
-| Pulsanti | y **57**, alt. **35**, largh. **117**, passo **122** (x 24, 146, 268) | idem, due soli |
-| Linea sotto i pulsanti | — | y 101, da bordo a bordo |
-| Fascia bianca colonne | — | x 0, y 110, alt. 32 |
-| Etichette colonna | — | y **115**, alt. 22 |
-
-I pulsanti stanno **direttamente sul blu**, senza fascia bianca: testo bianco
-e icona SVG. Nessun pulsante in colore pieno — su fondo scuro sparirebbe.
+| Altezza sezione | **100** | **143** |
+| Fondo | `#1B3A5C` (dalla sezione) | idem |
+| Titolo | x 24, y 16, alt. 35 — stile `Titolo maschera` | idem |
+| Operatore | `<<$$UTENTE.Nome>>` x 741, y 18, largh. 255, alt. 32 → **996** | idem |
+| Pulsanti | y **57**, alt. **35**, largh. **117**, passo **122** (x 24, 146, 268, 390); `Annulla modifiche` x 512 largh. 191 | `Menù` x 24 largh. 84; `Nuovo` x 109 largh. 117 |
+| Linea sotto i pulsanti | — | y 101, da 0 a 1020 |
+| Fascia bianca colonne | — | x 0, y 110, largh. 1020, alt. 32 |
+| Etichette colonna | — | y **114**, alt. 24 |
 
 ### Corpo della scheda
 
-| | |
-|---|---|
-| Altezza parte | 270 |
-| Campi | x **123**, largh. **329** tutti uguali, alt. **32** |
-| Passo verticale | **36** (primo campo a y 39 dall'inizio della parte) |
-| Etichette | allineate a destra, **bordo destro a 112** |
-| Niente riquadro | ne' rettangolo bianco, ne' titolo di sezione, ne' linea |
+| | | |
+|---|---|---|
+| **Cornice** | x **14**, largh. **982** → **996**; angoli 5 pt; bordo e riempimento dal tema | vincolante |
+| Titolo della cornice | testo x **28**, alt. **23**, y = **cornice − 12** (sta sulla linea), fondo bianco | vincolante |
+| Primo campo | y = **cornice + 26** (cornice 116 → campo 142) | |
+| Campi colonna sinistra | x **147**, largh. **312** → **459** | vincolante |
+| Campi colonna destra | x **621**, largh. **348** → **969** | vincolante |
+| Campi a tutta larghezza (testi lunghi) | x **147**, largh. **822** → **969** | vincolante |
+| Altezza campo | **32** | |
+| Passo verticale | **40** (campo 32 + 8) | |
+| Etichette sinistra | x **24**, largh. **112** → **136**, allineate a destra, alt. 23, y = **campo + 6** | bordo destro vincolante |
+| Etichette destra | x **498**, largh. **112** → **610**, allineate a destra, alt. 23, y = campo + 6 | bordo destro vincolante |
+| Spazio fra due cornici | **44** (la cornice chiude a 319, la successiva parte a 363) | |
+| Fondo cornice | **26** sotto l'ultimo campo | |
+| `Note` | etichetta x 14, alt. 21, 22 sopra il campo; campo x **14**, largh. **982** → 996 | |
 
-Il riquadro torna utile **solo quando i campi sono tanti**: su `PuntiControllo`
-si raggruppa, su un'anagrafica da quattro campi no.
+Le etichette lunghe si **accorciano** per stare in 112 (`Ragione soc.`,
+`Temp. min.`, `N. ricon. CE`): un'etichetta che parte prima di 24 esce dalla
+cornice.
 
 ### Corpo dell'elenco
 
-Altezza parte **32**. Campi a **y 1, alt. 28**, sfondo trasparente e bordi
-spenti. Bordo superiore della parte 1 pt grigio chiaro: e' il filo fra le righe.
-
-| Colonna | X | Largh. |
-|---|---|---|
-| `Apri` (pulsante) | 24 | 51 |
-| Codice | 85 | 169 |
-| Descrizione | 264 | 276 |
-| Ordine | 540 | 70 (allineato a destra) |
-| Attivo | 610 | 70 |
-
-**Etichetta di colonna e campo devono avere la stessa X e la stessa
-larghezza.** Si spostano selezionandoli insieme, mai uno per volta.
+Altezza sezione **30**. Campi a **y 1, alt. 28**, sfondo trasparente e bordi
+spenti. Pulsante `Apri` x 24, largh. 51. Prima colonna da x **81**, l'ultima
+chiude a **996**. **Etichetta di colonna e campo: stessa X e stessa
+larghezza**, si spostano selezionandoli insieme, mai uno per volta.
 
 ### La ricerca, sugli elenchi
 
 | Oggetto | X | Y | Largh. | Alt. |
 |---|---|---|---|---|
-| Casella `<OCC>::gCerca` | 273 | 58 | 307 | 32 |
-| Pulsante `Tutti` | 585 | 58 | 95 | 35 |
+| Casella `<OCC>::gCerca` | 233 | 58 | 685 | 32 |
+| Pulsante `Tutti` | 918 | 58 | 78 → **996** | 35 |
 
 Dettagli, trigger e parametri: `guide/03-ricerca.md`.
 
 ### Pie' di pagina
 
-Altezza **38**, fondo bianco, bordo solo sopra. Il contatore e' fatto di
-**quattro oggetti** a y 5, alti 23:
+Altezza **38**. Il contatore e' fatto di **quattro oggetti**, alti 23:
 
 | Oggetto | X | Largh. |
 |---|---|---|
 | `Record` | 24 | 55 |
-| `{{RecordNumber}}` | 84 | 70 — fondo grigio chiaro |
+| `{{RecordNumber}}` | 84 | 70 |
 | `Di` | 157 | 19 |
-| `{{FoundCount}}` | 179 | 70 — fondo grigio chiaro |
-
-Il fondo grigio sui due simboli distingue a colpo d'occhio il testo fisso dal
-numero che cambia.
+| `{{FoundCount}}` | 179 | 70 |
 
 ### Controlli dei campi
 
