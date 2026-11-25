@@ -17,7 +17,7 @@ Nomi di menu, istruzioni e funzioni da `VOCABOLARIO-FILEMAKER.md`.
 | `P_Pippo` | `Operatore` | **legge**: non scrive, non crea, non chiude |
 
 Finora le maschere erano uguali per tutti, o cambiavano con
-*Nascondi oggetto quando*. Qui serve qualcosa di piu' solido, perche' una non
+*Nascondi oggetto se*. Qui serve qualcosa di piu' solido, perche' una non
 conformita' chiusa e' un atto del registro: per questo si usano i **permessi
 per tabella** del set di privilegi, gli stessi della tappa 2, e un'opzione
 nuova sugli script: **Garantisci privilegi di accesso completo**.
@@ -66,7 +66,7 @@ non efficace
 ```
 
 `File > Gestisci > Database`, tabella `NonConformita`, campi **`Data`** e
-**`Descrizione`**: `Opzioni > Convalida` > **Non vuoto**, *Solo durante
+**`Descrizione`**: `Opzioni > Verifica` > **Non vuoto**, *Solo durante
 l'immissione dei dati*, e **togliere** la spunta a *Consenti all'utente di
 ignorare*.
 
@@ -89,14 +89,14 @@ Salva record/richieste [ Con finestra di dialogo: Disattivato ]
 
 # 1 - chi puo' chiudere
 If [ Get ( NomeSetPrivilegiAccount ) = "Operatore" ]
-   Mostra finestra personalizzata [ "Non autorizzato" ;
+   Mostra finestra personalizz. [ "Non autorizzato" ;
        "Una non conformita' la chiude il responsabile." ]
    Esci dallo script [ "" ]
 End If
 
 # 2 - gia' chiusa
 If [ NOT EVuoto ( NCF|NonConformita::DataChiusura ) ]
-   Mostra finestra personalizzata [ "Gia' chiusa" ;
+   Mostra finestra personalizz. [ "Gia' chiusa" ;
        "Questa non conformita' e' chiusa dal " & NCF|NonConformita::DataChiusura & "." ]
    Esci dallo script [ "" ]
 End If
@@ -119,19 +119,19 @@ If [ EVuoto ( NCF|NonConformita::EsitoVerifica ) ]
    Imposta variabile [ $manca ; $manca & "¶- l'esito della verifica" ]
 End If
 If [ NOT EVuoto ( $manca ) ]
-   Mostra finestra personalizzata [ "Non si puo' ancora chiudere" ; "Manca:" & $manca ]
+   Mostra finestra personalizz. [ "Non si puo' ancora chiudere" ; "Manca:" & $manca ]
    Esci dallo script [ "" ]
 End If
 
 # 4 - non efficace: resta aperta
 If [ NCF|NonConformita::EsitoVerifica = "non efficace" ]
-   Mostra finestra personalizzata [ "Resta aperta" ;
+   Mostra finestra personalizz. [ "Resta aperta" ;
        "Se l'azione non e' stata efficace la non conformita' non si chiude. Scrivi un'altra azione correttiva, verificala, e riprova." ]
    Esci dallo script [ "" ]
 End If
 
 # 5 - conferma
-Mostra finestra personalizzata [ "Chiudere la non conformita'?" ;
+Mostra finestra personalizz. [ "Chiudere la non conformita'?" ;
     "Dopo la chiusura non si modifica piu'." ; pulsanti: "Chiudi" , "Annulla" ]
 If [ Get ( SceltaUltimoMessaggio ) <> 1 ]
    Esci dallo script [ "" ]
@@ -141,7 +141,7 @@ End If
 Imposta campo [ NCF|NonConformita::DataChiusura ; Get ( DataCorrente ) ]
 Imposta campo [ NCF|NonConformita::IdResponsabile ; $$UTENTE.Id ]
 Salva record/richieste [ Con finestra di dialogo: Disattivato ]
-Mostra finestra personalizzata [ "Chiusa" ;
+Mostra finestra personalizz. [ "Chiusa" ;
     "Non conformita' chiusa il " & Get ( DataCorrente ) & "." ]
 ```
 
@@ -208,42 +208,52 @@ pulsanti **`Elenco`, `Nuovo`, `Salva`, `Annulla Modifiche`**, e i quattro
 testi del pie' di pagina. **Non `Elimina`**: una registrazione non si
 cancella. Titolo: `NON CONFORMITÀ`.
 
-## Fase 7 — I tre riquadri
+## Fase 7 — Le tre cornici
 
-Rettangoli bianchi x **14**, larghi **982** (chiudono a 996), con il titolo
-in alto a x 28, come nella scheda dei punti di controllo.
+Il corpo e' **bianco**: un rettangolo bianco non stacca niente, quello che
+raggruppa e' il **bordo**. La cornice giusta c'e' gia' su
+`D_PuntiControllo scheda`: rettangolo con angoli a 5 pt (bordo e riempimento
+dal tema) e titolo **sulla linea**, cioe' un testo alto 23 messo 12 sopra il
+bordo, con fondo bianco che interrompe la linea sotto la scritta. Si copia
+quella: su `D_PuntiControllo scheda` si selezionano la cornice di
+`IDENTIFICAZIONE` e il suo titolo, Ctrl+C, e sulla scheda nuova Ctrl+V tre
+volte. **Prima le cornici, poi i campi**, cosi' le cornici restano sotto.
+
+Tutte e tre x **14**, larghe **982** (chiudono a 996), titolo a x 28.
 
 Colonna sinistra: etichette x 28 larghe 131 allineate a destra, campi da
 x **167**. Colonna destra: etichette che finiscono a 610, campi da x **621**
 larghi 348. **Tutto chiude a 969.**
 
-### `COSA È SUCCESSO` — riquadro y 116, alto 232
+### `COSA È SUCCESSO` — cornice y 116, alta 232; titolo y 104
 
 | Y | Etichetta | Campo | X | Largh. | Alt. | Controllo |
 |---|---|---|---|---|---|---|
 | 142 | Data | `Data` | 167 | 292 | 32 | **Calendario a discesa** |
-| 142 | Origine | `Origine` | 621 | 348 | 32 | **Menu a discesa** `vl_OrigineNonConformita` |
-| 182 | Gravità | `Gravita` | 167 | 292 | 32 | **Menu a discesa** `vl_Gravita` |
+| 142 | Origine | `Origine` | 621 | 348 | 32 | **Elenco a discesa** `vl_OrigineNonConformita` |
+| 182 | Gravità | `Gravita` | 167 | 292 | 32 | **Elenco a discesa** `vl_Gravita` |
 | 182 | Rilevata da | `IdOperatoreRilevatore` | 621 | 348 | 32 | **Menu a comparsa** `vl_Operatori` |
-| 222 | Descrizione | `Descrizione` | 167 | 802 | 100 | casella |
+| 222 | Descrizione | `Descrizione` | 167 | 802 | 100 | Casella modifica |
 
-### `COSA SI È FATTO` — riquadro y 376, alto 130
+### `COSA SI È FATTO` — cornice y 376, alta 130; titolo y 364
 
 | Y | Etichetta | Campo | X | Largh. | Alt. |
 |---|---|---|---|---|---|
 | 402 | Azione correttiva | `AzioneCorrettiva` | 167 | 802 | 80 |
 
-### `CHIUSURA` — riquadro y 534, alto 216
+### `CHIUSURA` — cornice y 534, alta 216; titolo y 522
 
 | Y | Etichetta | Campo | X | Largh. | Alt. | Controllo |
 |---|---|---|---|---|---|---|
-| 560 | Verifica | `VerificaEfficacia` | 167 | 802 | 80 | casella |
-| 654 | Esito | `EsitoVerifica` | 167 | 292 | 32 | **Menu a discesa** `vl_EsitoVerifica` |
-| 654 | Stato | `Stato` | 621 | 348 | 32 | **immissione tolta** |
-| 694 | Chiusa il | `DataChiusura` | 167 | 292 | 32 | **immissione tolta** |
-| 694 | Chiusa da | `NCF\|OperatoreResponsabile::NomeCompleto` | 621 | 348 | 32 | **immissione tolta** |
+| 560 | Verifica | `VerificaEfficacia` | 167 | 802 | 80 | Casella modifica |
+| 654 | Esito | `EsitoVerifica` | 167 | 292 | 32 | **Elenco a discesa** `vl_EsitoVerifica` |
+| 654 | Stato | `Stato` | 621 | 348 | 32 | **accesso tolto** |
+| 694 | Chiusa il | `DataChiusura` | 167 | 292 | 32 | **accesso tolto** |
+| 694 | Chiusa da | `NCF\|OperatoreResponsabile::NomeCompleto` | 621 | 348 | 32 | **accesso tolto** |
 
-**Le ultime tre si leggono e basta**: le scrive lo script `30`. Chi le
+**Le ultime tre si leggono e basta** (*accesso tolto* = Impostazioni › Dati ›
+area Comportamento › **Accesso campo**: togliere la spunta del modo Usa): le
+scrive lo script `30`. Chi le
 potesse scrivere a mano potrebbe chiudere una non conformita' senza passare
 dai controlli.
 
@@ -253,7 +263,7 @@ Etichetta `Note` x 14, y 778; campo `Note` x 14, y 800, **982** x 110.
 
 ## Fase 8 — I pulsanti
 
-| Pulsante | Cosa fa | Nascondi oggetto quando |
+| Pulsante | Cosa fa | Nascondi oggetto se |
 |---|---|---|
 | `Elenco` (copiato) | **cambiare il parametro** in `"D_NonConformita elenco"` | — |
 | `Nuova` (il `Nuovo` copiato, rinominato) | `Nuovo record/richiesta`, com'e' | `Get ( NomeSetPrivilegiAccount ) = "Operatore"` |

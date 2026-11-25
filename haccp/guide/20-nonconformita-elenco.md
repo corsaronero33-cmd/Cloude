@@ -94,7 +94,7 @@ If [ $cosa = "aperte" ]
    Esegui la ricerca
    If [ Get ( ContoTrovati ) = 0 ]
       Mostra tutti i record
-      Mostra finestra personalizzata [ "Nessuna non conformita' aperta" ;
+      Mostra finestra personalizz. [ "Nessuna non conformita' aperta" ;
           "Sono tutte chiuse. Mostro l'elenco completo." ]
    End If
 End If
@@ -150,8 +150,9 @@ per tutti.
 Etichette a y **114** alte 24, campi a y **144** alti 28, stessa X e
 larghezza. L'ultima chiude a **996**.
 
-**A tutti e sei i campi si toglie l'immissione**: l'elenco si legge, si
-lavora nella scheda.
+**A tutti e sei i campi si toglie l'accesso** (Impostazioni › Dati ›
+Comportamento › **Accesso campo**: togliere la spunta del modo Usa): l'elenco
+si legge, si lavora nella scheda.
 
 La `Descrizione` delle non conformita' nate da una rilevazione e' lunga
 (*"Fuori limite: Frigo carni. Valore rilevato 7 °C, limiti ammessi da 0 a

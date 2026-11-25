@@ -81,7 +81,7 @@ che un errore di FileMaker.
 
 ### Altezze delle parti
 
-Clicca l'etichetta grigia della parte sul bordo sinistro, poi Ispettore
+Clicca l'etichetta grigia della parte sul bordo sinistro, poi Impostazioni
 (Ctrl+I) › scheda **Posizione** › Altezza.
 
 | Parte | Altezza |
@@ -103,13 +103,13 @@ tutte le maschere successive nascono gia' con l'intestazione giusta.
 
 1. Clicca l'etichetta grigia **Intestazione** sul bordo sinistro: selezioni la
    parte, non un oggetto.
-2. Ispettore › **Aspetto** › Riempimento: da Sfumatura passa a **Tinta unita**,
+2. Impostazioni › **Aspetto** › Riempimento: da Sfumatura passa a **Tinta unita**,
    poi **Altro colore** e scrivi `#1B3A5C`.
 3. Testo `Reparto`, misure dalla tabella. Il colore **bianco lo metti a mano**:
    il tema lo farebbe scuro, e su fondo scuro non si leggerebbe.
 4. Testo a destra, **esattamente** `<<$$UTENTE.Nome>>`. Anche bianco.
 5. Rettangolo della fascia pulsanti: bianco, bordo **solo sotto**
-   (Ispettore › Aspetto › Bordo: accendi il lato di sotto, spegni gli altri).
+   (Impostazioni › Aspetto › Bordo: accendi il lato di sotto, spegni gli altri).
 
 | Oggetto | X | Y | Largh. | Alt. | Aspetto |
 |---|---|---|---|---|---|
@@ -142,7 +142,7 @@ l'etichetta si scrive nel campo in alto di quella stessa finestra.
 | `Elimina` | 228 | 64 | 94 | 28 | Esegui passo script | `Elimina record/richiesta`, finestra di conferma **attivata** |
 
 L'aspetto **non lo imposti, ci pensa Apex blu**. In cima alla scheda Aspetto
-dell'Ispettore c'e' l'elenco degli stili del tema.
+della finestra Impostazioni c'e' l'elenco degli stili del tema.
 
 | Quale | Cosa fare |
 |---|---|
@@ -179,7 +179,7 @@ Apex blu.
 | `REP\|Reparti::Codice` | 208 | 72 | 120 | 29 | lascia com'e' |
 | `REP\|Reparti::Descrizione` | 208 | 110 | 400 | 29 | lascia com'e' |
 | `REP\|Reparti::Ordine` | 208 | 148 | 80 | 29 | allineato a destra |
-| `REP\|Reparti::Attivo` | 208 | 186 | 100 | 29 | `Formato` › `Controllo` › Menu a discesa, lista `vl_SiNo` |
+| `REP\|Reparti::Attivo` | 208 | 186 | 100 | 29 | Impostazioni › Dati › Controllo stile › Elenco a discesa, lista `vl_SiNo` |
 
 Quando si disegna un campo, FileMaker crea in automatico la sua etichetta:
 spostala e ridimensionala secondo la tabella, oppure cancellala e rifalla.
@@ -225,7 +225,7 @@ Uno **stile** e' un aspetto salvato con un nome: si applica con un clic, e
 cambiandolo si aggiornano tutti gli oggetti che lo usano **in tutte le
 maschere del file**. Apex blu ne porta gia' tanti; a noi ne mancano due.
 
-Seleziona l'oggetto gia' formattato, Ispettore › scheda **Aspetto**, in cima
+Seleziona l'oggetto gia' formattato, Impostazioni › scheda **Aspetto**, in cima
 c'e' l'elenco degli stili del tema; dal menu con la freccia scegli
 **Salva come nuovo stile**.
 

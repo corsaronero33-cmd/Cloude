@@ -131,8 +131,8 @@ etichetta e campo**: e' la relazione che vale, non il numero.
 
 L'ultima chiude a **996**, come tutte le altre quindici maschere.
 
-**A tutti e sette i campi si toglie l'immissione**: Ispettore > Dati >
-Comportamento > togliere la spunta a *Consenti l'immissione nel campo*.
+**A tutti e sette i campi si toglie l'accesso**: Impostazioni › scheda Dati ›
+area Comportamento › **Accesso campo**: togliere la spunta del modo Usa.
 E' il modo piu' semplice e piu' solido di rendere il registro di sola
 lettura: non dipende da chi e' entrato.
 
@@ -201,7 +201,7 @@ If [ $cosa = "nonconformi" ]
    Esegui la ricerca
    If [ Get ( ContoTrovati ) = 0 ]
       Mostra tutti i record
-      Mostra finestra personalizzata
+      Mostra finestra personalizz.
           [ "Nessuna non conformita'" ;
             "Non ci sono rilevazioni fuori limite. Mostro tutto il registro." ]
    End If

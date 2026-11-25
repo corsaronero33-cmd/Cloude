@@ -50,7 +50,7 @@ stessa larghezza:
 le etichette stanno a y 114 e i campi a y 144, senza eccezioni.
 
 I due campi `Valore` sovrapposti di `D_Parametri elenco` hanno le due formule
-*Nascondi oggetto quando* esattamente opposte, letto col nome giusto
+*Nascondi oggetto se* esattamente opposte, letto col nome giusto
 (`<Conditions><Hide>`). Quello che avevo segnalato come mancante al collaudo
 016 e ritirato al 017 e' confermato presente.
 

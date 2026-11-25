@@ -63,7 +63,7 @@ nessun campo: e' uno per tutta l'applicazione.
 # === 92 - UTILITA - CERCA ===
 # Ricerca rapida sul formato corrente. Uno per tutta l'applicazione.
 # Non sa su quali campi cerca: si decide sul formato, con la spunta
-# della Ricerca rapida nell'Ispettore.
+# della Ricerca rapida nella finestra Impostazioni.
 # Parametro: il testo da cercare, passato dal trigger della casella.
 
 Imposta variabile [ $cerca ; Valore: Get ( ParametroScript ) ]
@@ -123,10 +123,10 @@ Chiudono a **680**, che e' il bordo destro del contenuto di questo formato:
 ci finiscono anche `<<$$UTENTE.Nome>>` (425 + 255) e la colonna `Attivo`
 (610 + 70). Il formato e' largo 685.
 
-**Segnaposto:** Ispettore -> scheda **Dati** -> **Testo segnaposto** ->
+**Segnaposto:** Impostazioni -> scheda **Dati** -> **Testo segnaposto** ->
 `Cerca...`.
 
-**Spunta della Ricerca rapida:** va **tolta** da questa casella (Ispettore ->
+**Spunta della Ricerca rapida:** va **tolta** da questa casella (Impostazioni ->
 scheda Dati), altrimenti il programma cerca dentro la casella di ricerca.
 
 ### Il trigger, finestra per finestra
@@ -184,7 +184,7 @@ l'aspetto**: carattere bianco in grassetto, nessun riempimento. Disegnandolo
 nuovo prenderebbe lo stile di serie del tema — chiaro con il bordo — e su
 fondo blu sarebbe un'altra cosa.
 
-**Misure**, Ispettore -> scheda Posizione:
+**Misure**, Impostazioni -> scheda Posizione:
 
 | Voce | Valore |
 |---|---|
@@ -228,7 +228,7 @@ gia' scritte.
 > scritto `cuc` nel riquadro, e non sapresti piu' se stai guardando tutto o un
 > risultato.
 
-> **Rifinitura che per ora non farei.** Ispettore -> scheda Dati -> **Nascondi
+> **Rifinitura che per ora non farei.** Impostazioni -> scheda Dati -> **Nascondi
 > oggetto quando**, calcolo `EVuoto ( REP|Reparti::gCerca )`: il pulsante
 > comparirebbe solo a ricerca attiva. E' elegante, ma un pulsante che va e
 > viene si nota piu' di uno fermo, e `Tutti` serve anche ad annullare una
@@ -241,7 +241,7 @@ gia' scritte.
 `Formati` -> `Imposta formato` -> Generale: **Abilita Ricerca rapida**
 spuntato (di serie lo e').
 
-Poi, campo per campo sul formato, Ispettore -> scheda **Dati** -> la spunta
+Poi, campo per campo sul formato, Impostazioni -> scheda **Dati** -> la spunta
 della Ricerca rapida:
 
 | Campo sul formato | Spunta | Perche' |

@@ -50,7 +50,7 @@ formati, e la regolarita' dei nomi e' quello che lo tiene in piedi.
 
 ## 2. Tre cose che l'export non porta
 
-**La spunta *Consenti l'immissione nel campo*.** Ho provato a dedurla dai
+**La spunta *Accesso campo* (modo Usa).** Ho provato a dedurla dai
 numeri che FileMaker scrive nelle proprieta' degli oggetti e **non ci sono
 riuscito in modo affidabile**: su `D_Parametri` i due campi `Valore`
 differiscono di un bit coerente con quella spunta, ma gli stessi numeri sui

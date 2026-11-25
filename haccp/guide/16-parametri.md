@@ -101,8 +101,9 @@ mano: FileMaker ci mette il valore del gruppo.
 | Tipo | 734 | 90 | `Tipo` |
 | **Valore** | 834 | 160 | **due campi sovrapposti** |
 
-Su `Chiave`, `Descrizione` e `Tipo`: **togliere `Consenti l'immissione nel
-campo`**. Sono di sola lettura per tutti.
+Su `Chiave`, `Descrizione` e `Tipo`: Impostazioni › scheda **Dati** › area
+Comportamento › **Accesso campo**: **togliere la spunta del modo Usa**. Sono
+di sola lettura per tutti.
 
 **La chiave e' il nome con cui lo script `01` cerca il parametro.** Cambiarla
 da `BonificaPesce` a `Bonifica pesce` non da' nessun errore, e da quel momento
@@ -126,7 +127,7 @@ Quale si vede, per chi:
 | `Responsabile` | bianchi | **grigi** |
 | `Operatore` | **grigi** | **grigi** |
 
-Campo A, *Nascondi oggetto quando*:
+Campo A, *Nascondi oggetto se*:
 
 ```
 Get ( NomeSetPrivilegiAccount ) = "Operatore"
@@ -164,9 +165,9 @@ confrontava con `[Accesso completo]`: sbagliata, perche' quel nome e' tradotto
 solo nell'interfaccia mentre `Get ( NomeSetPrivilegiAccount )` restituisce il valore
 inglese.
 
-**Perche' due campi e non una spunta.** *Consenti l'immissione nel campo* e'
-una proprieta' fissa dell'oggetto, non si puo' calcolare. *Nascondi oggetto
-quando* e' un calcolo e si valuta riga per riga. Sovrapporre due oggetti e
+**Perche' due campi e non una spunta.** In FileMaker 22 l'*Accesso campo* e'
+una spunta fissa dell'oggetto, non si puo' calcolare (la scelta "in base a un
+calcolo" arriva solo con la versione 26). *Nascondi oggetto se* e' un calcolo e si valuta riga per riga. Sovrapporre due oggetti e
 accenderne uno solo e' il modo di ottenere un campo "a volte scrivibile".
 
 **Il grigio e' l'unica cosa che l'utente vede:** senza, clicca, non succede

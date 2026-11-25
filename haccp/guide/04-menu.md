@@ -42,7 +42,7 @@ sembra rotta.
 2. **Il tema:** `Formati` › `Cambia tema` › **HACCP**.
 3. `Formati` › `Imposta formato` › Generale: togli **Includi nel menu dei
    formati**.
-4. Altezze, Ispettore › Posizione:
+4. Altezze, Impostazioni › Posizione:
    - **Navigazione superiore**: da 110 a **100**
    - **Corpo**: da 658 a **440**
 5. Larghezza del formato: **685**, come le altre due.
@@ -83,7 +83,7 @@ Le tre scritte REGISTRI, ANAGRAFICHE, CONFIGURAZIONE.
 
 1. Testo `REGISTRI` a **x 24, y 24**, largo 380, alto 20.
 2. **10,5 pt**, semigrassetto, tutto maiuscolo, colore `#1B3A5C`.
-3. Ispettore › Aspetto › menu con la freccia › **Salva come nuovo stile** ›
+3. Impostazioni › Aspetto › menu con la freccia › **Salva come nuovo stile** ›
    `Titolo gruppo`.
 4. Gli altri due, con lo stile applicato a un clic:
    `ANAGRAFICHE` a y **140**, `CONFIGURAZIONE` a y **328**.

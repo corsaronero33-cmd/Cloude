@@ -1,5 +1,5 @@
-<svg viewBox="-150 -10 1190 1031" role="img" aria-label="La maschera D_NonConformita scheda: tre riquadri, cosa e successo, cosa si e fatto e la chiusura, piu le note; in alto i pulsanti Elenco, Nuova, Salva, Annulla modifiche e Chiudi la non conformita." font-family="Source Sans 3, Segoe UI, sans-serif">
-  <rect x="0" y="0" width="1020" height="1011" fill="#EEF1F2"/>
+<svg viewBox="-150 -10 1190 1031" role="img" aria-label="La maschera D_NonConformita scheda su fondo bianco: tre cornici con il titolo sulla linea, cosa e successo, cosa si e fatto e la chiusura, piu le note; in alto i pulsanti Elenco, Nuova, Salva, Annulla modifiche e Chiudi la non conformita." font-family="Source Sans 3, Segoe UI, sans-serif">
+  <rect x="0" y="0" width="1020" height="1011" fill="#FFFFFF"/>
   <rect x="0" y="0" width="1020" height="100" fill="#1B3A5C"/>
   <text x="24" y="44" font-size="25" font-weight="700" fill="#FFFFFF">NON CONFORMITÀ</text>
   <text x="996" y="40" font-size="15" fill="#C9DAE8" text-anchor="end">Mario Rossi</text>
@@ -13,8 +13,9 @@
   <text x="486" y="79" font-size="13" fill="#1B3A5C" text-anchor="middle">Annulla modifiche</text>
   <rect x="756" y="57" width="240" height="35" rx="3" fill="#FFFFFF"/>
   <text x="876" y="79" font-size="13.5" font-weight="700" fill="#1B3A5C" text-anchor="middle">Chiudi la non conformità</text>
-  <rect x="14" y="116" width="982" height="232" rx="4" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="28" y="112" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA È SUCCESSO</text>
+  <rect x="14" y="116" width="982" height="232" rx="5" fill="none" stroke="#A9B6BD"/>
+  <rect x="28" y="104" width="141" height="23" fill="#FFFFFF"/>
+  <text x="34" y="121" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA È SUCCESSO</text>
   <text x="159" y="163" font-size="13" fill="#5F7078" text-anchor="end">Data</text>
   <rect x="167" y="142" width="292" height="32" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
   <text x="175" y="163" font-size="13.5" fill="#16222A" font-weight="400">11/11/2026</text>
@@ -35,14 +36,16 @@
   <rect x="167" y="222" width="802" height="100" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
   <text x="175" y="243" font-size="13.5" fill="#16222A" font-weight="400">Fuori limite: Frigo carni. Valore rilevato 7 °C,</text>
   <text x="175" y="261" font-size="13.5" fill="#16222A" font-weight="400">limiti ammessi da 0 a 4.</text>
-  <rect x="14" y="376" width="982" height="130" rx="4" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="28" y="372" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA SI È FATTO</text>
+  <rect x="14" y="376" width="982" height="130" rx="5" fill="none" stroke="#A9B6BD"/>
+  <rect x="28" y="364" width="141" height="23" fill="#FFFFFF"/>
+  <text x="34" y="381" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">COSA SI È FATTO</text>
   <text x="159" y="423" font-size="13" fill="#5F7078" text-anchor="end">Azione correttiva</text>
   <rect x="167" y="402" width="802" height="80" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
   <text x="175" y="423" font-size="13.5" fill="#16222A" font-weight="400">Spostati i prodotti nel frigo 2. Chiamato il tecnico:</text>
   <text x="175" y="441" font-size="13.5" fill="#16222A" font-weight="400">guarnizione della porta sostituita.</text>
-  <rect x="14" y="534" width="982" height="216" rx="4" fill="#FFFFFF" stroke="#C9D3D8"/>
-  <text x="28" y="530" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">CHIUSURA</text>
+  <rect x="14" y="534" width="982" height="216" rx="5" fill="none" stroke="#A9B6BD"/>
+  <rect x="28" y="522" width="90" height="23" fill="#FFFFFF"/>
+  <text x="34" y="539" font-size="13" font-weight="700" fill="#1B3A5C" letter-spacing=".06em">CHIUSURA</text>
   <text x="159" y="581" font-size="13" fill="#5F7078" text-anchor="end">Verifica</text>
   <rect x="167" y="560" width="802" height="80" rx="3" fill="#FFFFFF" stroke="#C9D3D8"/>
   <text x="175" y="581" font-size="13.5" fill="#16222A" font-weight="400">Rimisurato il giorno dopo alle 7:00 e alle 12:00:</text>
@@ -73,5 +76,5 @@
   <text x="-140" y="96" font-size="11" fill="currentColor" opacity=".6">y 100</text>
   <line x1="-140" y1="973" x2="-6" y2="973" stroke="currentColor" opacity=".3" stroke-dasharray="3 3"/>
   <text x="-140" y="969" font-size="11" fill="currentColor" opacity=".6">y 973</text>
-  <text x="621" y="752" font-size="11.5" fill="#5F7078">in grigio: li scrive lo script, non si toccano</text>
+  <text x="621" y="768" font-size="11.5" fill="#5F7078">in grigio: li scrive lo script, non si toccano</text>
 </svg>

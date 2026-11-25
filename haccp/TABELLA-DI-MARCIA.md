@@ -70,7 +70,7 @@ tabella vuota; e la coda dello script `20` da rifare.
 - `archivio/collaudo-016.md` — <https://claude.ai/artifact/6z2L966mmMiMQz4Vqi1pwG>
   i due rami dello script non si comportavano allo stesso modo. Causa vera: i
   due campi del valore sovrapposti **senza** le formule *Nascondi oggetto
-  quando*, per cui su un punto a temperatura il numero non si poteva digitare
+  se*, per cui su un punto a temperatura il numero non si poteva digitare
   e l'esito usciva vuoto. Piu' la chiusura dello script scritta due volte, il
   messaggio del "Registrato" senza il nome del punto, e la finestra della non
   conformita' che lampeggiava con la propria barra dei menu.

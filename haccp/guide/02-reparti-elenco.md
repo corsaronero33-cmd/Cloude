@@ -45,7 +45,7 @@ da `Nuovo formato`, alla terza maschera un dettaglio diverso ti scappa.
 
 1. Nel Corpo seleziona tutto: rettangolo, titolo, linea, quattro etichette,
    quattro campi. **Canc.**
-2. Parte **Corpo** › Ispettore › Posizione › **Altezza 32**.
+2. Parte **Corpo** › Impostazioni › Posizione › **Altezza 32**.
 
 > Copiare i campi invece di cancellarli si puo', ma se li porti dietro con
 > altezza 29 e il bordo della scheda devi comunque rifare misure e aspetto.
@@ -133,7 +133,7 @@ FileMaker rende corrente quel record prima di eseguire lo script.
 ## Fase 5 — Righe alternate
 
 1. Clicca l'etichetta grigia **Corpo**: selezioni la parte.
-2. Ispettore › Aspetto: la tendina di **stato** in cima, che dice `Normale`,
+2. Impostazioni › Aspetto: la tendina di **stato** in cima, che dice `Normale`,
    offre anche **Sfondo alternato**.
 3. Con quello stato attivo, Riempimento appena piu' scuro del bianco.
 4. Rimetti la tendina su `Normale` prima di toccare altro.

@@ -166,9 +166,9 @@ numero che cambia.
 | Che campo e' | Controllo |
 |---|---|
 | contiene un **Id**, lista a due campi | **Menu a comparsa** |
-| contiene il valore stesso, lista a un campo | **Menu a discesa** |
+| contiene il valore stesso, lista a un campo | **Elenco a discesa** |
 | di tipo **Data** | **Calendario a discesa** |
-| tutto il resto | Casella di modifica |
+| tutto il resto | Casella modifica |
 
 ### Stili del tema `HACCP`
 
@@ -325,7 +325,7 @@ la tabella di origine e si sistemano i campi. Quello che cambia e' poco.
 Aggiunge due cose:
 
 **Menu a tendina.** Sul campo `Tipo`, `Formato` -> `Controllo` ->
-**Menu a discesa** con la lista `vl_TipoAttrezzatura`. Idem per `Attivo` con
+**Elenco a discesa** con la lista `vl_TipoAttrezzatura`. Idem per `Attivo` con
 `vl_SiNo`.
 
 **Il reparto.** Il campo `IdReparto` contiene un IDUU, che non si puo' mostrare
@@ -333,7 +333,7 @@ a nessuno. Si mette il campo con controllo **Menu a comparsa** e lista
 **`vl_Reparti`**: l'operatore vede "Cucina" e continua a vederla anche dopo
 aver scelto, il database memorizza l'IDUU.
 
-Con **Menu a discesa** invece, appena si esce dal campo ricompare l'IDUU: la
+Con **Elenco a discesa** invece, appena si esce dal campo ricompare l'IDUU: la
 regola completa e' in `CLAUDE.md`.
 
 Sull'**elenco** invece il campo giusto da mostrare non e' `IdReparto` ma

@@ -19,7 +19,7 @@ stessa X e larghezza, elenco e scheda larghi uguali — e tutto il resto.
 | I due trigger | `SuUscitaOggetto` → `92` con parametro `PCO\|PuntiControllo::gCerca`; `SuEntrataFormato` → `91` |
 | Parametri dei pulsanti | tutti giusti, compreso `+ Nuovo` → `93` |
 | `IdReparto` | Menu a comparsa con `vl_Reparti` |
-| Le sette tendine del valore | Menu a discesa con la lista giusta |
+| Le sette tendine del valore | Elenco a discesa con la lista giusta |
 
 ### Chiuso dal collaudo 010
 

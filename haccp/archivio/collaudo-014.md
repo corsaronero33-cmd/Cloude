@@ -69,7 +69,7 @@ Lo stile nuovo e' stato creato invece di rinominare il vecchio.
 detto che esista in quella forma, e indicarlo e' stato un errore. Si fa con
 due operazioni certe, applicare ed eliminare:
 
-1. selezionare il **titolo** in intestazione, Ispettore › **Aspetto**;
+1. selezionare il **titolo** in intestazione, Impostazioni › **Aspetto**;
 2. cliccare **`Titolo maschera`** nella lista degli stili — l'aspetto non deve
    cambiare; se cambia, si sistema e si fa *Salva modifiche allo stile*;
 3. ripetere sui quindici titoli;

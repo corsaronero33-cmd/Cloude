@@ -23,7 +23,7 @@ FileMaker e la persona.
 
 Tabella **Operatori**, campo `gCerca` Testo, **archiviazione globale**.
 
-Gia' che sei li': su `AccountFileMaker`, `Opzioni` › scheda **Convalida** ›
+Gia' che sei li': su `AccountFileMaker`, `Opzioni` › scheda **Verifica** ›
 spunta **Univoco**. Il perche' e' nella fase 5.
 
 ## Fase 2 — Lo script `91 - Operatori - Entra nell'elenco`

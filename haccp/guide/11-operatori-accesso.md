@@ -42,7 +42,7 @@ collaudo**, quindi si fanno per prime.
 
 | | Cosa | Dove |
 |---|---|---|
-| 1 | `AccountFileMaker` ha ancora **Menu a comparsa** con `vl_Fornitori`: va **Casella di modifica**, nessuna lista | scheda |
+| 1 | `AccountFileMaker` ha ancora **Menu a comparsa** con `vl_Fornitori`: va **Casella modifica**, nessuna lista | scheda |
 | 2 | Stesso controllo su `Cognome`, `Nome`, `Mansione`, `Telefono` | scheda |
 | 3 | Cancella l'oggetto `$$PARAMETRI` rimasto in fondo al formato | scheda |
 | 4 | Titolo del riquadro: `DATI DEL FPRODOTTO` → `DATI DELL'OPERATORE` | scheda |
@@ -116,7 +116,7 @@ errore**.
 | `Reimposta password` | 303 | 326 | 180 | 35 | `95 - Operatori - Reimposta password` |
 
 Partono da x **143**, allineati alla colonna dei campi. Su tutti e due,
-`Ispettore › Dati › Nascondi oggetto quando`:
+`Impostazioni › Dati › Nascondi oggetto se`:
 
 ```
 Get ( NomeSetPrivilegiAccount ) = "Operatore"
@@ -130,7 +130,7 @@ or not EVuoto ( OPE|Operatori::AccountFileMaker )
 ```
 
 **Il pulsante resta visibile finche' il record non e' confermato**, e non e'
-un guasto. *Nascondi oggetto quando* si ricalcola al **commit** del record e ai
+un guasto. *Nascondi oggetto se* si ricalcola al **commit** del record e ai
 refresh del formato, non a ogni lettera che scrivi: se compili `Account FM` e
 premi subito `Crea account` senza uscire dal campo, il pulsante c'e' ancora. Lo
 script invece legge il campo **come e' adesso**, anche non confermato, e si

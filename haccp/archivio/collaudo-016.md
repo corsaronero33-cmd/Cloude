@@ -11,7 +11,7 @@ limiti o non"*.
 
 > **Correzione, dopo la Revisione 16.** La prima stesura di questo collaudo
 > apriva con un sesto rilievo, dato come il piu' grave: le due formule
-> *Nascondi oggetto quando* mancanti sulla maschera. **Era un errore di
+> *Nascondi oggetto se* mancanti sulla maschera. **Era un errore di
 > lettura mio**, non un difetto del file. Vedi il paragrafo 1.
 
 ---
@@ -27,7 +27,7 @@ limiti o non"*.
 **Che cosa avevo scritto.** Che su `D_Rilevazioni registra` i due campi
 `gValore` e `gValoreTesto`, sovrapposti alla stessa posizione, erano entrambi
 visibili perche' **nessuno dei due aveva la formula *Nascondi oggetto
-quando***; e che da qui seguiva, a catena, che su un punto a temperatura il
+se***; e che da qui seguiva, a catena, che su un punto a temperatura il
 numero non si poteva digitare, `Valore` nasceva vuoto,
 `EsitoRilevazione ( "" ; min ; max )` restituiva `""`, e il registro
 conservava record con l'esito vuoto mentre lo script diceva "conforme".
@@ -42,7 +42,7 @@ conservava record con l'esito vuoto mentre lo script diceva "conforme".
 Letto con il nome giusto, **le due formule c'erano gia' nella Revisione 15**,
 scritte esattamente come la scheda 18 le prescriveva:
 
-| Campo | Nascondi oggetto quando |
+| Campo | Nascondi oggetto se |
 |---|---|
 | `RIL\|Rilevazioni::gValore` | `RIL\|PuntoScelto::Grandezza = "visivo"` |
 | `RIL\|Rilevazioni::gValoreTesto` | `RIL\|PuntoScelto::Grandezza <> "visivo"` |

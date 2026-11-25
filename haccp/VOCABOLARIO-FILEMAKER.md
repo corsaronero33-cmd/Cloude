@@ -1,14 +1,23 @@
 # Come si chiamano le cose in FileMaker Pro 22 italiano
 
-Verificato sulla documentazione Claris in italiano, `help.claris.com/it/pro-help/`,
-il 18 novembre 2026. **Non si va a memoria e non si traduce a senso:** un nome
+Verificato sulla documentazione Claris in italiano **della versione 22**,
+`help.claris.com/archive/fm22/it/pro-help/content/` (prima stesura il 18
+novembre 2026 sulla guida corrente, ricontrollata sulla 22 il 25 novembre). **Non si va a memoria e non si traduce a senso:** un nome
 sbagliato manda chi costruisce a cercare un comando che non esiste.
 
 ## La regola
 
 Si scrive il nome **che l'utente legge a schermo**. Quando non si e' sicuri si
-apre la pagina italiana del passo su `help.claris.com/it/pro-help/content/` e
-si legge il titolo: il titolo della pagina **e'** il nome del passo.
+apre la pagina italiana dell'istruzione su
+`help.claris.com/archive/fm22/it/pro-help/content/` e si legge il titolo: il
+titolo della pagina **e'** il nome dell'istruzione.
+
+**Mai la guida corrente** (`help.claris.com/it/pro-help/`): da novembre 2026
+e' quella della **versione 26**, e non coincide con la 22. Esempi trovati:
+la 26 scrive `Mostra finestra personalizzata` dove la 22 scrive
+`Mostra finestra personalizz.`; la 26 ha *Comportamento immissione campo*
+con *Solo selezione* e *Imposta in base a calcolo*, che nella 22 **non
+esistono** (la 22 ha *Accesso campo*, a spunte).
 
 ## Istruzioni di script
 
@@ -35,7 +44,7 @@ Si chiamano **istruzioni di script**, non "passi di script".
 | `Set Field` | `Imposta campo` |
 | `Set Variable` | `Imposta variabile` |
 | `Set Error Capture` | **`Imposta cattura errori`** |
-| `Show Custom Dialog` | `Mostra finestra personalizzata` |
+| `Show Custom Dialog` | `Mostra finestra personalizz.` (abbreviato cosi' nella 22) |
 | `Allow User Abort` | `Consenti interruzione utente` |
 | `Exit Script` | `Esci dallo script` |
 | `Perform Script` | `Esegui script` |
@@ -203,6 +212,31 @@ La finestra iniziale con i file recenti si chiama **finestra Home**.
 Le opzioni del singolo file stanno invece in `File > Opzioni file`, scheda
 `Apri`.
 
+## La finestra Impostazioni e i campi sul formato
+
+Verificati sull'archivio della 22 il 25 novembre 2026.
+
+| Inglese | Italiano (FileMaker 22) |
+|---|---|
+| Inspector | **finestra Impostazioni** — schede `Posizione`, `Stili`, `Aspetto`, `Dati` |
+| Control style | Impostazioni › `Dati` › area Campo › **`Controllo stile`** |
+| Edit box | `Casella modifica` |
+| Drop-down list | **`Elenco a discesa`** (con *Includi freccia* diventa casella combinata) |
+| Pop-up menu | **`Menu a comparsa`** |
+| Checkbox set / Radio button set | `Gruppo caselle di controllo` / `Gruppo pulsanti di opzione` |
+| Drop-down calendar | `Calendario a discesa` |
+| Concealed edit box | `Casella di modifica nascosta` |
+| Field entry (Browse/Find mode) | Impostazioni › `Dati` › area Comportamento › **`Accesso campo`**, una spunta per il modo Usa e una per il modo Trova. **Non si calcola** nella 22 |
+| Hide object when | Impostazioni › `Dati` › **`Nascondi oggetto se`**, con `Applica nel modo Trova` |
+| Show hidden condition badge | `Visualizza > Mostra > Condizione nascosta` |
+| Field Options › Validation | `Opzioni per il campo` › scheda **`Verifica`** |
+| Validate data in this field: Always / Only during data entry | `Convalida i dati in questo campo`: `Sempre` / `Solo durante l'immissione dei dati` |
+| Allow user to override during data entry | `Consenti all'utente di ignorare durante l'immissione dei dati` |
+| Not empty | `Non vuoto` |
+| Validated by calculation | `Convalidato mediante calcolo` |
+| Skip data entry validation (Commit Records) | `Non eseguire verifica dati inseriti` |
+| Specify Calculation (dialog) | finestra `Specifica calcolo` (nella 26 diventa "Specifica il calcolo") |
+
 ## Altri termini verificati
 
 | Inglese | Italiano |
@@ -234,6 +268,17 @@ Scritto per diciannove schede, e corretto tutto in una volta:
 | `OnLayoutEnter`, `OnObjectSave`, `OnObjectExit` | `SuEntrataFormato`, `SuSalvataggioOggetto`, `SuUscitaOggetto` |
 | `Formato > Formattazione condizionale` | `Formattazione > Condizionale` |
 | `Visualizza > Modifica formato` | `Visualizza > Formato scheda` (Ctrl+L) |
+| `Ispettore` | `finestra Impostazioni` |
+| `Menu a discesa` | `Elenco a discesa` (oppure `Menu a comparsa`, che e' un'altra cosa) |
+| `Nascondi oggetto quando` | `Nascondi oggetto se` |
+| `Opzioni > Convalida` | `Opzioni > Verifica` |
+| `Convalidata da calcolo` | `Convalidato mediante calcolo` |
+| `Consenti l'immissione nel campo` | `Accesso campo` (spunta del modo Usa) |
+| `Formato > Controllo` | Impostazioni › `Dati` › `Controllo stile` |
+| `Mostra finestra personalizzata` | `Mostra finestra personalizz.` |
+
+Il secondo giro (25 novembre) e' venuto dall'aver verificato sulla guida
+**corrente**, che e' gia' quella della 26: la seconda meta' della tabella.
 
 La prima a cadere e' stata `Esegui trova`, segnalata da chi stava costruendo:
 *"a dire il vero non e' esegui trova ma esegui ricerca"*. Tirando quel filo

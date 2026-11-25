@@ -41,7 +41,8 @@ quelli che ricompaiono quando si riapre una formula salvata. Chi costruisce
 confronta la guida con lo schermo, e i due devono coincidere.
 
 Ogni nome si prende da `VOCABOLARIO-FILEMAKER.md`, e se non c'e' si verifica
-sul titolo della pagina italiana Claris **prima** di scriverlo. Mai tradurre a
+sul titolo della pagina italiana Claris **della versione 22** **prima** di
+scriverlo. Mai tradurre a
 senso: `Get ( ConteggioTrovati )`, `Get ( NomeSetPrivilegi )` e
 `Get ( UltimaSceltaMessaggio )` erano nomi inventati, e chi costruiva li ha
 corretti a mano per sei tappe.
@@ -67,7 +68,11 @@ Si scrive un codice colore **solo** dove il tema non arriva, e sono tre casi:
   nostra ad Apex blu;
 - il **testo bianco** sopra quel fondo scuro, perche' il tema lo farebbe
   scuro;
-- il riquadro **bianco** che stacca i campi dallo sfondo del corpo;
+- il **fondo bianco del titolo** di una cornice, che interrompe la linea
+  sotto la scritta. Il corpo e' gia' bianco: le cornici non hanno bisogno di
+  un riempimento nostro, e nei disegni il corpo si disegna **bianco** (fino
+  alla scheda 21 era grigio, e faceva sembrare necessari i rettangoli
+  bianchi);
 - il **rosso `#DD0000`** dei fuori limite, nella formattazione condizionale
   del campo `Esito` sul registro. E' quel rosso e non un altro perche' e'
   quello che Apex blu usa gia' per i numeri negativi: il file resta con un
@@ -156,7 +161,7 @@ database`, oppure `File > Salva con nome > XML`) e archiviato in
 schema che vive dentro un file binario, e per verificare il lavoro fatto
 invece di fidarsi.
 
-## Campi Id: Menu a comparsa, mai Menu a discesa
+## Campi Id: Menu a comparsa, mai Elenco a discesa
 
 Un campo `Id...` contiene un **IDUU**, trentasei caratteri senza significato.
 Sulla maschera non deve comparire mai, nemmeno per un attimo.
@@ -165,7 +170,7 @@ La differenza sta nel **tipo di controllo**, non nella lista valori:
 
 | Controllo | Cosa mostra il campo a riposo |
 |---|---|
-| **Menu a discesa** | il **valore memorizzato** — cioe' l'IDUU |
+| **Elenco a discesa** | il **valore memorizzato** — cioe' l'IDUU |
 | **Menu a comparsa** | il **secondo campo** della lista valori — cioe' `Cucina` |
 
 E i campi di tipo **Data** prendono il **Calendario a discesa**: su una data il
@@ -180,7 +185,7 @@ Quindi:
   (`vl_Reparti`, `vl_Fornitori`, `vl_Attrezzature`, `vl_Operatori`,
   `vl_Prodotti`, `vl_PuntiControllo`) -> **Menu a comparsa**;
 - campo che contiene **il valore stesso** e lista a un campo solo
-  (`vl_SiNo`, `vl_TipoAttrezzatura`, `vl_Frequenza`...) -> **Menu a discesa**,
+  (`vl_SiNo`, `vl_TipoAttrezzatura`, `vl_Frequenza`...) -> **Elenco a discesa**,
   che in piu' lascia scrivere e completa da solo.
 
 **L'effetto collaterale, da sapere.** Il Menu a comparsa mostra **niente** se
@@ -340,7 +345,7 @@ Costato due volte:
 
 - il parametro di un trigger cercato al primo livello invece che nel
   sottoalbero;
-- *Nascondi oggetto quando* cercato come elemento `<HideCondition>`, che non
+- *Nascondi oggetto se* cercato come elemento `<HideCondition>`, che non
   esiste: sta in `<Conditions><Hide><Calculation><Text>`. Risultato: segnalato
   come mancante il difetto piu' grave del collaudo 016, che in realta' era
   stato fatto. Il controllo in positivo su `D_Parametri elenco`, dove quelle
@@ -368,8 +373,18 @@ italiana. Non si va a memoria e non si traduce a senso: un nome sbagliato
 manda chi costruisce a cercare un comando che non esiste.
 
 Quando serve un nome che non e' in tabella si apre
-`help.claris.com/it/pro-help/content/<nome-inglese-con-trattini>.html` e si
-legge il **titolo della pagina**: quello **e'** il nome italiano.
+`help.claris.com/archive/fm22/it/pro-help/content/<nome-inglese-con-trattini>.html`
+e si legge il **titolo della pagina**: quello **e'** il nome italiano.
+
+**La guida e' quella della 22, non quella corrente.** Chi costruisce ha
+FileMaker Pro **22.0.7** (lo dice l'attributo `Source` in testa al DDR). La
+guida su `help.claris.com/it/pro-help/` e' gia' quella della **26**, e la
+differenza non e' solo di parole: la 26 ha opzioni che la 22 non ha
+(*Imposta in base a calcolo* sull'accesso ai campi). Verificare sulla 26 e'
+costato un giro di correzioni sbagliate il 25 novembre: *Specifica il
+calcolo*, *Mostra finestra personalizzata*, *Solo visualizzazione* sono nomi
+della 26. Se una pagina dell'archivio 22 non si trova, il nome si segna fra i
+**non verificati**, non si prende dalla 26.
 
 Le tre che si sbagliano piu' spesso, perche' sembrano traducibili e non lo
 sono:

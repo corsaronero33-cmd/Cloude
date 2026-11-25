@@ -111,10 +111,10 @@ Scheda: da `Reparto` a **`Attrezzatura`**. Elenco: da `Reparti` a
 1. Seleziona nel **Corpo** i quattro campi e le quattro etichette, **Canc**.
    Non si recuperano: la griglia nuova ha misure diverse (etichette da 150 a
    88, campi da 329 a 200) e ridisegnarli e' piu' veloce che correggerli.
-2. Parte **Corpo** › Ispettore › Posizione › **Altezza 500**.
+2. Parte **Corpo** › Impostazioni › Posizione › **Altezza 500**.
 3. **Rettangolo** del primo riquadro, misure dalla tabella. Riempimento
    bianco, bordo 1 pt, raggio 4.
-4. **Testo** del titolo, poi Ispettore › Aspetto › stile **`Titolo gruppo`**,
+4. **Testo** del titolo, poi Impostazioni › Aspetto › stile **`Titolo gruppo`**,
    quello salvato per il menu.
 5. **Linea**, con Maiusc premuto.
 6. Seleziona i tre oggetti insieme, **Ctrl+D**, e dai al duplicato le misure
@@ -148,7 +148,7 @@ colonna e niente riquadro; da **6 a 10** due colonne e un riquadro; **oltre
 
 1. **Campo**: disegnalo nel riquadro 1. Nella finestra di scelta, la tendina
    dell'occorrenza in alto dev'essere **`ATT|Attrezzature`**. Scegli `Codice`.
-2. Ispettore › Posizione: **x 143, y 72, largh. 200, alt. 32**.
+2. Impostazioni › Posizione: **x 143, y 72, largh. 200, alt. 32**.
 3. L'etichetta creata in automatico: **x 44, y 72, largh. 88, alt. 32**,
    allineata a **destra**.
 4. Ora hai la coppia campione. **Selezionala tutta** e **Ctrl+D** per ogni
@@ -178,8 +178,9 @@ e **460** per i campi (larghi 200). La colonna destra chiude a **660**.
 | 404 | Note | `Note` | **x 143, largh. 517, alt. 60** — arriva a 660 | | | |
 
 **Le tendine si mettono dopo.** Disegna prima tutti e quattordici i campi, poi
-torna sui tre che le vogliono: `Formato` › `Controllo`. **`Tipo` e `Attivo`
-vogliono Menu a discesa, `IdReparto` vuole Menu a comparsa** — il perche' e'
+torna sui tre che le vogliono: Impostazioni › scheda **Dati** › area
+Campo › **Controllo stile**. **`Tipo` e `Attivo`
+vogliono Elenco a discesa, `IdReparto` vuole Menu a comparsa** — il perche' e'
 nella fase 6.
 
 **Le etichette sono corte per forza.** Larghe 88 non ci sta "Ultima
@@ -192,18 +193,18 @@ manutenzione": si scrive **"Ultima manut."**. E' il prezzo delle due colonne.
 `IdReparto` contiene un **IDUU**: trentasei caratteri senza significato. Sulla
 maschera non deve comparire mai, **nemmeno dopo aver scelto**.
 
-**Qui si sbaglia facilmente.** Con il **Menu a discesa** la tendina aperta
-mostra "Cucina", scegli, e appena esci dal campo **ricompare l'IDUU**: il Menu
+**Qui si sbaglia facilmente.** Con l'**Elenco a discesa** la tendina aperta
+mostra "Cucina", scegli, e appena esci dal campo **ricompare l'IDUU**: l'Elenco
 a discesa fa vedere *il valore memorizzato*. Serve il **Menu a comparsa**, che
 fa vedere *il secondo campo della lista valori*.
 
 | Controllo | Tendina aperta | Cosa scrive | Campo a riposo |
 |---|---|---|---|
-| **Menu a discesa** | Cucina | l'IDUU | **l'IDUU** — sbagliato |
+| **Elenco a discesa** | Cucina | l'IDUU | **l'IDUU** — sbagliato |
 | **Menu a comparsa** | Cucina | l'IDUU | **Cucina** — giusto |
 
-**Come si cambia:** selezioni il campo, `Formato` › `Controllo` ›
-**Menu a comparsa**, lista valori `vl_Reparti`. Un clic, e la lista resta la
+**Come si cambia:** selezioni il campo, Impostazioni › **Dati** ›
+**Controllo stile** › **Menu a comparsa**, lista valori `vl_Reparti`. Un clic, e la lista resta la
 stessa.
 
 ### La regola, per tutti i campi del progetto
@@ -211,11 +212,11 @@ stessa.
 | Che campo e' | Lista valori | Controllo | Esempi qui |
 |---|---|---|---|
 | contiene un **Id** | a **due** campi (mostra una cosa, scrive l'Id) | **Menu a comparsa** | `IdReparto` |
-| contiene **il valore stesso** | a **un** campo | **Menu a discesa** | `Tipo`, `Attivo` |
+| contiene **il valore stesso** | a **un** campo | **Elenco a discesa** | `Tipo`, `Attivo` |
 
-Sul campo che contiene gia' il suo valore il Menu a discesa e' **meglio**:
-lascia scrivere e completa da solo. Quindi `Tipo` e `Attivo` restano a
-discesa, cambia solo `IdReparto`.
+Sul campo che contiene gia' il suo valore l'Elenco a discesa e' **meglio**:
+lascia scrivere e completa da solo. Quindi `Tipo` e `Attivo` restano
+Elenco a discesa, cambia solo `IdReparto`.
 
 **L'effetto collaterale da sapere.** Il Menu a comparsa mostra **niente** se
 il valore memorizzato non e' piu' nella lista — per esempio un reparto
@@ -312,7 +313,7 @@ il giorno in cui esiste.
 | 3 | `+ Nuovo` | Due riquadri, titolo **Attrezzatura**, etichette non tagliate |
 | 4 | Clicchi su **Tipo** | Tendina con i tipi di attrezzatura |
 | 5 | Clicchi su **Reparto** | Tendina con **Cucina** e **Magazzino secco**, non stringhe di 36 caratteri |
-| 5b | Scegli **Cucina** e **clicchi fuori dal campo** | Il campo continua a dire **Cucina**. Se ricompare l'IDUU, il controllo e' Menu a discesa: fase 6 |
+| 5b | Scegli **Cucina** e **clicchi fuori dal campo** | Il campo continua a dire **Cucina**. Se ricompare l'IDUU, il controllo e' Elenco a discesa: fase 6 |
 | 6 | Compili `FRI-01` / `Frigo verdure` / Frigorifero / Cucina, poi `← Elenco` | La colonna **Reparto** dice **Cucina**: la relazione funziona |
 | 7 | Crei `FOR-01` / `Forno` nell'altro reparto | Due righe, **in ordine di codice**: FOR prima di FRI |
 | 8 | `Apri` sulla **seconda** riga | Si apre **quella** attrezzatura. Se si apre un reparto, hai saltato la fase 3c |
@@ -324,7 +325,7 @@ il giorno in cui esiste.
 **La 5 e la 5b sono due prove diverse, ed e' il punto.** La 5 verifica la
 **lista valori**: se dentro la tendina vedi gli IDUU, la lista non e'
 `vl_Reparti`. La 5b verifica il **controllo**: se l'IDUU ricompare *dopo* aver
-scelto, la lista e' giusta ma il controllo e' Menu a discesa invece che a
+scelto, la lista e' giusta ma il controllo e' Elenco a discesa invece che a
 comparsa. Due cause diverse, due rimedi diversi.
 
 La prova 12 dimostra che la duplicazione e' pulita. Se le due anagrafiche si

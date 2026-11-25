@@ -307,7 +307,7 @@ Il corpo passa da **230** a **400**, e i pulsanti stanno dentro il riquadro
 | `Crea account` | 143 | 326 | 150 | 35 | `94 - Operatori - Crea account` |
 | `Reimposta password` | 303 | 326 | 180 | 35 | `95 - Operatori - Reimposta password` |
 
-Tutti e due, `Ispettore › Dati › Nascondi oggetto quando`:
+Tutti e due, `Impostazioni › Dati › Nascondi oggetto se`:
 
 ```
 Get ( NomeSetPrivilegiAccount ) = "Operatore"
@@ -320,7 +320,7 @@ Get ( NomeSetPrivilegiAccount ) = "Operatore"
 or not EVuoto ( OPE|Operatori::AccountFileMaker )
 ```
 
-Il campo `Ruolo` va nel riquadro nuovo (controllo **Menu a discesa**, lista
+Il campo `Ruolo` va nel riquadro nuovo (controllo **Elenco a discesa**, lista
 `vl_Ruoli`), e la colonna `Ruolo` all'elenco **accanto** a `Account FM`, non
 al suo posto.
 

@@ -115,7 +115,7 @@ Casi (
 ```
 
 **Dove si usa:** convalida del campo `Fornitori::PartitaIva`.
-`Opzioni` -> `Convalida` -> **Convalidata da calcolo**, formula
+`Opzioni` -> `Verifica` -> **Convalidato mediante calcolo**, formula
 `PartitaIvaValida ( PartitaIva )`, e nel messaggio personalizzato scrivi
 "La partita IVA non e' valida: controlla le cifre."
 

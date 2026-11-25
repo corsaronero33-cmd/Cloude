@@ -95,7 +95,7 @@ tabella vuota.
 
 Perche' per FileMaker **non sono vuoti**. Letto dal DDR:
 
-| Campo | Auto-immissione | Convalida |
+| Campo | Auto-immissione | Verifica |
 |---|---|---|
 | `Id` | calcolo `Get ( IDUU )` | **Non vuoto**, univoco |
 | `CreatoIl` | data e ora di creazione | — |

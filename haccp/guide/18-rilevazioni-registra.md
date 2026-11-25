@@ -79,13 +79,13 @@ Salva record/richieste [ Senza finestra di dialogo ]
 
 # 1 - controlli, prima di toccare il database
 If [ EVuoto ( RIL|Rilevazioni::gIdPuntoControllo ) ]
-   Mostra finestra personalizzata [ "Manca un dato" ; "Scegli il punto di controllo." ]
+   Mostra finestra personalizz. [ "Manca un dato" ; "Scegli il punto di controllo." ]
    Esci dallo script [ "" ]
 End If
 If [ If ( RIL|PuntoScelto::Grandezza = "visivo" ;
           EVuoto ( RIL|Rilevazioni::gValoreTesto ) ;
           EVuoto ( RIL|Rilevazioni::gValore ) ) ]
-   Mostra finestra personalizzata [ "Manca un dato" ; "Scrivi il valore rilevato." ]
+   Mostra finestra personalizz. [ "Manca un dato" ; "Scrivi il valore rilevato." ]
    Esci dallo script [ "" ]
 End If
 
@@ -149,10 +149,10 @@ Salva record/richieste
 
 # 6 - un messaggio solo, scelto in base all'esito
 If [ $esito = "non conforme" ]
-   Mostra finestra personalizzata [ "Valore fuori limite" ;
+   Mostra finestra personalizz. [ "Valore fuori limite" ;
        $descrizione & "PP Azione correttiva da eseguire: P" & $azione ]
 Else
-   Mostra finestra personalizzata [ "Registrato" ;
+   Mostra finestra personalizz. [ "Registrato" ;
        "Rilevazione registrata: " & $nome & " - conforme." ]
 End If
 
@@ -226,19 +226,19 @@ Pulsanti a y 57: `← Menù` → `90` con `"D_Menu"`, `Registro` → `90` con
 | 202 | — | `RIL\|PuntoScelto::LimiteMax` | 552 | 100 | sola lettura |
 | 202 | Unita | `RIL\|PuntoScelto::UnitaMisura` | 751 | 245 | sola lettura |
 | 312 | Valore | `gValore` | 143 | 300 | casella **alta 50**, 24pt |
-| 312 | *sovrapposto* | `gValoreTesto` | 143 | 300 | **Menu a discesa** `vl_EsitoRilevazione` |
-| 382 | Note | `gNote` | 143 | 853 | casella |
+| 312 | *sovrapposto* | `gValoreTesto` | 143 | 300 | **Elenco a discesa** `vl_EsitoRilevazione` |
+| 382 | Note | `gNote` | 143 | 853 | Casella modifica |
 
-I quattro campi di `RIL|PuntoScelto`: sfondo grigio, **immissione tolta**.
+I quattro campi di `RIL|PuntoScelto`: sfondo grigio, **accesso tolto**.
 Sono quello che il punto dice, non quello che l'operatore scrive.
 
 **I due campi del valore si nascondono a vicenda**, stessa tecnica dei
-parametri. Ispettore > scheda **Dati** > riquadro **Comportamento** >
-**Nascondi oggetto quando**:
+parametri. Impostazioni > scheda **Dati** > riquadro **Comportamento** >
+**Nascondi oggetto se**:
 
 ```
-gValore        nascondi quando:  RIL|PuntoScelto::Grandezza = "visivo"
-gValoreTesto   nascondi quando:  RIL|PuntoScelto::Grandezza <> "visivo"
+gValore        nascondi se:  RIL|PuntoScelto::Grandezza = "visivo"
+gValoreTesto   nascondi se:  RIL|PuntoScelto::Grandezza <> "visivo"
 ```
 
 **Queste due formule non sono un abbellimento: senza di loro la maschera non
@@ -299,7 +299,7 @@ Due verifiche, in quest'ordine:
 
 1. **Sulla maschera**, scegliere un punto a temperatura: se compare il menu
    `conforme / non conforme` invece della casella numerica, le due formule
-   *Nascondi oggetto quando* della fase 4 non stanno facendo il loro lavoro.
+   *Nascondi oggetto se* della fase 4 non stanno facendo il loro lavoro.
    Tutto il resto segue da li'.
 2. **Su `Z_RIL Rilevazioni`**, guardare la colonna `Esito` dei record appena
    fatti: **un solo `Esito` vuoto e' un difetto**, non una stranezza. Vuol
