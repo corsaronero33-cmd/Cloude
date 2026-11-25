@@ -183,6 +183,26 @@ I **modi** si scelgono dal menu `Visualizza` (o con la scorciatoia):
 | Manage Layouts | `File > Gestisci > Formati`, finestra `Gestisci formati` |
 | Get ( CurrentPrivilegeSetName ) | `Get ( NomeSetPrivilegiCorrente )` — dentro uno script con accesso completo restituisce `[Full Access]`; `Get ( NomeSetPrivilegiAccount )` resta il set vero |
 
+## Impostazioni dell'applicazione
+
+Su **Windows** non si chiamano "Preferenze": **`Modifica > Impostazioni`**
+(su macOS `FileMaker Pro > Impostazioni`). Schede: `Generale`, `Schema`,
+`Memoria`, `Plug-In`, `Host e plug-in autorizzati`.
+
+| Scheda | Voce |
+|---|---|
+| Generale | `Segnala quando è disponibile un aggiornamento` |
+| Generale | `Avvisami quando è disponibile un aggiornamento della versione principale` |
+| Generale | `Segnala quando è disponibile una nuova versione` |
+| Generale | `Mostra gli annunci dei prodotti nella finestra Home` |
+| Generale | `Mostra i file aperti di recente` |
+| Generale | `All'avvio, apri il file` |
+| Plug-In | `Plug-In correntemente attivi`, `Visualizza cartella plug-in` |
+
+La finestra iniziale con i file recenti si chiama **finestra Home**.
+Le opzioni del singolo file stanno invece in `File > Opzioni file`, scheda
+`Apri`.
+
 ## Altri termini verificati
 
 | Inglese | Italiano |
