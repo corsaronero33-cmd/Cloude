@@ -24,3 +24,6 @@ desktop.ini
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Impostazioni locali (contengono la password)
+LibraPRO/libra.ini

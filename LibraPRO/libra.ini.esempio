@@ -1,0 +1,10 @@
+; Impostazioni locali di questa postazione.
+; Copia questo file come libra.ini e metti i tuoi valori.
+; libra.ini non va su Git: contiene la password.
+
+[database]
+host = localhost
+porta = 5432
+nome = librapro
+utente = libra
+password = CambiaMi
